@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kasir Thai Tea CST</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Library SheetJS untuk Export Excel yang Rapi -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
     <style>
         :root {
             --primary: #E67E22;
@@ -79,6 +83,8 @@
         .btn-success:hover { background: #219653; }
         .btn-warning { background: var(--secondary); color: white; }
         .btn-warning:hover { background: #E67E22; }
+        .btn-excel { background: #1D6F42; color: white; } /* Excel Green */
+        .btn-excel:hover { background: #145030; }
         .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
         .btn-sm { padding: 6px 12px; font-size: 0.85rem; }
         
@@ -151,7 +157,8 @@
         .remove-item:hover { background: rgba(231, 76, 60, 0.1); }
         
         .cart-summary { border-top: 2px solid var(--light); padding-top: 20px; }
-        .summary-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 0.95rem; }
+        .summary-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 0.95rem; align-items: center; }
+        .summary-row input { width: 100px; padding: 5px; border: 1px solid #ddd; border-radius: 6px; text-align: right; font-weight: 600; }
         .summary-row.total {
             font-size: 1.4rem; font-weight: 700; color: var(--primary-dark);
             margin: 15px 0; padding-top: 15px; border-top: 2px dashed var(--light);
@@ -409,7 +416,10 @@
             <div class="cart-summary">
                 <div class="summary-row"><span>Subtotal</span><span id="subtotal">Rp 0</span></div>
                 <div class="summary-row"><span>PPN (11%)</span><span id="tax">Rp 0</span></div>
-                <div class="summary-row"><span>Diskon</span><span id="discount">Rp 0</span></div>
+                <div class="summary-row" style="color: var(--danger);">
+                    <span><i class="fas fa-tag"></i> Diskon (Rp)</span>
+                    <input type="number" id="discountInput" placeholder="0" min="0">
+                </div>
                 <div class="summary-row total"><span>Total</span><span id="total">Rp 0</span></div>
                 
                 <div style="margin: 20px 0; font-weight: 500;">
@@ -430,7 +440,7 @@
                     </div>
                 </div>
 
-                <!-- CASH INPUT SECTION (New) -->
+                <!-- CASH INPUT SECTION -->
                 <div id="cashPaymentSection" style="display: block;">
                     <div class="summary-row cash-input-row">
                         <div style="width: 100%;">
@@ -469,7 +479,7 @@
             <div class="receipt-summary">
                 <div class="summary-row"><span>Subtotal</span><span id="receiptSubtotal">Rp 0</span></div>
                 <div class="summary-row"><span>PPN (11%)</span><span id="receiptTax">Rp 0</span></div>
-                <div class="summary-row"><span>Diskon</span><span id="receiptDiscount">Rp 0</span></div>
+                <div class="summary-row" style="color: var(--danger);"><span>Diskon</span><span id="receiptDiscount">Rp 0</span></div>
                 <div class="receipt-total"><span>TOTAL</span><span id="receiptTotal">Rp 0</span></div>
                 
                 <!-- Cash Details in Receipt -->
@@ -547,8 +557,9 @@
                 <button class="btn btn-danger btn-sm" id="clearAllDataBtn">
                     <i class="fas fa-trash-alt"></i> Hapus Semua Data
                 </button>
-                <button class="btn btn-warning btn-sm" id="exportReportBtn">
-                    <i class="fas fa-download"></i> Export CSV
+                <!-- Ganti Export CSV jadi Export Excel -->
+                <button class="btn btn-excel btn-sm" id="exportReportBtn">
+                    <i class="fas fa-file-excel"></i> Export Excel
                 </button>
                 <button class="btn btn-primary btn-sm" id="printReportBtn">
                     <i class="fas fa-print"></i> Cetak Laporan
@@ -575,12 +586,12 @@
         let transactions = JSON.parse(localStorage.getItem('thaiTeaTransactions')) || [];
         let selectedPaymentMethod = 'cash';
         let cashPaid = 0;
+        let discountValue = 0; 
 
         const productsGrid = document.getElementById('productsGrid');
         const cartItems = document.getElementById('cartItems');
         const subtotalEl = document.getElementById('subtotal');
         const taxEl = document.getElementById('tax');
-        const discountEl = document.getElementById('discount');
         const totalEl = document.getElementById('total');
         const itemCountEl = document.getElementById('itemCount');
         const checkoutBtn = document.getElementById('checkoutBtn');
@@ -614,6 +625,7 @@
         const cashPaymentSection = document.getElementById('cashPaymentSection');
         const changeRow = document.getElementById('changeRow');
         const changeAmount = document.getElementById('changeAmount');
+        const discountInput = document.getElementById('discountInput'); 
 
         const formatRupiah = (amount) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
         
@@ -717,20 +729,24 @@
         const updateTotals = () => {
             const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
             const tax = subtotal * 0.11;
-            const discount = 0;
-            const total = subtotal + tax - discount;
+            const total = Math.max(0, (subtotal + tax) - discountValue); 
+            
             subtotalEl.textContent = formatRupiah(subtotal);
             taxEl.textContent = formatRupiah(tax);
-            discountEl.textContent = formatRupiah(discount);
             totalEl.textContent = formatRupiah(total);
-            return { subtotal, tax, discount, total };
+            return { subtotal, tax, discount: discountValue, total };
         };
+
+        // Handle Discount Input
+        discountInput.addEventListener('input', (e) => {
+            discountValue = parseInt(e.target.value) || 0;
+            updateTotals();
+        });
 
         const updateCheckoutButton = () => {
             if (cart.length > 0) {
-                // Check if cash is selected and input is valid
                 if (selectedPaymentMethod === 'cash') {
-                    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) * 1.11;
+                    const total = updateTotals().total;
                     if (cashPaid >= total) {
                         checkoutBtn.disabled = false;
                         checkoutBtn.innerHTML = '<i class="fas fa-check"></i> Proses Pembayaran';
@@ -771,7 +787,6 @@
             const now = new Date();
             const transactionId = generateTransactionId();
             
-            // Save transaction
             const transaction = {
                 id: transactionId,
                 timestamp: now.toISOString(),
@@ -787,7 +802,6 @@
             transactions.push(transaction);
             saveTransactions();
             
-            // Show receipt
             receiptDateTime.textContent = now.toLocaleString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
             receiptItems.innerHTML = '';
             cart.forEach(item => {
@@ -802,7 +816,6 @@
             receiptTotal.textContent = formatRupiah(totals.total);
             receiptPaymentMethod.textContent = selectedPaymentMethod.charAt(0).toUpperCase() + selectedPaymentMethod.slice(1);
             
-            // Cash details in receipt
             if (selectedPaymentMethod === 'cash') {
                 receiptCashDetails.style.display = 'block';
                 receiptCashPaid.textContent = formatRupiah(cashPaid);
@@ -817,6 +830,8 @@
             setTimeout(() => {
                 cart = []; saveCart(); renderCart();
                 resetCashInput();
+                discountInput.value = '';
+                discountValue = 0;
             }, 2500);
         };
 
@@ -855,19 +870,16 @@
                     break;
             }
             
-            // Calculate statistics
             const totalRevenue = filteredTransactions.reduce((sum, t) => sum + t.total, 0);
             const totalOrders = filteredTransactions.length;
             const totalItems = filteredTransactions.reduce((sum, t) => sum + t.items.reduce((s, i) => s + i.quantity, 0), 0);
             const avgTransaction = totalOrders > 0 ? totalRevenue / totalOrders : 0;
             
-            // Update stats
             document.getElementById('totalRevenue').textContent = formatRupiah(totalRevenue);
             document.getElementById('totalOrders').textContent = totalOrders;
             document.getElementById('totalItems').textContent = totalItems;
             document.getElementById('avgTransaction').textContent = formatRupiah(avgTransaction);
             
-            // Render transactions list
             const transactionsList = document.getElementById('transactionsList');
             if (filteredTransactions.length === 0) {
                 transactionsList.innerHTML = `
@@ -877,7 +889,6 @@
                         <p>Belum ada transaksi pada periode yang dipilih</p>
                     </div>`;
             } else {
-                // Sort by newest first
                 filteredTransactions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
                 
                 let tableHTML = `
@@ -913,14 +924,18 @@
             }
         };
 
-        // Export to CSV
-        const exportToCSV = () => {
+        // 🔥 EXPORT TO EXCEL (Rapi & Profesional)
+        const exportToExcel = () => {
             if (transactions.length === 0) {
                 alert('Tidak ada data untuk diekspor!');
                 return;
             }
+
+            // 1. Persiapan Data Header
+            const header = ["ID Transaksi", "Tanggal", "Waktu", "Nama Item (Qty)", "Subtotal", "PPN (11%)", "Diskon", "Total Bayar", "Pembayaran", "Uang Diterima", "Kembalian"];
             
-            let csv = 'ID Transaksi,Tanggal,Waktu,Item,Subtotal,Pajak,Diskon,Total,Metode Pembayaran,Uang Diterima,Kembalian\n';
+            // 2. Persiapan Data Rows
+            const data = [header]; // Baris pertama adalah header
             
             transactions.forEach(trx => {
                 const date = new Date(trx.timestamp);
@@ -928,18 +943,40 @@
                 const timeStr = date.toLocaleTimeString('id-ID');
                 const items = trx.items.map(i => `${i.name} (${i.quantity})`).join('; ');
                 
-                csv += `${trx.id},${dateStr},${timeStr},"${items}",${trx.subtotal},${trx.tax},${trx.discount},${trx.total},${trx.paymentMethod},${trx.cashPaid || 0},${trx.change || 0}\n`;
+                // Format angka agar rapi di Excel (tanpa simbol Rp di value, tapi kita bisa format string juga)
+                // Disini saya pakai format string Rupiah agar langsung rapi dilihat
+                const row = [
+                    trx.id,
+                    dateStr,
+                    timeStr,
+                    items,
+                    formatRupiah(trx.subtotal),
+                    formatRupiah(trx.tax),
+                    formatRupiah(trx.discount || 0),
+                    formatRupiah(trx.total),
+                    trx.paymentMethod.toUpperCase(),
+                    formatRupiah(trx.cashPaid || 0),
+                    formatRupiah(trx.change || 0)
+                ];
+                data.push(row);
             });
-            
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            link.setAttribute('href', url);
-            link.setAttribute('download', `Laporan_Thai_Tea_CST_${new Date().toISOString().split('T')[0]}.csv`);
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+
+            // 3. Buat Worksheet & Workbook
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Laporan Penjualan");
+
+            // 4. Atur Lebar Kolom Otomatis (Supaya Rapi)
+            const colWidths = [
+                {wch: 20}, {wch: 12}, {wch: 10}, {wch: 35}, 
+                {wch: 15}, {wch: 15}, {wch: 15}, {wch: 15}, 
+                {wch: 12}, {wch: 15}, {wch: 15}
+            ];
+            ws['!cols'] = colWidths;
+
+            // 5. Download File
+            const today = new Date().toISOString().split('T')[0];
+            XLSX.writeFile(wb, `Laporan_Penjualan_ThaiTeaCST_${today}.xlsx`);
         };
 
         // Clear all data
@@ -975,7 +1012,6 @@
                 method.classList.add('selected');
                 selectedPaymentMethod = method.dataset.method;
                 
-                // Show/Hide Cash Input
                 if (selectedPaymentMethod === 'cash') {
                     cashPaymentSection.style.display = 'block';
                     cashInput.focus();
@@ -996,19 +1032,23 @@
                 if (cart.length > 0 && !confirm('Keranjang masih berisi item. Lanjutkan order baru?')) return;
                 cart = []; saveCart(); renderCart(); renderProducts();
                 resetCashInput();
+                discountInput.value = '';
+                discountValue = 0;
             });
             
-            // Report functionality
             viewReportBtn.addEventListener('click', () => {
                 generateReport();
                 reportModal.classList.add('active');
             });
             reportPeriod.addEventListener('change', generateReport);
             generateReportBtn.addEventListener('click', generateReport);
-            exportReportBtn.addEventListener('click', exportToCSV);
+            
+            // Ganti listener export CSV ke Export Excel
+            exportReportBtn.addEventListener('click', exportToExcel);
+            
             clearAllDataBtn.addEventListener('click', clearAllData);
             printReportBtn.addEventListener('click', () => {
-                alert('Fitur cetak laporan akan membuka dialog print browser. Untuk hasil terbaik, gunakan export CSV.');
+                alert('Fitur cetak laporan akan membuka dialog print browser. Untuk hasil terbaik, gunakan Export Excel.');
                 window.print();
             });
             
