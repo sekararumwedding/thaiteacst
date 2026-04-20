@@ -2,11 +2,9 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Kasir Thai Tea CST</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Library SheetJS untuk Export Excel yang Rapi -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
     <style>
@@ -24,13 +22,14 @@
             --radius: 16px;
         }
         
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; -webkit-tap-highlight-color: transparent; }
         
         body {
             background: linear-gradient(135deg, #FFF8F0 0%, #FFEBE0 100%);
             color: var(--dark);
             min-height: 100vh;
             padding: 20px;
+            overflow-x: hidden;
         }
         
         .app-container {
@@ -62,31 +61,30 @@
             width: 50px; height: 50px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             color: white; font-size: 1.5rem; font-weight: bold;
+            flex-shrink: 0;
         }
-        .logo-text h1 { font-size: 1.8rem; color: var(--primary-dark); font-weight: 800; }
+        .logo-text h1 { font-size: 1.8rem; color: var(--primary-dark); font-weight: 800; line-height: 1.2; }
         .logo-text p { color: var(--gray); font-size: 0.9rem; }
         
-        .header-actions { display: flex; align-items: center; gap: 15px; }
+        .header-actions { display: flex; align-items: center; gap: 12px; }
         
         .btn {
             padding: 12px 24px; border: none; border-radius: 12px; font-weight: 600;
-            cursor: pointer; display: flex; align-items: center; gap: 8px;
-            transition: all 0.3s; font-size: 0.95rem;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+            transition: all 0.2s; font-size: 0.95rem; min-height: 44px; touch-action: manipulation;
         }
         .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(230, 126, 34, 0.4); }
+        .btn-primary:active { transform: scale(0.98); background: var(--primary-dark); }
         .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
-        .btn-outline:hover { background: var(--primary); color: white; }
+        .btn-outline:active { background: var(--primary); color: white; }
         .btn-danger { background: var(--danger); color: white; }
-        .btn-danger:hover { background: #c0392b; }
+        .btn-danger:active { background: #c0392b; }
         .btn-success { background: var(--success); color: white; }
-        .btn-success:hover { background: #219653; }
-        .btn-warning { background: var(--secondary); color: white; }
-        .btn-warning:hover { background: #E67E22; }
-        .btn-excel { background: #1D6F42; color: white; } /* Excel Green */
-        .btn-excel:hover { background: #145030; }
+        .btn-success:active { background: #219653; }
+        .btn-excel { background: #1D6F42; color: white; }
+        .btn-excel:active { background: #145030; }
         .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-        .btn-sm { padding: 6px 12px; font-size: 0.85rem; }
+        .btn-sm { padding: 8px 14px; font-size: 0.85rem; min-height: 38px; }
         
         .menu-section {
             background: var(--white); border-radius: var(--radius); padding: 25px;
@@ -100,9 +98,10 @@
         
         .category-filter { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 25px; }
         .category-btn {
-            padding: 8px 20px; background: var(--light); border: none; border-radius: 30px;
-            font-weight: 500; cursor: pointer; transition: all 0.3s;
+            padding: 10px 20px; background: var(--light); border: none; border-radius: 30px;
+            font-weight: 500; cursor: pointer; transition: all 0.2s; min-height: 40px;
         }
+        .category-btn:active { transform: scale(0.96); }
         .category-btn.active, .category-btn:hover { background: var(--primary); color: white; }
         
         .products-grid {
@@ -110,24 +109,25 @@
         }
         .product-card {
             background: var(--white); border-radius: 16px; overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08); transition: transform 0.3s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08); transition: transform 0.2s;
             display: flex; flex-direction: column; border: 2px solid transparent;
+            touch-action: manipulation;
         }
-        .product-card:hover { transform: translateY(-5px); border-color: var(--primary); box-shadow: 0 8px 25px rgba(230, 126, 34, 0.25); }
+        .product-card:active { transform: scale(0.98); border-color: var(--primary); }
         .product-img {
             height: 140px; background: linear-gradient(135deg, #FFF3E0, #FFE0B2);
             display: flex; align-items: center; justify-content: center; font-size: 3rem; color: var(--primary);
         }
         .product-info { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; }
-        .product-name { font-weight: 600; font-size: 1.1rem; margin-bottom: 5px; color: var(--dark); }
-        .product-desc { color: var(--gray); font-size: 0.85rem; margin-bottom: 10px; flex-grow: 1; }
+        .product-name { font-weight: 600; font-size: 1.1rem; margin-bottom: 5px; color: var(--dark); line-height: 1.3; }
+        .product-desc { color: var(--gray); font-size: 0.85rem; margin-bottom: 10px; flex-grow: 1; line-height: 1.4; }
         .product-price { font-weight: 700; font-size: 1.3rem; color: var(--primary-dark); margin: 8px 0; }
         .add-to-cart {
-            width: 100%; padding: 10px; background: var(--primary); color: white; border: none;
+            width: 100%; padding: 12px; background: var(--primary); color: white; border: none;
             border-radius: 10px; font-weight: 600; cursor: pointer; display: flex; align-items: center;
-            justify-content: center; gap: 8px; transition: background 0.3s; margin-top: 5px;
+            justify-content: center; gap: 8px; transition: background 0.2s; margin-top: 5px; min-height: 44px;
         }
-        .add-to-cart:hover { background: var(--primary-dark); }
+        .add-to-cart:active { background: var(--primary-dark); }
         
         .cart-section {
             background: var(--white); border-radius: var(--radius); padding: 25px;
@@ -142,41 +142,42 @@
             display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: var(--primary); flex-shrink: 0;
         }
         .cart-item-info { flex-grow: 1; }
-        .cart-item-name { font-weight: 600; margin-bottom: 3px; }
+        .cart-item-name { font-weight: 600; margin-bottom: 3px; line-height: 1.3; }
         .cart-item-price { color: var(--primary-dark); font-weight: 600; }
-        .cart-item-quantity { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+        .cart-item-quantity { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
         .quantity-btn {
-            width: 28px; height: 28px; border-radius: 8px; background: var(--light); border: none;
-            font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s;
+            width: 32px; height: 32px; border-radius: 8px; background: var(--light); border: none;
+            font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s; min-height: 32px;
         }
-        .quantity-btn:hover { background: var(--primary); color: white; }
+        .quantity-btn:active { background: var(--primary); color: white; }
         .remove-item {
             color: var(--danger); background: none; border: none; cursor: pointer; font-size: 1.1rem;
-            width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: background 0.2s;
+            width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: background 0.2s; min-height: 32px;
         }
-        .remove-item:hover { background: rgba(231, 76, 60, 0.1); }
+        .remove-item:active { background: rgba(231, 76, 60, 0.1); }
         
         .cart-summary { border-top: 2px solid var(--light); padding-top: 20px; }
-        .summary-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 0.95rem; align-items: center; }
-        .summary-row input { width: 100px; padding: 5px; border: 1px solid #ddd; border-radius: 6px; text-align: right; font-weight: 600; }
+        .summary-row { display: flex; justify-content: space-between; padding: 10px 0; font-size: 0.95rem; align-items: center; }
+        .summary-row input { width: 110px; padding: 8px; border: 1px solid #ddd; border-radius: 8px; text-align: right; font-weight: 600; min-height: 40px; }
         .summary-row.total {
             font-size: 1.4rem; font-weight: 700; color: var(--primary-dark);
             margin: 15px 0; padding-top: 15px; border-top: 2px dashed var(--light);
         }
         .summary-row.cash-input-row {
-            background: #E8F8F5; padding: 10px; border-radius: 8px; margin: 10px 0; border: 1px solid #A2D9CE;
+            background: #E8F8F5; padding: 12px; border-radius: 10px; margin: 10px 0; border: 1px solid #A2D9CE;
         }
-        .summary-row.cash-input-row label { font-weight: 600; color: var(--success); display: block; margin-bottom: 5px; }
+        .summary-row.cash-input-row label { font-weight: 600; color: var(--success); display: block; margin-bottom: 8px; font-size: 0.9rem; }
         .summary-row.cash-input-row input {
-            width: 100%; padding: 8px; border: 1px solid #A2D9CE; border-radius: 6px; font-weight: bold; font-size: 1.1rem;
+            width: 100%; padding: 10px; border: 1px solid #A2D9CE; border-radius: 8px; font-weight: bold; font-size: 1.1rem; min-height: 44px;
         }
         .summary-row.change-row { color: var(--success); font-weight: 700; font-size: 1.1rem; }
         
         .payment-methods { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 20px 0; }
         .payment-method {
             padding: 15px; border: 2px solid var(--light); border-radius: 12px; text-align: center;
-            cursor: pointer; transition: all 0.3s; background: var(--white);
+            cursor: pointer; transition: all 0.2s; background: var(--white); min-height: 70px; display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
+        .payment-method:active { transform: scale(0.98); }
         .payment-method:hover, .payment-method.selected { border-color: var(--primary); background: rgba(230, 126, 34, 0.08); }
         .payment-method i { font-size: 1.8rem; margin-bottom: 8px; color: var(--primary); }
         .payment-method.cash i { color: #27AE60; }
@@ -187,7 +188,7 @@
         .payment-method.selected.qris i { color: #2980B9; }
         .payment-method.selected.transfer i { color: #8E44AD; }
         
-        .checkout-btn { width: 100%; padding: 16px; font-size: 1.1rem; margin-top: 10px; }
+        .checkout-btn { width: 100%; padding: 16px; font-size: 1.1rem; margin-top: 10px; min-height: 50px; }
         
         .empty-cart { text-align: center; padding: 40px 20px; color: var(--gray); }
         .empty-cart i { font-size: 3rem; margin-bottom: 15px; opacity: 0.7; }
@@ -195,7 +196,8 @@
         /* Modal Styles */
         .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; padding: 20px;
+            background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 20px;
+            backdrop-filter: blur(4px);
         }
         .modal.active { display: flex; }
         .modal-content {
@@ -204,11 +206,11 @@
             max-height: 90vh; overflow-y: auto;
         }
         .close-modal {
-            position: absolute; top: 15px; right: 20px; background: none; border: none;
-            font-size: 1.5rem; color: var(--gray); cursor: pointer; width: 36px; height: 36px;
-            border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.2s;
+            position: absolute; top: 15px; right: 20px; background: var(--light); border: none;
+            font-size: 1.5rem; color: var(--dark); cursor: pointer; width: 40px; height: 40px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.2s; z-index: 10;
         }
-        .close-modal:hover { background: var(--light); color: var(--danger); }
+        .close-modal:active { background: var(--danger); color: white; }
         
         /* Receipt Modal */
         .receipt {
@@ -219,7 +221,7 @@
         .receipt-logo { font-size: 2.5rem; color: var(--primary); margin-bottom: 10px; font-weight: 800; }
         .receipt-title { font-size: 1.4rem; font-weight: 700; color: var(--dark); margin: 5px 0; }
         .receipt-meta { color: var(--gray); font-size: 0.9rem; margin-top: 5px; line-height: 1.6; }
-        .receipt-items { margin-bottom: 20px; }
+        .receipt-items { margin-bottom: 20px; max-height: 250px; overflow-y: auto; }
         .receipt-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #eee; }
         .receipt-item-name { font-weight: 500; }
         .receipt-item-qty { color: var(--gray); margin-left: 5px; }
@@ -228,7 +230,7 @@
         .receipt-total { display: flex; justify-content: space-between; font-size: 1.5rem; font-weight: 700; color: var(--primary-dark); margin: 10px 0; }
         .receipt-footer { text-align: center; margin-top: 25px; padding-top: 15px; border-top: 2px dashed #eee; color: var(--gray); font-size: 0.9rem; }
         .receipt-actions { display: flex; gap: 10px; margin-top: 25px; }
-        .receipt-actions .btn { flex: 1; justify-content: center; }
+        .receipt-actions .btn { flex: 1; justify-content: center; min-height: 48px; }
         
         /* Report Styles */
         .report-header {
@@ -240,7 +242,7 @@
         .report-filters { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
         .report-filters select, .report-filters input {
             padding: 10px 15px; border: 2px solid var(--light); border-radius: 10px;
-            font-size: 0.95rem; background: white; cursor: pointer;
+            font-size: 0.95rem; background: white; cursor: pointer; min-height: 40px;
         }
         .report-filters select:focus, .report-filters input:focus {
             outline: none; border-color: var(--primary);
@@ -297,20 +299,16 @@
         .empty-report h3 { margin-bottom: 10px; color: var(--dark); }
         
         .report-actions {
-            display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end;
+            display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; flex-wrap: wrap;
         }
 
         /* PRINT FIX CSS */
         @media print {
             @page { margin: 0; size: auto; }
             body { background: white; -webkit-print-color-adjust: exact; }
-            
-            /* Hide everything by default */
             .app-container, header, .cart-section, .modal, .menu-section, .report-header, .stats-grid, .transactions-table, .report-actions {
                 display: none !important;
             }
-
-            /* Show only receipt */
             .receipt {
                 display: block !important;
                 position: absolute;
@@ -324,41 +322,116 @@
                 margin: 0;
                 visibility: visible !important;
             }
-            
-            /* Ensure modal background is gone */
             .modal.active {
                 position: static;
                 background: white;
                 display: block !important;
                 height: auto;
             }
-            
             .receipt-actions, .close-modal {
                 display: none !important;
             }
         }
         
-        @media (max-width: 1100px) {
-            .app-container { grid-template-columns: 1fr; }
-            .cart-section { position: static; max-height: none; }
-            header { flex-direction: column; gap: 15px; text-align: center; }
-            .header-actions { width: 100%; justify-content: center; }
-        }
+        /* MOBILE OPTIMIZATION */
         @media (max-width: 768px) {
-            body { padding: 10px; }
-            .products-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
-            .product-img { height: 120px; font-size: 2.5rem; }
-            .payment-methods { grid-template-columns: 1fr; }
-            .receipt, .modal-content { padding: 20px; margin: 10px; }
+            body { padding: 10px; font-size: 14px; }
+            header {
+                padding: 12px 15px;
+                flex-direction: column;
+                gap: 12px;
+                position: relative;
+                top: 0;
+                margin-bottom: 12px;
+                border-radius: 12px;
+            }
+            .logo { width: 100%; justify-content: center; }
+            .logo-icon { width: 40px; height: 40px; font-size: 1.2rem; }
+            .logo-text h1 { font-size: 1.5rem; }
+            .logo-text p { font-size: 0.85rem; }
+            .header-actions { width: 100%; justify-content: center; gap: 10px; }
+            .header-actions .btn { padding: 10px 16px; font-size: 0.9rem; flex: 1; }
+            
+            .app-container { grid-template-columns: 1fr; gap: 15px; }
+            .menu-section, .cart-section { 
+                padding: 15px; max-height: none; position: static; 
+                border-radius: 12px; margin-bottom: 10px;
+            }
+            
+            .section-title { margin-bottom: 15px; padding-bottom: 10px; }
+            .section-title h2 { font-size: 1.3rem; }
+            .section-title span { font-size: 0.85rem; }
+            
+            .category-filter { gap: 8px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
+            .category-btn { padding: 8px 16px; font-size: 0.85rem; white-space: nowrap; }
+            
+            .products-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+            .product-card { border-radius: 12px; }
+            .product-img { height: 110px; font-size: 2.2rem; }
+            .product-info { padding: 10px; }
+            .product-name { font-size: 0.95rem; }
+            .product-desc { font-size: 0.8rem; margin-bottom: 8px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+            .product-price { font-size: 1.1rem; margin: 6px 0; }
+            .add-to-cart { padding: 10px; font-size: 0.85rem; min-height: 40px; }
+            
+            .cart-section { margin-top: 5px; }
+            .cart-items { max-height: 300px; }
+            .cart-item { padding: 12px 0; gap: 12px; }
+            .cart-item-img { width: 50px; height: 50px; font-size: 1.3rem; }
+            .cart-item-quantity { gap: 8px; }
+            .quantity-btn, .remove-item { width: 28px; height: 28px; font-size: 0.9rem; }
+            
+            .payment-methods { grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; }
+            .payment-method { padding: 12px 8px; min-height: 60px; }
+            .payment-method i { font-size: 1.5rem; margin-bottom: 6px; }
+            .payment-method div { font-size: 0.85rem; }
+            
+            .summary-row input { width: 100%; max-width: 100%; min-height: 42px; }
+            .cash-input-row input { width: 100% !important; }
+            .checkout-btn { padding: 14px; font-size: 1rem; min-height: 48px; }
+            
+            /* Modal Bottom Sheet Style for Mobile */
+            .modal { padding: 0; align-items: flex-end; }
+            .modal.active { display: flex; }
+            .receipt, .modal-content { 
+                width: 100%; max-width: 100%; max-height: 92vh; 
+                border-radius: 20px 20px 0 0; margin: 0;
+                padding: 25px 20px 30px;
+                overflow-y: auto;
+            }
+            .close-modal { top: 12px; right: 12px; width: 36px; height: 36px; font-size: 1.2rem; }
+            
+            .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
+            .stat-card { padding: 15px; }
+            .stat-label { font-size: 0.8rem; }
+            .stat-value { font-size: 1.4rem; }
+            
+            .report-header { flex-direction: column; align-items: stretch; gap: 12px; }
+            .report-filters { justify-content: space-between; }
+            .report-filters select { flex: 1; }
+            
+            .transactions-table { font-size: 0.85rem; display: block; overflow-x: auto; white-space: nowrap; }
+            .transactions-table th, .transactions-table td { padding: 10px 12px; }
+            
+            .report-actions { flex-direction: column; }
+            .report-actions .btn { width: 100%; justify-content: center; }
+            
+            .receipt-actions { flex-direction: column; }
+            .receipt-actions .btn { width: 100%; }
+        }
+        
+        @media (max-width: 480px) {
             .stats-grid { grid-template-columns: 1fr; }
-            .transactions-table { font-size: 0.85rem; }
-            .transactions-table th, .transactions-table td { padding: 8px 10px; }
+            .products-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .product-img { height: 90px; font-size: 1.8rem; }
+            .product-name { font-size: 0.9rem; }
+            .product-price { font-size: 1rem; }
         }
         
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .product-card, .cart-item, .stat-card { animation: fadeIn 0.3s ease-out; }
         
-        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: var(--light); border-radius: 10px; }
         ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--primary-dark); }
@@ -440,7 +513,6 @@
                     </div>
                 </div>
 
-                <!-- CASH INPUT SECTION -->
                 <div id="cashPaymentSection" style="display: block;">
                     <div class="summary-row cash-input-row">
                         <div style="width: 100%;">
@@ -482,7 +554,6 @@
                 <div class="summary-row" style="color: var(--danger);"><span>Diskon</span><span id="receiptDiscount">Rp 0</span></div>
                 <div class="receipt-total"><span>TOTAL</span><span id="receiptTotal">Rp 0</span></div>
                 
-                <!-- Cash Details in Receipt -->
                 <div id="receiptCashDetails" style="margin-top: 10px; font-size: 0.9rem; color: var(--gray);">
                     <div class="summary-row"><span>Uang Diterima</span><span id="receiptCashPaid">Rp 0</span></div>
                     <div class="summary-row" style="color: var(--success); font-weight: bold;"><span>Kembalian</span><span id="receiptChange">Rp 0</span></div>
@@ -557,7 +628,6 @@
                 <button class="btn btn-danger btn-sm" id="clearAllDataBtn">
                     <i class="fas fa-trash-alt"></i> Hapus Semua Data
                 </button>
-                <!-- Ganti Export CSV jadi Export Excel -->
                 <button class="btn btn-excel btn-sm" id="exportReportBtn">
                     <i class="fas fa-file-excel"></i> Export Excel
                 </button>
@@ -737,7 +807,6 @@
             return { subtotal, tax, discount: discountValue, total };
         };
 
-        // Handle Discount Input
         discountInput.addEventListener('input', (e) => {
             discountValue = parseInt(e.target.value) || 0;
             updateTotals();
@@ -763,7 +832,6 @@
             }
         };
 
-        // Handle Cash Input
         cashInput.addEventListener('input', (e) => {
             const val = parseInt(e.target.value) || 0;
             cashPaid = val;
@@ -780,7 +848,6 @@
             }
         });
 
-        // CHECKOUT & SAVE TRANSACTION
         const checkout = () => {
             if (cart.length === 0) return;
             const totals = updateTotals();
@@ -835,7 +902,6 @@
             }, 2500);
         };
 
-        // GENERATE REPORT
         const generateReport = () => {
             const period = reportPeriod.value;
             const now = new Date();
@@ -924,18 +990,14 @@
             }
         };
 
-        // 🔥 EXPORT TO EXCEL (Rapi & Profesional)
         const exportToExcel = () => {
             if (transactions.length === 0) {
                 alert('Tidak ada data untuk diekspor!');
                 return;
             }
 
-            // 1. Persiapan Data Header
             const header = ["ID Transaksi", "Tanggal", "Waktu", "Nama Item (Qty)", "Subtotal", "PPN (11%)", "Diskon", "Total Bayar", "Pembayaran", "Uang Diterima", "Kembalian"];
-            
-            // 2. Persiapan Data Rows
-            const data = [header]; // Baris pertama adalah header
+            const data = [header];
             
             transactions.forEach(trx => {
                 const date = new Date(trx.timestamp);
@@ -943,30 +1005,19 @@
                 const timeStr = date.toLocaleTimeString('id-ID');
                 const items = trx.items.map(i => `${i.name} (${i.quantity})`).join('; ');
                 
-                // Format angka agar rapi di Excel (tanpa simbol Rp di value, tapi kita bisa format string juga)
-                // Disini saya pakai format string Rupiah agar langsung rapi dilihat
                 const row = [
-                    trx.id,
-                    dateStr,
-                    timeStr,
-                    items,
-                    formatRupiah(trx.subtotal),
-                    formatRupiah(trx.tax),
-                    formatRupiah(trx.discount || 0),
-                    formatRupiah(trx.total),
-                    trx.paymentMethod.toUpperCase(),
-                    formatRupiah(trx.cashPaid || 0),
-                    formatRupiah(trx.change || 0)
+                    trx.id, dateStr, timeStr, items,
+                    formatRupiah(trx.subtotal), formatRupiah(trx.tax), formatRupiah(trx.discount || 0),
+                    formatRupiah(trx.total), trx.paymentMethod.toUpperCase(),
+                    formatRupiah(trx.cashPaid || 0), formatRupiah(trx.change || 0)
                 ];
                 data.push(row);
             });
 
-            // 3. Buat Worksheet & Workbook
             const ws = XLSX.utils.aoa_to_sheet(data);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Laporan Penjualan");
 
-            // 4. Atur Lebar Kolom Otomatis (Supaya Rapi)
             const colWidths = [
                 {wch: 20}, {wch: 12}, {wch: 10}, {wch: 35}, 
                 {wch: 15}, {wch: 15}, {wch: 15}, {wch: 15}, 
@@ -974,12 +1025,10 @@
             ];
             ws['!cols'] = colWidths;
 
-            // 5. Download File
             const today = new Date().toISOString().split('T')[0];
             XLSX.writeFile(wb, `Laporan_Penjualan_ThaiTeaCST_${today}.xlsx`);
         };
 
-        // Clear all data
         const clearAllData = () => {
             if (transactions.length === 0) {
                 alert('Tidak ada data untuk dihapus!');
@@ -1042,10 +1091,7 @@
             });
             reportPeriod.addEventListener('change', generateReport);
             generateReportBtn.addEventListener('click', generateReport);
-            
-            // Ganti listener export CSV ke Export Excel
             exportReportBtn.addEventListener('click', exportToExcel);
-            
             clearAllDataBtn.addEventListener('click', clearAllData);
             printReportBtn.addEventListener('click', () => {
                 alert('Fitur cetak laporan akan membuka dialog print browser. Untuk hasil terbaik, gunakan Export Excel.');
