@@ -82,8 +82,9 @@
         .qty-btn { width: 24px; height: 24px; border-radius: 6px; background: var(--light); border: none; font-weight: bold; cursor: pointer; }
         .remove-btn { color: var(--danger); background: none; border: none; cursor: pointer; margin-left: auto; }
         
-        .summary-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 0.9rem; }
-        .summary-row.total { font-size: 1.2rem; font-weight: 700; color: var(--primary-dark); margin: 10px 0; padding-top: 10px; border-top: 2px dashed var(--light); }
+        .summary-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 0.95rem; align-items: center; }
+        .summary-row input { width: 100px; padding: 6px; border: 1px solid #ddd; border-radius: 6px; text-align: right; font-weight: 600; }
+        .summary-row.total { font-size: 1.4rem; font-weight: 700; color: var(--primary-dark); margin: 10px 0; padding-top: 12px; border-top: 3px solid var(--light); }
         .payment-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 15px 0; }
         .pay-method { padding: 10px; border: 2px solid var(--light); border-radius: 10px; text-align: center; cursor: pointer; font-size: 0.85rem; transition: 0.2s; }
         .pay-method.selected { border-color: var(--primary); background: rgba(230,126,34,0.1); }
@@ -252,8 +253,11 @@
             </div>
             <div class="cart-summary">
                 <div class="summary-row"><span>Subtotal</span><span id="subtotal">Rp 0</span></div>
-                <div class="summary-row"><span>PPN (11%)</span><span id="tax">Rp 0</span></div>
-                <div class="summary-row" style="color: var(--danger);"><span><i class="fas fa-tag"></i> Diskon (dari PPN)</span><span id="discountDisplay">Rp 0</span></div>
+                <div class="summary-row" style="color: var(--danger);">
+                    <span><i class="fas fa-tag"></i> Diskon</span>
+                    <!-- ✅ UPDATE: Pakai oninput agar langsung update saat ngetik -->
+                    <input type="number" id="discountInput" placeholder="0" min="0" oninput="applyDiscount()" style="width: 100px; padding: 6px; border: 1px solid #ddd; border-radius: 6px; text-align: right; font-weight: 600;">
+                </div>
                 <div class="summary-row total"><span>Total</span><span id="total">Rp 0</span></div>
                 
                 <div style="margin: 15px 0; font-weight: 600; font-size: 0.9rem;"><i class="fas fa-credit-card"></i> Pembayaran</div>
@@ -375,7 +379,6 @@
         let inventoryCache = {};
         let cart = [];
         let selectedPayment = 'cash';
-        let discount = 0;
 
         const formatRp = (n) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n || 0);
         const branchNames = { cabang_01: '📍 Sport Center Bandara Soetta', cabang_02: '📍 TOD M1, Benda' };
@@ -457,7 +460,7 @@
                 card.className = 'product-card';
                 card.innerHTML = `
                     <div class="item-badge" id="badge-${p.id}" style="display:none;">0</div>
-                    <div class="product-img"><img src="${p.img}" alt="${p.name}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>🧋</text></svg>'"></div>
+                    <div class="product-img"><img src="${p.img}" alt="${p.name}" onerror="this.src='image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>🧋</text></svg>'"></div>
                     <div class="product-info">
                         <div class="product-name">${p.name}</div>
                         <div class="product-desc">${p.desc}</div>
@@ -514,7 +517,7 @@
             
             container.innerHTML = cart.map(item => `
                 <div class="cart-item">
-                    <div class="cart-item-img"><img src="${item.img}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>🧋</text></svg>'"></div>
+                    <div class="cart-item-img"><img src="${item.img}" onerror="this.src='image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>🧋</text></svg>'"></div>
                     <div class="cart-item-info">
                         <div class="cart-item-name">${item.name}</div>
                         <div class="cart-item-price">${formatRp(item.price)}</div>
@@ -542,40 +545,44 @@
             });
         }
 
+        // ✅ PERHITUNGAN TOTAL SEDERHANA & VALIDASI TOMBOL
         function updateTotals() {
-            const sub = cart.reduce((s,i) => s + (i.price * i.qty), 0);
-            const tax = sub * 0.11;
-            // Diskon dikurangi dari PPN
-            const finalTax = Math.max(0, tax - discount);
-            const tot = sub + finalTax;
+            const sub = cart.reduce((s, i) => s + (i.price * i.qty), 0);
+            const discInput = document.getElementById('discountInput');
+            const disc = parseFloat(discInput.value) || 0;
+            const total = Math.max(0, sub - disc);
             
             document.getElementById('subtotal').textContent = formatRp(sub);
-            document.getElementById('tax').textContent = formatRp(tax);
-            document.getElementById('discountDisplay').textContent = formatRp(discount);
-            document.getElementById('total').textContent = formatRp(tot);
-            document.getElementById('itemCount').textContent = `${cart.reduce((s,i)=>s+i.qty,0)} item`;
+            document.getElementById('total').textContent = formatRp(total);
+            document.getElementById('itemCount').textContent = `${cart.reduce((s, i) => s + i.qty, 0)} item`;
             
-            checkCashInput();
+            // ✅ TOMBOL BAYAR AKTIF JIKA ADA ITEM & TOTAL > 0
+            const btn = document.getElementById('checkoutBtn');
+            btn.disabled = !(cart.length > 0 && total > 0);
+            
+            // Update kembalian jika mode tunai
+            if(selectedPayment === 'cash') checkCashInput();
         }
 
+        function applyDiscount() {
+            updateTotals();
+        }
+
+        // ✅ CEK UANG KEMBALIAN (HANYA UI)
         function checkCashInput() {
+            if(selectedPayment !== 'cash') return;
+            
+            const totalText = document.getElementById('total').textContent.replace(/[^0-9]/g, '');
+            const total = parseInt(totalText) || 0;
             const cash = parseInt(document.getElementById('cashInput').value) || 0;
-            const sub = cart.reduce((s,i) => s + (i.price * i.qty), 0);
-            const tax = sub * 0.11;
-            const finalTax = Math.max(0, tax - discount);
-            const tot = sub + finalTax;
             const changeRow = document.getElementById('changeRow');
             
-            if(selectedPayment === 'cash' && cash >= tot) {
-                document.getElementById('changeAmount').textContent = formatRp(cash - tot);
+            if(cash >= total && total > 0) {
+                document.getElementById('changeAmount').textContent = formatRp(cash - total);
                 changeRow.style.display = 'block';
             } else {
                 changeRow.style.display = 'none';
             }
-            
-            const btn = document.getElementById('checkoutBtn');
-            if(selectedPayment === 'cash' && cash < tot) btn.disabled = true;
-            else if(cart.length > 0) btn.disabled = false;
         }
 
         // 💳 PAYMENT FUNCTIONS
@@ -583,25 +590,27 @@
             selectedPayment = method;
             document.querySelectorAll('.pay-method').forEach(m => m.classList.remove('selected'));
             document.querySelector(`[data-method="${method}"]`).classList.add('selected');
+            
+            const cashInput = document.getElementById('cashInputGroup');
+            cashInput.style.display = method === 'cash' ? 'block' : 'none';
+            document.getElementById('changeRow').style.display = 'none';
+            
+            if(method !== 'cash') document.getElementById('cashInput').value = '';
             renderPaymentPanel(method);
+            updateTotals(); // Re-check button state
         }
 
         function renderPaymentPanel(method) {
             const panel = document.getElementById('paymentPanel');
             const content = document.getElementById('paymentContent');
             const title = document.getElementById('paymentTitle');
-            const cashInput = document.getElementById('cashInputGroup');
             
             if (method === 'cash') {
                 panel.classList.remove('active');
-                cashInput.style.display = 'block';
-                checkCashInput();
                 return;
             }
             
             panel.classList.add('active');
-            cashInput.style.display = 'none';
-            document.getElementById('changeRow').style.display = 'none';
             content.innerHTML = '';
             
             if (method === 'qris') {
@@ -675,9 +684,8 @@
             btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
             
             const sub = cart.reduce((s,i) => s + (i.price * i.qty), 0);
-            const tax = sub * 0.11;
-            const finalTax = Math.max(0, tax - discount);
-            const tot = sub + finalTax;
+            const disc = parseFloat(document.getElementById('discountInput').value) || 0;
+            const total = Math.max(0, sub - disc);
             const cash = selectedPayment === 'cash' ? (parseInt(document.getElementById('cashInput').value) || 0) : 0;
             
             try {
@@ -696,12 +704,11 @@
                         id: trxRef.id,
                         items: cart,
                         subtotal: sub,
-                        tax: finalTax,
-                        discount: discount,
-                        total: tot,
+                        discount: disc,
+                        total: total,
                         paymentMethod: selectedPayment,
                         cashPaid: cash,
-                        change: selectedPayment === 'cash' ? cash - tot : 0,
+                        change: selectedPayment === 'cash' ? cash - total : 0,
                         cashierId: currentUser.uid,
                         cashierName: currentUser.displayName || currentUser.email,
                         branchId: currentBranch,
@@ -709,9 +716,11 @@
                     });
                 });
                 
-                printThermalReceipt({ id: 'TRX'+Date.now(), items: cart, subtotal: sub, tax: finalTax, discount, total: tot, paymentMethod: selectedPayment, cashPaid: cash, change: selectedPayment === 'cash' ? cash - tot : 0 });
+                printThermalReceipt({ id: 'TRX'+Date.now(), items: cart, subtotal: sub, discount: disc, total: total, paymentMethod: selectedPayment, cashPaid: cash, change: selectedPayment === 'cash' ? cash - total : 0 });
                 
                 cart = [];
+                document.getElementById('discountInput').value = '';
+                document.getElementById('cashInput').value = '';
                 renderCart();
                 updateCartBadges();
                 updateTotals();
@@ -737,7 +746,7 @@
             
             let itemsHtml = trx.items.map(i => `<tr><td>${i.name} x${i.qty}</td><td style="text-align:right">${formatRp(i.price*i.qty)}</td></tr>`).join('');
             
-            w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>@media print{@page{margin:0;size:58mm auto;}body{margin:0;padding:5px;font-family:'Courier New',monospace;font-size:12px;}}body{font-family:'Courier New',monospace;font-size:12px;max-width:58mm;margin:0 auto;}table{width:100%;border-collapse:collapse;margin:5px 0;}td{padding:2px 0;}.header{text-align:center;border-bottom:1px dashed #000;padding-bottom:5px;margin-bottom:5px;}.total{border-top:1px dashed #000;padding-top:5px;margin-top:5px;}.row{display:flex;justify-content:space-between;margin:2px 0;}.big{font-size:14px;font-weight:bold;margin-top:5px;}.footer{text-align:center;margin-top:10px;font-size:10px;border-top:1px dashed #000;padding-top:5px;}</style></head><body><div class="header"><h2 style="margin:0;">🧋 THAI TEA CST</h2><p style="margin:2px 0;">${branch}</p><p>${date}</p></div><table>${itemsHtml}</table><div class="total"><div class="row"><span>Subtotal</span><span>${formatRp(trx.subtotal)}</span></div><div class="row"><span>PPN 11%</span><span>${formatRp(trx.tax)}</span></div>${trx.discount?`<div class="row"><span>Diskon</span><span>${formatRp(trx.discount)}</span></div>`:''}<div class="row big"><span>TOTAL</span><span>${formatRp(trx.total)}</span></div></div>${trx.paymentMethod==='cash'?`<div class="row"><span>Bayar</span><span>${formatRp(trx.cashPaid)}</span></div><div class="row" style="font-weight:bold;"><span>Kembali</span><span>${formatRp(trx.change)}</span></div>`:''}<div class="footer"><p>Metode: ${trx.paymentMethod.toUpperCase()}</p><p>Terima kasih!</p><p>PT CAHAYA SEJATI TEKNOLOGI</p></div><script>window.onload=()=>{window.print();window.onafterprint=()=>window.close();};<\/script></body></html>`);
+            w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>@media print{@page{margin:0;size:58mm auto;}body{margin:0;padding:5px;font-family:'Courier New',monospace;font-size:12px;}}body{font-family:'Courier New',monospace;font-size:12px;max-width:58mm;margin:0 auto;}table{width:100%;border-collapse:collapse;margin:5px 0;}td{padding:2px 0;}.header{text-align:center;border-bottom:1px dashed #000;padding-bottom:5px;margin-bottom:5px;}.total{border-top:1px dashed #000;padding-top:5px;margin-top:5px;}.row{display:flex;justify-content:space-between;margin:2px 0;}.big{font-size:14px;font-weight:bold;margin-top:5px;}.footer{text-align:center;margin-top:10px;font-size:10px;border-top:1px dashed #000;padding-top:5px;}</style></head><body><div class="header"><h2 style="margin:0;">🧋 THAI TEA CST</h2><p style="margin:2px 0;">${branch}</p><p>${date}</p></div><table>${itemsHtml}</table><div class="total"><div class="row"><span>Subtotal</span><span>${formatRp(trx.subtotal)}</span></div>${trx.discount?`<div class="row"><span>Diskon</span><span>${formatRp(trx.discount)}</span></div>`:''}<div class="row big"><span>TOTAL</span><span>${formatRp(trx.total)}</span></div></div>${trx.paymentMethod==='cash'?`<div class="row"><span>Bayar</span><span>${formatRp(trx.cashPaid)}</span></div><div class="row" style="font-weight:bold;"><span>Kembali</span><span>${formatRp(trx.change)}</span></div>`:''}<div class="footer"><p>Metode: ${trx.paymentMethod.toUpperCase()}</p><p>Terima kasih!</p><p>PT CAHAYA SEJATI TEKNOLOGI</p></div><script>window.onload=()=>{window.print();window.onafterprint=()=>window.close();};<\/script></body></html>`);
             w.document.close();
         }
 
@@ -781,7 +790,7 @@
         }
 
         function exportExcel() {
-            const rows = [['Waktu','ID','Kasir','Cabang','Item','Qty','Total','Metode','Bayar','Kembali']];
+            const rows = [['Waktu','ID','Kasir','Cabang','Item','Qty','Subtotal','Diskon','Total','Metode','Bayar','Kembali']];
             alert('Fitur export Excel siap diintegrasikan dengan data laporan.');
         }
 
@@ -795,8 +804,8 @@
 
         function openReportModal() { document.getElementById('reportModal').classList.add('active'); loadReport(); }
         function closeReportModal() { document.getElementById('reportModal').classList.remove('active'); }
-        function clearCart() { if(confirm('Hapus keranjang?')) { cart=[]; renderCart(); updateCartBadges(); updateTotals(); } }
-        function newOrder() { clearCart(); discount = 0; document.getElementById('discountDisplay').textContent = 'Rp 0'; }
+        function clearCart() { if(confirm('Hapus keranjang?')) { cart=[]; document.getElementById('discountInput').value=''; document.getElementById('cashInput').value=''; renderCart(); updateCartBadges(); updateTotals(); } }
+        function newOrder() { cart=[]; document.getElementById('discountInput').value=''; document.getElementById('cashInput').value=''; renderCart(); updateCartBadges(); updateTotals(); }
 
         // INIT
         window.onload = () => {
