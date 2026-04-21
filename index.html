@@ -116,10 +116,20 @@
         }
         .product-card:active { transform: scale(0.98); border-color: var(--primary); }
         .product-img {
-            height: 140px; background: linear-gradient(135deg, #FFF3E0, #FFE0B2);
-            display: flex; align-items: center; justify-content: center; font-size: 3rem; color: var(--primary);
+            height: 140px; 
+            background: linear-gradient(135deg, #FFF3E0, #FFE0B2);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--primary);
             position: relative;
+            overflow: hidden;
         }
+        .product-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+        .product-card:hover .product-img img { transform: scale(1.05); }
         .product-info { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; }
         .product-name { font-weight: 600; font-size: 1.1rem; margin-bottom: 5px; color: var(--dark); line-height: 1.3; }
         .product-desc { color: var(--gray); font-size: 0.85rem; margin-bottom: 10px; flex-grow: 1; line-height: 1.4; }
@@ -168,8 +178,10 @@
         .cart-item { display: flex; gap: 15px; padding: 15px 0; border-bottom: 1px solid var(--light); }
         .cart-item-img {
             width: 60px; height: 60px; background: var(--light); border-radius: 12px;
-            display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: var(--primary); flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center; 
+            overflow: hidden; flex-shrink: 0;
         }
+        .cart-item-img img { width: 100%; height: 100%; object-fit: cover; }
         .cart-item-info { flex-grow: 1; }
         .cart-item-name { font-weight: 600; margin-bottom: 3px; line-height: 1.3; }
         .cart-item-price { color: var(--primary-dark); font-weight: 600; }
@@ -396,7 +408,7 @@
             
             .products-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
             .product-card { border-radius: 12px; }
-            .product-img { height: 110px; font-size: 2.2rem; }
+            .product-img { height: 110px; }
             .product-info { padding: 10px; }
             .product-name { font-size: 0.95rem; }
             .product-desc { font-size: 0.8rem; margin-bottom: 8px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
@@ -407,7 +419,7 @@
             .cart-section { margin-top: 5px; }
             .cart-items { max-height: 300px; }
             .cart-item { padding: 12px 0; gap: 12px; }
-            .cart-item-img { width: 50px; height: 50px; font-size: 1.3rem; }
+            .cart-item-img { width: 50px; height: 50px; }
             .cart-item-quantity { gap: 8px; }
             .quantity-btn, .remove-item { width: 28px; height: 28px; font-size: 0.9rem; }
             
@@ -453,7 +465,7 @@
         @media (max-width: 480px) {
             .stats-grid { grid-template-columns: 1fr; }
             .products-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-            .product-img { height: 90px; font-size: 1.8rem; }
+            .product-img { height: 90px; }
             .product-name { font-size: 0.9rem; }
             .product-price { font-size: 1rem; }
         }
@@ -494,10 +506,9 @@
             </div>
             <div class="category-filter">
                 <button class="category-btn active" data-category="all">Semua</button>
-                <button class="category-btn" data-category="signature">Signature</button>
-                <button class="category-btn" data-category="milk">Thai Milk Tea</button>
-                <button class="category-btn" data-category="topping">Topping</button>
-                <button class="category-btn" data-category="extra">Extra</button>
+                <button class="category-btn" data-category="premium">Premium Best Seller</button>
+                <button class="category-btn" data-category="original">Original</button>
+                <button class="category-btn" data-category="extra">Extra Topping</button>
             </div>
             <div class="products-grid" id="productsGrid"></div>
         </section>
@@ -595,7 +606,6 @@
                 <div style="margin: 15px 0; font-weight: 600;">Terima kasih telah berbelanja!</div>
                 <div>Barang yang sudah dibeli tidak dapat ditukar/dikembalikan</div>
                 <div style="margin-top: 10px; font-weight: 600;">Simpan struk ini sebagai bukti pembayaran</div>
-                <!-- ✅ TELAH DIGANTI SESUAI PERMINTAAN -->
                 <div style="margin-top: 20px; font-size: 0.85rem; opacity: 0.8;">Powered by PT CAHAYA SEJATI TEKNOLOGI</div>
             </div>
             <div class="receipt-actions">
@@ -670,17 +680,20 @@
     </div>
 
     <script>
+        // ✅ MENU & HARGA BARU DENGAN GAMBAR PRODUK ASLI
         const products = [
-            { id: 1, name: "Thai Tea Original", description: "Teh thailand klasik dengan susu kental manis", price: 15000, category: "signature", icon: "🧋" },
-            { id: 2, name: "Thai Milk Tea", description: "Perpaduan teh thailand dan susu segar", price: 18000, category: "milk", icon: "🥛" },
-            { id: 3, name: "Thai Tea Boba", description: "Thai tea original dengan topping boba kenyal", price: 22000, category: "topping", icon: "🍮" },
-            { id: 4, name: "Thai Tea Jelly", description: "Thai tea dengan jelly buah segar", price: 20000, category: "topping", icon: "🍮" },
-            { id: 5, name: "Thai Tea Less Sugar", description: "Thai tea dengan kadar gula 50%", price: 16000, category: "signature", icon: "🍃" },
-            { id: 6, name: "Thai Tea Ice Blend", description: "Thai tea diblender dengan es krim vanilla", price: 25000, category: "signature", icon: "🍦" },
-            { id: 7, name: "Extra Boba", description: "Tambahan boba mutiara hitam", price: 5000, category: "extra", icon: "⚫" },
-            { id: 8, name: "Extra Jelly", description: "Tambahan jelly buah mix", price: 4000, category: "extra", icon: "🟡" },
-            { id: 9, name: "Large Size", description: "Upgrade ke ukuran large (+200ml)", price: 3000, category: "extra", icon: "📏" },
-            { id: 10, name: "Thai Tea Cream Cheese", description: "Thai tea dengan topping cream cheese", price: 24000, category: "milk", icon: "🧀" }
+            // Premium Best Seller
+            { id: 1, name: "Premium Thai Tea", description: "with Cream Cheese & Shredded Cheese", price: 20000, category: "premium", image: "https://i.ibb.co.com/S44X01hn/Premium-Thai-Tea-with-Cream-Cheese-Shredded-Cheese.jpg" },
+            { id: 2, name: "Premium Matcha", description: "with Cream Cheese & Shredded Cheese", price: 25000, category: "premium", image: "https://i.ibb.co.com/XZ2k5y1T/Premium-Matcha-with-Cream-Cheese-Shredded-Cheese.jpg" },
+            { id: 3, name: "Premium Chocolate", description: "with Cream Cheese & Shredded Cheese", price: 20000, category: "premium", image: "https://i.ibb.co.com/ZzSGpkQB/Premium-Chocolate-with-Cream-Cheese-Shredded-Cheese.jpg" },
+            // Original
+            { id: 4, name: "Thai Tea", description: "Original choice without premium cheese topping", price: 5000, category: "original", image: "https://i.ibb.co.com/N6jCd6sw/Thai-Tea-original.jpg" },
+            { id: 5, name: "Matcha", description: "Original choice without premium cheese topping", price: 5000, category: "original", image: "https://i.ibb.co.com/99Tb8ZjY/Matcha-original.jpg" },
+            { id: 6, name: "Chocolate", description: "Original choice without premium cheese topping", price: 5000, category: "original", image: "https://i.ibb.co.com/bjzr6NNm/Chocolate-original.jpg" },
+            // Extra Topping
+            { id: 7, name: "Cream Cheese", description: "Extra topping", price: 3000, category: "extra", image: "https://i.ibb.co.com/SXyM8m2L/Extra-Topping-Cream-Cheese.jpg" },
+            { id: 8, name: "Cheese (Keju Parut)", description: "Extra topping", price: 3000, category: "extra", image: "https://i.ibb.co.com/gZv3pDvz/Extra-Topping-Cheese-Keju-Parut.jpg" },
+            { id: 9, name: "Bubble (Tapioca Pearl)", description: "Extra topping", price: 3000, category: "extra", image: "https://i.ibb.co.com/d0DwHSr4/Extra-Topping-Bubble-Tapioca-Pearl.jpg" }
         ];
 
         let cart = JSON.parse(localStorage.getItem('thaiTeaCart')) || [];
@@ -764,7 +777,9 @@
                 card.className = 'product-card';
                 card.dataset.productId = product.id;
                 card.innerHTML = `
-                    <div class="product-img">${product.icon}</div>
+                    <div class="product-img">
+                        <img src="${product.image}" alt="${product.name}" onerror="this.parentElement.innerHTML='<span style=\'font-size:2.5rem\'>🧋</span>'">
+                    </div>
                     <div class="product-info">
                         <div class="product-name">${product.name}</div>
                         <div class="product-desc">${product.description}</div>
@@ -784,7 +799,7 @@
             if (!product) return;
             const existing = cart.find(item => item.id === productId);
             if (existing) existing.quantity++;
-            else cart.push({ id: product.id, name: product.name, price: product.price, icon: product.icon, quantity: 1 });
+            else cart.push({ id: product.id, name: product.name, price: product.price, image: product.image, quantity: 1 });
             saveCart(); renderCart(); updateProductBadges();
         };
 
@@ -828,7 +843,9 @@
                 const el = document.createElement('div');
                 el.className = 'cart-item';
                 el.innerHTML = `
-                    <div class="cart-item-img">${item.icon}</div>
+                    <div class="cart-item-img">
+                        <img src="${item.image}" alt="${item.name}" onerror="this.parentElement.innerHTML='<span style=\'font-size:1.3rem\'>🧋</span>'">
+                    </div>
                     <div class="cart-item-info">
                         <div class="cart-item-name">${item.name}</div>
                         <div class="cart-item-price">${formatRupiah(item.price)}</div>
