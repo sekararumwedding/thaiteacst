@@ -255,7 +255,6 @@
                 <div class="summary-row"><span>Subtotal</span><span id="subtotal">Rp 0</span></div>
                 <div class="summary-row" style="color: var(--danger);">
                     <span><i class="fas fa-tag"></i> Diskon</span>
-                    <!-- ✅ UPDATE: Pakai oninput agar langsung update saat ngetik -->
                     <input type="number" id="discountInput" placeholder="0" min="0" oninput="applyDiscount()" style="width: 100px; padding: 6px; border: 1px solid #ddd; border-radius: 6px; text-align: right; font-weight: 600;">
                 </div>
                 <div class="summary-row total"><span>Total</span><span id="total">Rp 0</span></div>
@@ -545,7 +544,7 @@
             });
         }
 
-        // ✅ PERHITUNGAN TOTAL SEDERHANA & VALIDASI TOMBOL
+        // ✅ PERHITUNGAN TOTAL & VALIDASI TOMBOL
         function updateTotals() {
             const sub = cart.reduce((s, i) => s + (i.price * i.qty), 0);
             const discInput = document.getElementById('discountInput');
@@ -560,7 +559,6 @@
             const btn = document.getElementById('checkoutBtn');
             btn.disabled = !(cart.length > 0 && total > 0);
             
-            // Update kembalian jika mode tunai
             if(selectedPayment === 'cash') checkCashInput();
         }
 
@@ -597,7 +595,7 @@
             
             if(method !== 'cash') document.getElementById('cashInput').value = '';
             renderPaymentPanel(method);
-            updateTotals(); // Re-check button state
+            updateTotals();
         }
 
         function renderPaymentPanel(method) {
@@ -677,7 +675,7 @@
             setTimeout(() => btn.innerHTML = original, 1500);
         }
 
-        // 💳 CHECKOUT
+        // 💳 CHECKOUT & PRINT
         async function processCheckout() {
             if(cart.length === 0) return;
             const btn = document.getElementById('checkoutBtn');
@@ -687,6 +685,7 @@
             const disc = parseFloat(document.getElementById('discountInput').value) || 0;
             const total = Math.max(0, sub - disc);
             const cash = selectedPayment === 'cash' ? (parseInt(document.getElementById('cashInput').value) || 0) : 0;
+            const change = selectedPayment === 'cash' ? cash - total : 0;
             
             try {
                 for(const item of cart) {
@@ -708,7 +707,7 @@
                         total: total,
                         paymentMethod: selectedPayment,
                         cashPaid: cash,
-                        change: selectedPayment === 'cash' ? cash - total : 0,
+                        change: change,
                         cashierId: currentUser.uid,
                         cashierName: currentUser.displayName || currentUser.email,
                         branchId: currentBranch,
@@ -716,7 +715,11 @@
                     });
                 });
                 
-                printThermalReceipt({ id: 'TRX'+Date.now(), items: cart, subtotal: sub, discount: disc, total: total, paymentMethod: selectedPayment, cashPaid: cash, change: selectedPayment === 'cash' ? cash - total : 0 });
+                // Print Struk
+                printThermalReceipt({ 
+                    items: cart, subtotal: sub, discount: disc, total: total, 
+                    paymentMethod: selectedPayment, cashPaid: cash, change: change 
+                });
                 
                 cart = [];
                 document.getElementById('discountInput').value = '';
@@ -739,6 +742,7 @@
             }
         }
 
+        // 🖨️ FUNGSI CETAK STRUK YANG DIPERBAIKI
         function printThermalReceipt(trx) {
             const w = window.open('', '_blank', 'width=400,height=600');
             const date = new Date().toLocaleString('id-ID');
@@ -746,7 +750,89 @@
             
             let itemsHtml = trx.items.map(i => `<tr><td>${i.name} x${i.qty}</td><td style="text-align:right">${formatRp(i.price*i.qty)}</td></tr>`).join('');
             
-            w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>@media print{@page{margin:0;size:58mm auto;}body{margin:0;padding:5px;font-family:'Courier New',monospace;font-size:12px;}}body{font-family:'Courier New',monospace;font-size:12px;max-width:58mm;margin:0 auto;}table{width:100%;border-collapse:collapse;margin:5px 0;}td{padding:2px 0;}.header{text-align:center;border-bottom:1px dashed #000;padding-bottom:5px;margin-bottom:5px;}.total{border-top:1px dashed #000;padding-top:5px;margin-top:5px;}.row{display:flex;justify-content:space-between;margin:2px 0;}.big{font-size:14px;font-weight:bold;margin-top:5px;}.footer{text-align:center;margin-top:10px;font-size:10px;border-top:1px dashed #000;padding-top:5px;}</style></head><body><div class="header"><h2 style="margin:0;">🧋 THAI TEA CST</h2><p style="margin:2px 0;">${branch}</p><p>${date}</p></div><table>${itemsHtml}</table><div class="total"><div class="row"><span>Subtotal</span><span>${formatRp(trx.subtotal)}</span></div>${trx.discount?`<div class="row"><span>Diskon</span><span>${formatRp(trx.discount)}</span></div>`:''}<div class="row big"><span>TOTAL</span><span>${formatRp(trx.total)}</span></div></div>${trx.paymentMethod==='cash'?`<div class="row"><span>Bayar</span><span>${formatRp(trx.cashPaid)}</span></div><div class="row" style="font-weight:bold;"><span>Kembali</span><span>${formatRp(trx.change)}</span></div>`:''}<div class="footer"><p>Metode: ${trx.paymentMethod.toUpperCase()}</p><p>Terima kasih!</p><p>PT CAHAYA SEJATI TEKNOLOGI</p></div><script>window.onload=()=>{window.print();window.onafterprint=()=>window.close();};<\/script></body></html>`);
+            // Format kembalian: hilangkan minus jika uang pas atau non-tunai
+            let changeText = '-';
+            if (trx.paymentMethod === 'cash') {
+                if (trx.change > 0) changeText = formatRp(trx.change);
+                else if (trx.change === 0) changeText = 'Uang Pas';
+            }
+            
+            // Format bayar: tampilkan hanya jika tunai
+            let cashText = trx.paymentMethod === 'cash' ? formatRp(trx.cashPaid) : '-';
+            
+            w.document.write(`<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Struk Pembayaran</title>
+    <style>
+        @media print {
+            @page { margin: 0; size: 58mm auto; }
+            body { margin: 0; padding: 5px; font-family: 'Courier New', monospace; font-size: 12px; }
+        }
+        body { font-family: 'Courier New', monospace; font-size: 12px; max-width: 58mm; margin: 0 auto; padding: 5px; line-height: 1.4; }
+        table { width: 100%; border-collapse: collapse; margin: 5px 0; }
+        td { padding: 2px 0; }
+        .header { text-align: center; border-bottom: 1px dashed #000; padding-bottom: 8px; margin-bottom: 8px; }
+        .header h2 { margin: 3px 0; font-size: 16px; }
+        .header p { margin: 2px 0; font-size: 11px; }
+        .total { border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 8px 0; margin: 8px 0; }
+        .row { display: flex; justify-content: space-between; margin: 3px 0; }
+        .big { font-size: 14px; font-weight: bold; margin: 5px 0; }
+        .footer { text-align: center; margin-top: 15px; font-size: 11px; border-top: 1px dashed #000; padding-top: 8px; line-height: 1.6; }
+        .thank-you { font-size: 13px; font-weight: bold; margin: 8px 0; color: #333; }
+        .sweet-message { font-size: 11px; margin: 5px 0; font-style: italic; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>🧋 THAI TEA CST</h2>
+        <p>${branch}</p>
+        <p>${date}</p>
+    </div>
+    
+    <table>${itemsHtml}</table>
+    
+    <div class="total">
+        <div class="row"><span>Subtotal</span><span>${formatRp(trx.subtotal)}</span></div>
+        ${trx.discount ? `<div class="row"><span>Diskon</span><span>${formatRp(trx.discount)}</span></div>` : ''}
+        <div class="row big"><span>TOTAL</span><span>${formatRp(trx.total)}</span></div>
+    </div>
+    
+    ${trx.paymentMethod === 'cash' ? `
+    <div style="margin: 8px 0;">
+        <div class="row"><span>Bayar</span><span>${cashText}</span></div>
+        <div class="row"><span>Kembali</span><span>${changeText}</span></div>
+    </div>
+    ` : ''}
+    
+    <div class="footer">
+        <div class="row" style="justify-content: center; margin-bottom: 8px;">
+            <span>Metode: <strong>${trx.paymentMethod.toUpperCase()}</strong></span>
+        </div>
+        
+        <div class="thank-you">✨ Terima Kasih! ✨</div>
+        
+        <div class="sweet-message">
+            🧋 Selamat Menikmati!<br>
+            Jangan lupa datang kembali ya! 😊
+        </div>
+        
+        <div style="margin-top: 10px; font-size: 10px;">
+            PT CAHAYA SEJATI TEKNOLOGI
+        </div>
+    </div>
+    
+    <script>
+        window.onload = function() { 
+            window.print(); 
+            window.onafterprint = function() { 
+                window.close(); 
+            }; 
+        };
+    <\/script>
+</body>
+</html>`);
             w.document.close();
         }
 
