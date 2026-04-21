@@ -53,6 +53,8 @@
             position: sticky;
             top: 10px;
             z-index: 100;
+            flex-wrap: wrap;
+            gap: 15px;
         }
         
         .logo { display: flex; align-items: center; gap: 15px; }
@@ -66,7 +68,19 @@
         .logo-text h1 { font-size: 1.8rem; color: var(--primary-dark); font-weight: 800; line-height: 1.2; }
         .logo-text p { color: var(--gray); font-size: 0.9rem; }
         
-        .header-actions { display: flex; align-items: center; gap: 12px; }
+        .header-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        
+        .branch-selector {
+            padding: 10px 15px;
+            border-radius: 10px;
+            border: 2px solid var(--primary);
+            background: white;
+            font-weight: 600;
+            min-height: 44px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            outline: none;
+        }
         
         .btn {
             padding: 12px 24px; border: none; border-radius: 12px; font-weight: 600;
@@ -343,7 +357,6 @@
             display: flex; gap: 8px; margin-top: 15px; justify-content: flex-end; flex-wrap: wrap;
         }
 
-        /* PRINT FIX CSS */
         @media print {
             @page { margin: 0; size: auto; }
             body { background: white; -webkit-print-color-adjust: exact; }
@@ -389,8 +402,8 @@
             .logo-icon { width: 36px; height: 36px; font-size: 1.1rem; }
             .logo-text h1 { font-size: 1.4rem; }
             .logo-text p { font-size: 0.8rem; }
-            .header-actions { width: 100%; justify-content: center; gap: 8px; }
-            .header-actions .btn { padding: 8px 14px; font-size: 0.85rem; flex: 1; }
+            .header-actions { width: 100%; justify-content: center; gap: 8px; flex-wrap: wrap; }
+            .header-actions .btn, .branch-selector { padding: 8px 14px; font-size: 0.85rem; flex: 1; min-width: 120px; }
             
             .app-container { grid-template-columns: 1fr; gap: 12px; }
             .menu-section, .cart-section { 
@@ -487,6 +500,11 @@
                 </div>
             </div>
             <div class="header-actions">
+                <!-- ✅ MULTI-CABANG SELECTOR -->
+                <select id="branchSelector" class="branch-selector">
+                    <option value="cabang_01">📍 Sport Center Bandara Soetta</option>
+                    <option value="cabang_02">📍 TOD M1, Benda</option>
+                </select>
                 <button class="btn btn-outline" id="newOrderBtn">
                     <i class="fas fa-plus"></i> Order Baru
                 </button>
@@ -578,7 +596,7 @@
             <div class="receipt-header">
                 <div class="receipt-logo">🧋 CST</div>
                 <div class="receipt-title">THAI TEA CST</div>
-                <div class="receipt-meta">
+                <div class="receipt-meta" id="receiptBranchInfo">
                     Bandar Udara Internasional Soekarno–Hatta<br>
                     Jl. C3 No.831, Pajang, Kec. Benda, Kota Tangerang, Banten 15126<br>
                     📞 +62 822-9999-7227
@@ -620,7 +638,7 @@
             <div class="report-header">
                 <div class="report-title">
                     <h2><i class="fas fa-chart-bar"></i> Laporan Penjualan</h2>
-                    <p>Thai Tea CST - Bandar Udara Soekarno-Hatta</p>
+                    <p>Thai Tea CST - Multi-Cabang</p>
                 </div>
                 <div class="report-filters">
                     <select id="reportPeriod">
@@ -699,15 +717,51 @@
       const db = firebase.firestore();
       console.log("✅ Firebase terhubung!");
 
+      // 🏢 DATA CABANG
+      const branchData = {
+          'cabang_01': {
+              name: 'Sport Center Bandara Soekarno-Hatta',
+              address: 'Bandar Udara Internasional Soekarno–Hatta, Jl. C3 No.831, Pajang, Kec. Benda, Kota Tangerang, Banten 15126',
+              phone: '+62 822-9999-7227'
+          },
+          'cabang_02': {
+              name: 'TOD M1, Benda',
+              address: 'TOD M1, Pajang, Kec. Benda, Kota Tangerang, Banten',
+              phone: '+62 822-9999-7227'
+          }
+      };
+
+      // 📍 Multi-Cabang Logic
+      const branchSelector = document.getElementById('branchSelector');
+      let currentBranch = localStorage.getItem('selectedBranch') || 'cabang_01';
+      branchSelector.value = currentBranch;
+
+      branchSelector.addEventListener('change', () => {
+          currentBranch = branchSelector.value;
+          localStorage.setItem('selectedBranch', currentBranch);
+          console.log("🔄 Cabang diganti ke:", currentBranch, "-", branchData[currentBranch].name);
+          updateReceiptBranchInfo();
+      });
+
+      function updateReceiptBranchInfo() {
+          const branch = branchData[currentBranch];
+          document.getElementById('receiptBranchInfo').innerHTML = `
+              ${branch.name}<br>
+              ${branch.address}<br>
+              📞 ${branch.phone}
+          `;
+      }
+
       // 💾 Fungsi Simpan ke Cloud dengan Fallback Offline
       async function saveTransactionToFirestore(transaction) {
           try {
               await db.collection('transactions').add({
                   ...transaction,
-                  branchId: 'cabang_utama',
+                  branchId: currentBranch, // ✅ Otomatis sesuai cabang yang dipilih
+                  branchName: branchData[currentBranch].name,
                   syncedAt: firebase.firestore.FieldValue.serverTimestamp()
               });
-              console.log("✅ Transaksi tersimpan ke Cloud");
+              console.log("✅ Transaksi tersimpan ke Cloud | Cabang:", currentBranch);
               clearOfflineQueue(); // Bersihkan queue jika berhasil
           } catch (error) {
               console.warn("⚠️ Gagal sync ke cloud, menyimpan offline:", error);
@@ -773,6 +827,8 @@
               day: 'numeric', hour: '2-digit', minute: '2-digit'
           });
           
+          const branch = branchData[transaction.branchId || currentBranch];
+          
           let itemsHTML = '';
           transaction.items.forEach(item => {
               itemsHTML += `
@@ -809,9 +865,9 @@
               <body>
                   <div class="header">
                       <h2>🧋 THAI TEA CST</h2>
-                      <p>Bandara Soekarno-Hatta</p>
-                      <p>Jl. C3 No.831, Tangerang</p>
-                      <p>📞 +62 822-9999-7227</p>
+                      <p>${branch.name}</p>
+                      <p>${branch.address}</p>
+                      <p>📞 ${branch.phone}</p>
                       <p>${dateStr}</p>
                   </div>
                   <table class="items">
@@ -851,8 +907,7 @@
             { id: 4, name: "Thai Tea", description: "Original choice without premium cheese topping", price: 10000, category: "original", image: "https://i.ibb.co.com/N6jCd6sw/Thai-Tea-original.jpg" },
             { id: 5, name: "Matcha", description: "Original choice without premium cheese topping", price: 10000, category: "original", image: "https://i.ibb.co.com/99Tb8ZjY/Matcha-original.jpg" },
             { id: 6, name: "Chocolate", description: "Original choice without premium cheese topping", price: 10000, category: "original", image: "https://i.ibb.co.com/bjzr6NNm/Chocolate-original.jpg" },
-            { id: 7, name: "Cream Cheese", description: "Extra topping", price: 3
-                5000, category: "extra", image: "https://i.ibb.co.com/SXyM8m2L/Extra-Topping-Cream-Cheese.jpg" },
+            { id: 7, name: "Cream Cheese", description: "Extra topping", price: 5000, category: "extra", image: "https://i.ibb.co.com/SXyM8m2L/Extra-Topping-Cream-Cheese.jpg" },
             { id: 8, name: "Cheese (Keju Parut)", description: "Extra topping", price: 3000, category: "extra", image: "https://i.ibb.co.com/gZv3pDvz/Extra-Topping-Cheese-Keju-Parut.jpg" },
             { id: 9, name: "Bubble (Tapioca Pearl)", description: "Extra topping", price: 3000, category: "extra", image: "https://i.ibb.co.com/d0DwHSr4/Extra-Topping-Bubble-Tapioca-Pearl.jpg" }
         ];
@@ -880,6 +935,7 @@
         const receiptTotal = document.getElementById('receiptTotal');
         const receiptPaymentMethod = document.getElementById('receiptPaymentMethod');
         const receiptDateTime = document.getElementById('receiptDateTime');
+        const receiptBranchInfo = document.getElementById('receiptBranchInfo');
         const receiptCashDetails = document.getElementById('receiptCashDetails');
         const receiptCashPaid = document.getElementById('receiptCashPaid');
         const receiptChange = document.getElementById('receiptChange');
@@ -1101,13 +1157,14 @@
             transactions.push(transaction);
             saveTransactions();
             
-            // 2. Kirim ke Cloud
+            // 2. Kirim ke Cloud dengan branch info
             saveTransactionToFirestore(transaction);
             
             // 3. Print Struk Thermal
             printThermalReceipt(transaction);
             
-            // 4. Tampilkan Modal Strukur di Layar
+            // 4. Tampilkan Modal Struk di Layar
+            updateReceiptBranchInfo();
             receiptDateTime.textContent = now.toLocaleString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
             receiptItems.innerHTML = '';
             cart.forEach(item => {
@@ -1147,7 +1204,9 @@
             
             const period = reportPeriod.value;
             const now = new Date();
-            let filteredTransactions = [];
+            
+            // Filter berdasarkan cabang yang dipilih
+            let filtered = transactions.filter(t => t.branchId === currentBranch);
             
             const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             const startOfYesterday = new Date(startOfDay);
@@ -1158,29 +1217,28 @@
             
             switch(period) {
                 case 'today':
-                    filteredTransactions = transactions.filter(t => new Date(t.timestamp) >= startOfDay);
+                    filtered = filtered.filter(t => new Date(t.timestamp) >= startOfDay);
                     break;
                 case 'yesterday':
-                    filteredTransactions = transactions.filter(t => {
+                    filtered = filtered.filter(t => {
                         const tDate = new Date(t.timestamp);
                         return tDate >= startOfYesterday && tDate < startOfDay;
                     });
                     break;
                 case 'week':
-                    filteredTransactions = transactions.filter(t => new Date(t.timestamp) >= startOfWeek);
+                    filtered = filtered.filter(t => new Date(t.timestamp) >= startOfWeek);
                     break;
                 case 'month':
-                    filteredTransactions = transactions.filter(t => new Date(t.timestamp) >= startOfMonth);
+                    filtered = filtered.filter(t => new Date(t.timestamp) >= startOfMonth);
                     break;
                 case 'all':
                 default:
-                    filteredTransactions = [...transactions];
                     break;
             }
             
-            const totalRevenue = filteredTransactions.reduce((sum, t) => sum + t.total, 0);
-            const totalOrders = filteredTransactions.length;
-            const totalItems = filteredTransactions.reduce((sum, t) => sum + t.items.reduce((s, i) => s + i.quantity, 0), 0);
+            const totalRevenue = filtered.reduce((sum, t) => sum + t.total, 0);
+            const totalOrders = filtered.length;
+            const totalItems = filtered.reduce((sum, t) => sum + t.items.reduce((s, i) => s + i.quantity, 0), 0);
             const avgTransaction = totalOrders > 0 ? totalRevenue / totalOrders : 0;
             
             document.getElementById('totalRevenue').textContent = formatRupiah(totalRevenue);
@@ -1189,7 +1247,7 @@
             document.getElementById('avgTransaction').textContent = formatRupiah(avgTransaction);
             
             const transactionsList = document.getElementById('transactionsList');
-            if (filteredTransactions.length === 0) {
+            if (filtered.length === 0) {
                 transactionsList.innerHTML = `
                     <div class="empty-report">
                         <i class="fas fa-inbox"></i>
@@ -1197,7 +1255,7 @@
                         <p>Belum ada transaksi pada periode yang dipilih</p>
                     </div>`;
             } else {
-                filteredTransactions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                filtered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
                 
                 let tableHTML = `
                     <table class="transactions-table">
@@ -1212,7 +1270,7 @@
                         </thead>
                         <tbody>`;
                 
-                filteredTransactions.forEach(trx => {
+                filtered.forEach(trx => {
                     const date = new Date(trx.timestamp);
                     const timeStr = date.toLocaleString('id-ID', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
                     const itemCount = trx.items.reduce((sum, i) => sum + i.quantity, 0);
@@ -1238,17 +1296,18 @@
                 return;
             }
 
-            const header = ["ID Transaksi", "Tanggal", "Waktu", "Nama Item (Qty)", "Subtotal", "PPN (11%)", "Diskon", "Total Bayar", "Pembayaran", "Uang Diterima", "Kembalian"];
+            const header = ["ID Transaksi", "Tanggal", "Waktu", "Cabang", "Nama Item (Qty)", "Subtotal", "PPN (11%)", "Diskon", "Total Bayar", "Pembayaran", "Uang Diterima", "Kembalian"];
             const data = [header];
             
             transactions.forEach(trx => {
                 const date = new Date(trx.timestamp);
                 const dateStr = date.toLocaleDateString('id-ID');
                 const timeStr = date.toLocaleTimeString('id-ID');
+                const branchName = branchData[trx.branchId]?.name || trx.branchId;
                 const items = trx.items.map(i => `${i.name} (${i.quantity})`).join('; ');
                 
                 const row = [
-                    trx.id, dateStr, timeStr, items,
+                    trx.id, dateStr, timeStr, branchName, items,
                     formatRupiah(trx.subtotal), formatRupiah(trx.tax), formatRupiah(trx.discount || 0),
                     formatRupiah(trx.total), trx.paymentMethod.toUpperCase(),
                     formatRupiah(trx.cashPaid || 0), formatRupiah(trx.change || 0)
@@ -1261,7 +1320,7 @@
             XLSX.utils.book_append_sheet(wb, ws, "Laporan Penjualan");
 
             const colWidths = [
-                {wch: 20}, {wch: 12}, {wch: 10}, {wch: 35}, 
+                {wch: 20}, {wch: 12}, {wch: 10}, {wch: 30}, {wch: 35},
                 {wch: 15}, {wch: 15}, {wch: 15}, {wch: 15}, 
                 {wch: 12}, {wch: 15}, {wch: 15}
             ];
@@ -1300,6 +1359,7 @@
 
         const init = () => {
             renderProducts(); renderCart();
+            updateReceiptBranchInfo();
             
             categoryBtns.forEach(btn => btn.addEventListener('click', () => {
                 categoryBtns.forEach(b => b.classList.remove('active'));
