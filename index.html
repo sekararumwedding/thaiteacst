@@ -85,8 +85,53 @@
         .summary-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 0.9rem; }
         .summary-row.total { font-size: 1.2rem; font-weight: 700; color: var(--primary-dark); margin: 10px 0; padding-top: 10px; border-top: 2px dashed var(--light); }
         .payment-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 15px 0; }
-        .pay-method { padding: 10px; border: 2px solid var(--light); border-radius: 10px; text-align: center; cursor: pointer; font-size: 0.85rem; }
+        .pay-method { padding: 10px; border: 2px solid var(--light); border-radius: 10px; text-align: center; cursor: pointer; font-size: 0.85rem; transition: 0.2s; }
         .pay-method.selected { border-color: var(--primary); background: rgba(230,126,34,0.1); }
+        .pay-method i { font-size: 1.5rem; margin-bottom: 5px; display: block; }
+        
+        /* 💳 PAYMENT INFO PANEL */
+        .payment-panel {
+            display: none; margin: 15px 0; background: var(--white);
+            border: 2px solid var(--light); border-radius: 14px;
+            padding: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            animation: fadeIn 0.3s ease;
+        }
+        .payment-panel.active { display: block; }
+        .panel-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 15px; padding-bottom: 12px; border-bottom: 1px dashed #ddd;
+        }
+        .panel-header h4 { margin: 0; color: var(--dark); font-size: 1rem; display: flex; align-items: center; gap: 8px; }
+        .panel-header h4 i { color: var(--primary); }
+        .btn-copy-all {
+            padding: 6px 12px; background: var(--light); border: none; border-radius: 8px;
+            font-size: 0.8rem; cursor: pointer; color: var(--dark); transition: 0.2s; font-weight: 600;
+        }
+        .btn-copy-all:hover { background: var(--primary); color: white; }
+        .payment-grid-info { display: grid; gap: 12px; }
+        .payment-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px; background: #FAFAFA; border-radius: 10px; border: 1px solid #EEE;
+        }
+        .payment-info strong { display: block; font-size: 0.85rem; color: var(--gray); margin-bottom: 4px; }
+        .payment-info .number { font-size: 1.1rem; font-weight: 700; color: var(--dark); letter-spacing: 0.5px; }
+        .payment-info .owner { font-size: 0.8rem; color: var(--gray); margin-top: 2px; }
+        .btn-copy {
+            padding: 6px 10px; background: var(--white); border: 1px solid #DDD;
+            border-radius: 6px; cursor: pointer; font-size: 0.8rem; color: var(--gray); transition: 0.2s; font-weight: 500;
+        }
+        .btn-copy:hover { border-color: var(--primary); color: var(--primary); }
+        .btn-copy.copied { background: var(--success); color: white; border-color: var(--success); }
+        .qris-container { text-align: center; }
+        .qris-img { width: 220px; height: 220px; border-radius: 12px; border: 3px solid var(--light); margin: 10px auto; background: white; object-fit: contain; padding: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .qris-meta { font-size: 0.85rem; color: var(--gray); margin-top: 8px; line-height: 1.6; }
+        .qris-meta strong { color: var(--dark); }
+        .payment-note {
+            margin-top: 15px; padding: 10px; background: #FFF8E1; border-radius: 8px;
+            font-size: 0.85rem; color: #856404; display: flex; align-items: flex-start; gap: 8px;
+        }
+        .payment-note i { margin-top: 2px; }
+        
         .cash-input { background: #E8F8F5; padding: 10px; border-radius: 8px; margin: 10px 0; }
         .cash-input label { display: block; font-weight: 600; color: var(--success); margin-bottom: 5px; font-size: 0.85rem; }
         .cash-input input { width: 100%; padding: 8px; border: 1px solid #A2D9CE; border-radius: 6px; font-weight: bold; }
@@ -111,7 +156,7 @@
         @media print {
             @page { margin: 0; size: 58mm auto; }
             body { background: white; }
-            .app-container, header, .cart-section, .modal, .login-overlay { display: none !important; }
+            .app-container, header, .cart-section, .modal, .login-overlay, .payment-panel { display: none !important; }
             #thermalReceipt { display: block !important; position: absolute; left: 0; top: 0; width: 100%; padding: 5px; font-family: 'Courier New', monospace; font-size: 12px; }
         }
         @media (max-width: 768px) {
@@ -120,7 +165,10 @@
             header { flex-direction: column; align-items: stretch; text-align: center; }
             .user-badge { justify-content: center; }
             .products-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .payment-grid { grid-template-columns: 1fr; }
+            .qris-img { width: 180px; height: 180px; }
         }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -205,19 +253,33 @@
             <div class="cart-summary">
                 <div class="summary-row"><span>Subtotal</span><span id="subtotal">Rp 0</span></div>
                 <div class="summary-row"><span>PPN (11%)</span><span id="tax">Rp 0</span></div>
-                <div class="summary-row"><span>Diskon</span><span id="discountDisplay">Rp 0</span></div>
+                <div class="summary-row" style="color: var(--danger);"><span><i class="fas fa-tag"></i> Diskon (dari PPN)</span><span id="discountDisplay">Rp 0</span></div>
                 <div class="summary-row total"><span>Total</span><span id="total">Rp 0</span></div>
                 
                 <div style="margin: 15px 0; font-weight: 600; font-size: 0.9rem;"><i class="fas fa-credit-card"></i> Pembayaran</div>
                 <div class="payment-grid">
-                    <div class="pay-method selected" data-method="cash"><i class="fas fa-money-bill-wave" style="color: var(--success);"></i><br>Tunai</div>
-                    <div class="pay-method" data-method="qris"><i class="fas fa-qrcode" style="color: #3498DB;"></i><br>QRIS</div>
-                    <div class="pay-method" data-method="transfer"><i class="fas fa-exchange-alt" style="color: #9B59B6;"></i><br>Transfer</div>
-                    <div class="pay-method" data-method="ewallet"><i class="fas fa-wallet" style="color: var(--secondary);"></i><br>E-Wallet</div>
+                    <div class="pay-method selected" data-method="cash" onclick="selectPayment('cash')"><i class="fas fa-money-bill-wave" style="color: var(--success);"></i>Tunai</div>
+                    <div class="pay-method" data-method="qris" onclick="selectPayment('qris')"><i class="fas fa-qrcode" style="color: #3498DB;"></i>QRIS</div>
+                    <div class="pay-method" data-method="transfer" onclick="selectPayment('transfer')"><i class="fas fa-exchange-alt" style="color: #9B59B6;"></i>Transfer</div>
+                    <div class="pay-method" data-method="ewallet" onclick="selectPayment('ewallet')"><i class="fas fa-wallet" style="color: var(--secondary);"></i>E-Wallet</div>
                 </div>
-                <div class="cash-input">
+
+                <!-- 💳 PANEL INFORMASI PEMBAYARAN NON-TUNAI -->
+                <div id="paymentPanel" class="payment-panel">
+                    <div class="panel-header">
+                        <h4><i class="fas fa-credit-card"></i> <span id="paymentTitle">Detail Pembayaran</span></h4>
+                        <button class="btn-copy-all" onclick="copyAllPaymentInfo()"><i class="fas fa-copy"></i> Salin Semua</button>
+                    </div>
+                    <div id="paymentContent" class="payment-grid-info"></div>
+                    <div class="payment-note">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Pastikan nominal transfer sesuai total pesanan. Konfirmasi otomatis tercatat di sistem.</span>
+                    </div>
+                </div>
+
+                <div class="cash-input" id="cashInputGroup">
                     <label><i class="fas fa-coins"></i> Uang Diterima</label>
-                    <input type="number" id="cashInput" placeholder="0">
+                    <input type="number" id="cashInput" placeholder="0" oninput="checkCashInput()">
                     <div class="change-row" id="changeRow">Kembalian: <span id="changeAmount">Rp 0</span></div>
                 </div>
                 <button class="btn btn-success" id="checkoutBtn" disabled onclick="processCheckout()">
@@ -287,6 +349,27 @@
             { id: 'top_bubble', name: 'Bubble (Pearl)', cat: 'extra', price: 3000, img: 'https://i.ibb.co.com/d0DwHSr4/Extra-Topping-Bubble-Tapioca-Pearl.jpg', desc: 'Extra topping' }
         ];
 
+        // 💳 KONFIGURASI PEMBAYARAN
+        const PAYMENT_CONFIG = {
+            qris: {
+                title: "Scan QRIS CST",
+                imageUrl: "https://i.ibb.co.com/cK103gLW/qiris-cst.jpg",
+                merchant: "THAI TEA CST",
+                nmid: "ID123456789"
+            },
+            transfer: [
+                { bank: "BCA", number: "00000", owner: "PT CAHAYA SEJATI TEKNOLOGI" },
+                { bank: "Mandiri", number: "00000", owner: "PT CAHAYA SEJATI TEKNOLOGI" },
+                { bank: "BRI", number: "00000", owner: "PT CAHAYA SEJATI TEKNOLOGI" }
+            ],
+            ewallet: [
+                { name: "GoPay", number: "087808785098", color: "#00AED6" },
+                { name: "OVO", number: "087808785098", color: "#4C3494" },
+                { name: "DANA", number: "087808785098", color: "#0080FF" },
+                { name: "ShopeePay", number: "087808785098", color: "#EE4D2D" }
+            ]
+        };
+
         let currentUser = null;
         let currentBranch = null;
         let inventoryCache = {};
@@ -318,7 +401,7 @@
                 if(!data.active) throw new Error('Akun Anda dinonaktifkan oleh admin.');
                 
                 currentUser = cred.user;
-                currentBranch = data.branchId === 'all' ? 'cabang_01' : data.branchId; // Default to first branch if owner
+                currentBranch = data.branchId === 'all' ? 'cabang_01' : data.branchId;
                 document.getElementById('loginBranchDisplay').value = branchNames[currentBranch] || currentBranch;
                 
                 await loadInventory();
@@ -462,7 +545,9 @@
         function updateTotals() {
             const sub = cart.reduce((s,i) => s + (i.price * i.qty), 0);
             const tax = sub * 0.11;
-            const tot = Math.max(0, sub + tax - discount);
+            // Diskon dikurangi dari PPN
+            const finalTax = Math.max(0, tax - discount);
+            const tot = sub + finalTax;
             
             document.getElementById('subtotal').textContent = formatRp(sub);
             document.getElementById('tax').textContent = formatRp(tax);
@@ -476,7 +561,9 @@
         function checkCashInput() {
             const cash = parseInt(document.getElementById('cashInput').value) || 0;
             const sub = cart.reduce((s,i) => s + (i.price * i.qty), 0);
-            const tot = Math.max(0, sub + (sub*0.11) - discount);
+            const tax = sub * 0.11;
+            const finalTax = Math.max(0, tax - discount);
+            const tot = sub + finalTax;
             const changeRow = document.getElementById('changeRow');
             
             if(selectedPayment === 'cash' && cash >= tot) {
@@ -486,13 +573,102 @@
                 changeRow.style.display = 'none';
             }
             
-            // Enable checkout if valid
             const btn = document.getElementById('checkoutBtn');
             if(selectedPayment === 'cash' && cash < tot) btn.disabled = true;
             else if(cart.length > 0) btn.disabled = false;
         }
 
-        // 💳 CHECKOUT (ATOMIC STOCK DEDUCTION)
+        // 💳 PAYMENT FUNCTIONS
+        function selectPayment(method) {
+            selectedPayment = method;
+            document.querySelectorAll('.pay-method').forEach(m => m.classList.remove('selected'));
+            document.querySelector(`[data-method="${method}"]`).classList.add('selected');
+            renderPaymentPanel(method);
+        }
+
+        function renderPaymentPanel(method) {
+            const panel = document.getElementById('paymentPanel');
+            const content = document.getElementById('paymentContent');
+            const title = document.getElementById('paymentTitle');
+            const cashInput = document.getElementById('cashInputGroup');
+            
+            if (method === 'cash') {
+                panel.classList.remove('active');
+                cashInput.style.display = 'block';
+                checkCashInput();
+                return;
+            }
+            
+            panel.classList.add('active');
+            cashInput.style.display = 'none';
+            document.getElementById('changeRow').style.display = 'none';
+            content.innerHTML = '';
+            
+            if (method === 'qris') {
+                title.textContent = PAYMENT_CONFIG.qris.title;
+                content.innerHTML = `
+                    <div class="qris-container">
+                        <img src="${PAYMENT_CONFIG.qris.imageUrl}" alt="QRIS Code" class="qris-img">
+                        <div class="qris-meta">
+                            <strong>Merchant:</strong> ${PAYMENT_CONFIG.qris.merchant}<br>
+                            <strong>NMID:</strong> ${PAYMENT_CONFIG.qris.nmid}<br>
+                            <small>Scan QR code di atas untuk pembayaran</small>
+                        </div>
+                    </div>
+                `;
+            } else if (method === 'transfer') {
+                title.textContent = "Transfer Bank";
+                PAYMENT_CONFIG.transfer.forEach(acc => {
+                    content.innerHTML += `
+                        <div class="payment-item">
+                            <div class="payment-info">
+                                <strong>${acc.bank}</strong>
+                                <div class="number">${acc.number}</div>
+                                <div class="owner">a.n. ${acc.owner}</div>
+                            </div>
+                            <button class="btn-copy" onclick="copyToClipboard('${acc.number}', this)">Salin</button>
+                        </div>
+                    `;
+                });
+            } else if (method === 'ewallet') {
+                title.textContent = "E-Wallet";
+                PAYMENT_CONFIG.ewallet.forEach(wallet => {
+                    content.innerHTML += `
+                        <div class="payment-item">
+                            <div class="payment-info">
+                                <strong style="color:${wallet.color}">${wallet.name}</strong>
+                                <div class="number">${wallet.number}</div>
+                            </div>
+                            <button class="btn-copy" onclick="copyToClipboard('${wallet.number}', this)">Salin</button>
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        function copyToClipboard(text, btn) {
+            navigator.clipboard.writeText(text).then(() => {
+                const original = btn.textContent;
+                btn.textContent = 'Tersalin!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = original;
+                    btn.classList.remove('copied');
+                }, 1500);
+            });
+        }
+
+        function copyAllPaymentInfo() {
+            let allText = "";
+            document.querySelectorAll('.number').forEach(el => allText += el.textContent + "\n");
+            navigator.clipboard.writeText(allText.trim());
+            const btn = document.querySelector('.btn-copy-all');
+            const original = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check"></i> Tersalin!';
+            setTimeout(() => btn.innerHTML = original, 1500);
+        }
+
+        // 💳 CHECKOUT
         async function processCheckout() {
             if(cart.length === 0) return;
             const btn = document.getElementById('checkoutBtn');
@@ -500,30 +676,27 @@
             
             const sub = cart.reduce((s,i) => s + (i.price * i.qty), 0);
             const tax = sub * 0.11;
-            const tot = Math.max(0, sub + tax - discount);
+            const finalTax = Math.max(0, tax - discount);
+            const tot = sub + finalTax;
             const cash = selectedPayment === 'cash' ? (parseInt(document.getElementById('cashInput').value) || 0) : 0;
             
             try {
-                // 1. VALIDATE STOCK
                 for(const item of cart) {
                     if(getStock(item.id) < item.qty) throw new Error(`Stok ${item.name} tidak cukup!`);
                 }
                 
-                // 2. ATOMIC TRANSACTION (Firestore)
                 await db.runTransaction(async (t) => {
-                    // Deduct stock
                     for(const item of cart) {
                         const invRef = db.collection('inventory').doc(inventoryCache[item.id].id);
                         t.update(invRef, { stock: firebase.firestore.FieldValue.increment(-item.qty) });
                     }
                     
-                    // Save transaction
                     const trxRef = db.collection('transactions').doc();
                     t.set(trxRef, {
                         id: trxRef.id,
                         items: cart,
                         subtotal: sub,
-                        tax: tax,
+                        tax: finalTax,
                         discount: discount,
                         total: tot,
                         paymentMethod: selectedPayment,
@@ -536,14 +709,13 @@
                     });
                 });
                 
-                // 3. SUCCESS
-                printThermalReceipt({ id: 'TRX'+Date.now(), items: cart, subtotal: sub, tax, discount, total: tot, paymentMethod: selectedPayment, cashPaid: cash, change: selectedPayment === 'cash' ? cash - tot : 0 });
+                printThermalReceipt({ id: 'TRX'+Date.now(), items: cart, subtotal: sub, tax: finalTax, discount, total: tot, paymentMethod: selectedPayment, cashPaid: cash, change: selectedPayment === 'cash' ? cash - tot : 0 });
                 
                 cart = [];
                 renderCart();
                 updateCartBadges();
                 updateTotals();
-                await loadInventory(); // Refresh stock
+                await loadInventory();
                 renderProducts(document.querySelector('.cat-btn.active').dataset.cat);
                 
                 setTimeout(() => {
@@ -558,7 +730,6 @@
             }
         }
 
-        // 🖨️ PRINT THERMAL
         function printThermalReceipt(trx) {
             const w = window.open('', '_blank', 'width=400,height=600');
             const date = new Date().toLocaleString('id-ID');
@@ -570,7 +741,7 @@
             w.document.close();
         }
 
-        // 📊 REPORT & EXCEL
+        // 📊 REPORT FUNCTIONS
         async function loadReport() {
             const period = document.getElementById('reportPeriod').value;
             const now = new Date();
@@ -611,33 +782,21 @@
 
         function exportExcel() {
             const rows = [['Waktu','ID','Kasir','Cabang','Item','Qty','Total','Metode','Bayar','Kembali']];
-            // Simplified export logic for demo
             alert('Fitur export Excel siap diintegrasikan dengan data laporan.');
         }
 
-        // 🎛️ UI HELPERS
         function setupEventListeners() {
             document.querySelectorAll('.cat-btn').forEach(b => b.addEventListener('click', e => {
                 document.querySelectorAll('.cat-btn').forEach(x => x.classList.remove('active'));
                 e.target.classList.add('active');
                 renderProducts(e.target.dataset.cat);
             }));
-            
-            document.querySelectorAll('.pay-method').forEach(m => m.addEventListener('click', e => {
-                document.querySelectorAll('.pay-method').forEach(x => x.classList.remove('selected'));
-                e.currentTarget.classList.add('selected');
-                selectedPayment = e.currentTarget.dataset.method;
-                document.querySelector('.cash-input').style.display = selectedPayment === 'cash' ? 'block' : 'none';
-                checkCashInput();
-            }));
-            
-            document.getElementById('cashInput').addEventListener('input', checkCashInput);
         }
 
         function openReportModal() { document.getElementById('reportModal').classList.add('active'); loadReport(); }
         function closeReportModal() { document.getElementById('reportModal').classList.remove('active'); }
         function clearCart() { if(confirm('Hapus keranjang?')) { cart=[]; renderCart(); updateCartBadges(); updateTotals(); } }
-        function newOrder() { clearCart(); document.getElementById('discountDisplay').textContent = 'Rp 0'; discount=0; }
+        function newOrder() { clearCart(); discount = 0; document.getElementById('discountDisplay').textContent = 'Rp 0'; }
 
         // INIT
         window.onload = () => {
