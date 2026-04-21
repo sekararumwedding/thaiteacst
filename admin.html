@@ -2,13 +2,13 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Admin Dashboard - Thai Tea CST</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         
@@ -60,11 +60,11 @@
 
         .login-box {
             background: var(--white);
-            padding: 40px;
-            border-radius: 24px;
+            padding: 30px;
+            border-radius: 20px;
             box-shadow: var(--shadow-xl);
             width: 100%;
-            max-width: 450px;
+            max-width: 400px;
             animation: slideUp 0.5s ease;
         }
 
@@ -75,25 +75,25 @@
 
         .login-header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
         }
 
         .login-header .logo {
-            width: 80px;
-            height: 80px;
+            width: 70px;
+            height: 70px;
             background: var(--gradient-primary);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 20px;
-            font-size: 2.5rem;
+            margin: 0 auto 15px;
+            font-size: 2rem;
             color: white;
             box-shadow: var(--shadow-lg);
         }
 
         .login-header h1 {
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             font-weight: 700;
             color: var(--dark);
             margin-bottom: 8px;
@@ -101,16 +101,16 @@
 
         .login-header p {
             color: var(--gray);
-            font-size: 0.95rem;
+            font-size: 0.9rem;
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             font-weight: 600;
             color: var(--dark);
             font-size: 0.9rem;
@@ -118,9 +118,9 @@
 
         .form-group input, .form-group select {
             width: 100%;
-            padding: 14px 16px;
+            padding: 12px 14px;
             border: 2px solid #e5e7eb;
-            border-radius: 12px;
+            border-radius: 10px;
             font-size: 1rem;
             transition: all 0.3s;
             outline: none;
@@ -128,21 +128,21 @@
 
         .form-group input:focus, .form-group select:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(230, 126, 34, 0.1);
+            box-shadow: 0 0 0 3px rgba(230, 126, 34, 0.1);
         }
 
         .btn {
-            padding: 14px 24px;
+            padding: 12px 20px;
             border: none;
-            border-radius: 12px;
+            border-radius: 10px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            font-size: 1rem;
+            gap: 8px;
+            font-size: 0.95rem;
         }
 
         .btn-primary {
@@ -173,16 +173,16 @@
         }
 
         .btn-sm {
-            padding: 8px 16px;
-            font-size: 0.875rem;
+            padding: 8px 14px;
+            font-size: 0.85rem;
         }
 
         .error-msg {
             background: #FEE2E2;
             color: var(--danger);
-            padding: 12px 16px;
-            border-radius: 10px;
-            margin-bottom: 20px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-bottom: 15px;
             display: none;
             font-size: 0.9rem;
             border-left: 4px solid var(--danger);
@@ -200,46 +200,47 @@
 
         /* SIDEBAR */
         .sidebar {
-            width: 280px;
+            width: 260px;
             background: var(--white);
             box-shadow: var(--shadow-lg);
-            padding: 30px 20px;
+            padding: 25px 15px;
             position: fixed;
             height: 100vh;
             overflow-y: auto;
             z-index: 100;
+            transition: transform 0.3s;
         }
 
         .sidebar-header {
             text-align: center;
-            padding-bottom: 30px;
+            padding-bottom: 20px;
             border-bottom: 2px solid var(--light);
-            margin-bottom: 30px;
+            margin-bottom: 25px;
         }
 
         .sidebar-header .logo {
-            width: 70px;
-            height: 70px;
+            width: 60px;
+            height: 60px;
             background: var(--gradient-primary);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 15px;
-            font-size: 2rem;
+            margin: 0 auto 12px;
+            font-size: 1.8rem;
             color: white;
         }
 
         .sidebar-header h2 {
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             font-weight: 700;
             color: var(--dark);
         }
 
         .sidebar-header p {
             color: var(--gray);
-            font-size: 0.85rem;
-            margin-top: 5px;
+            font-size: 0.8rem;
+            margin-top: 4px;
         }
 
         .nav-menu {
@@ -247,20 +248,21 @@
         }
 
         .nav-item {
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .nav-link {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 14px 18px;
-            border-radius: 12px;
+            gap: 10px;
+            padding: 12px 15px;
+            border-radius: 10px;
             color: var(--gray);
             text-decoration: none;
             font-weight: 500;
             transition: all 0.3s;
             cursor: pointer;
+            font-size: 0.9rem;
         }
 
         .nav-link:hover, .nav-link.active {
@@ -269,23 +271,23 @@
         }
 
         .nav-link i {
-            font-size: 1.2rem;
-            width: 24px;
+            font-size: 1.1rem;
+            width: 22px;
         }
 
         .user-info {
             margin-top: auto;
-            padding: 20px;
+            padding: 15px;
             background: var(--light);
-            border-radius: 12px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
 
         .user-avatar {
-            width: 45px;
-            height: 45px;
+            width: 40px;
+            height: 40px;
             background: var(--gradient-primary);
             border-radius: 50%;
             display: flex;
@@ -293,77 +295,82 @@
             justify-content: center;
             color: white;
             font-weight: 600;
+            font-size: 0.9rem;
         }
 
         .user-details h4 {
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             font-weight: 600;
             color: var(--dark);
         }
 
         .user-details p {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: var(--gray);
         }
 
         /* MAIN CONTENT */
         .main-content {
             flex: 1;
-            margin-left: 280px;
-            padding: 30px;
+            margin-left: 260px;
+            padding: 25px;
+            transition: margin-left 0.3s;
         }
 
         .top-bar {
             background: var(--white);
-            padding: 20px 30px;
-            border-radius: 16px;
+            padding: 18px 25px;
+            border-radius: 14px;
             box-shadow: var(--shadow-sm);
-            margin-bottom: 30px;
+            margin-bottom: 25px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
         }
 
         .top-bar h1 {
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             font-weight: 700;
             color: var(--dark);
         }
 
         .top-bar p {
             color: var(--gray);
-            font-size: 0.9rem;
-            margin-top: 5px;
+            font-size: 0.85rem;
+            margin-top: 4px;
         }
 
         .top-actions {
             display: flex;
-            gap: 12px;
+            gap: 10px;
+            flex-wrap: wrap;
         }
 
         /* STATS CARDS */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 24px;
-            margin-bottom: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
         }
 
         .stat-card {
             background: var(--white);
-            padding: 28px;
-            border-radius: 20px;
+            padding: 22px;
+            border-radius: 16px;
             box-shadow: var(--shadow);
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 15px;
             transition: all 0.3s;
             position: relative;
             overflow: hidden;
         }
 
         .stat-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-3px);
             box-shadow: var(--shadow-xl);
         }
 
@@ -372,7 +379,7 @@
             position: absolute;
             top: 0;
             left: 0;
-            width: 5px;
+            width: 4px;
             height: 100%;
             background: var(--gradient-primary);
         }
@@ -383,13 +390,13 @@
         .stat-card.stock::before { background: var(--gradient-danger); }
 
         .stat-icon {
-            width: 65px;
-            height: 65px;
-            border-radius: 16px;
+            width: 55px;
+            height: 55px;
+            border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             color: white;
             background: var(--gradient-primary);
             box-shadow: var(--shadow);
@@ -401,14 +408,14 @@
         .stat-card.stock .stat-icon { background: var(--gradient-danger); }
 
         .stat-content h3 {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: var(--gray);
             font-weight: 500;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .stat-content p {
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             font-weight: 700;
             color: var(--dark);
         }
@@ -416,28 +423,30 @@
         /* CARDS */
         .card {
             background: var(--white);
-            border-radius: 20px;
+            border-radius: 16px;
             box-shadow: var(--shadow);
-            padding: 28px;
-            margin-bottom: 30px;
+            padding: 22px;
+            margin-bottom: 25px;
         }
 
         .card-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 24px;
-            padding-bottom: 20px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
             border-bottom: 2px solid var(--light);
+            flex-wrap: wrap;
+            gap: 12px;
         }
 
         .card-header h2 {
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             font-weight: 700;
             color: var(--dark);
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
 
         .card-header h2 i {
@@ -447,11 +456,13 @@
         /* TABLES */
         .table-container {
             overflow-x: auto;
+            margin: 0 -22px -22px;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
+            min-width: 600px;
         }
 
         thead {
@@ -459,19 +470,19 @@
         }
 
         th {
-            padding: 16px;
+            padding: 14px 12px;
             text-align: left;
             font-weight: 600;
             color: var(--dark);
-            font-size: 0.875rem;
+            font-size: 0.8rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
         td {
-            padding: 16px;
+            padding: 14px 12px;
             border-bottom: 1px solid var(--light);
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
 
         tr:hover {
@@ -479,9 +490,9 @@
         }
 
         .badge {
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 0.8rem;
+            padding: 5px 12px;
+            border-radius: 16px;
+            font-size: 0.75rem;
             font-weight: 600;
             display: inline-block;
         }
@@ -510,14 +521,15 @@
         .form-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
+            gap: 16px;
         }
 
         .form-actions {
-            margin-top: 24px;
+            margin-top: 20px;
             display: flex;
-            gap: 12px;
+            gap: 10px;
             justify-content: flex-end;
+            flex-wrap: wrap;
         }
 
         /* TABS */
@@ -535,40 +547,15 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* RESPONSIVE */
-        @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-100%);
-                transition: transform 0.3s;
-            }
-            
-            .sidebar.active {
-                transform: translateX(0);
-            }
-            
-            .main-content {
-                margin-left: 0;
-                padding: 20px;
-            }
-            
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* LOADING */
+        /* LOADING & EMPTY */
         .loading {
             text-align: center;
-            padding: 40px;
+            padding: 30px;
             color: var(--gray);
         }
 
         .loading i {
-            font-size: 3rem;
+            font-size: 2.5rem;
             animation: spin 1s linear infinite;
             color: var(--primary);
         }
@@ -580,20 +567,176 @@
 
         .empty-state {
             text-align: center;
-            padding: 60px 20px;
+            padding: 50px 20px;
             color: var(--gray);
         }
 
         .empty-state i {
-            font-size: 4rem;
-            margin-bottom: 20px;
+            font-size: 3.5rem;
+            margin-bottom: 15px;
             opacity: 0.5;
         }
 
         .empty-state h3 {
-            font-size: 1.3rem;
-            margin-bottom: 10px;
+            font-size: 1.2rem;
+            margin-bottom: 8px;
             color: var(--dark);
+        }
+
+        /* MOBILE MENU TOGGLE */
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 101;
+            background: var(--white);
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+        }
+
+        .menu-toggle i {
+            font-size: 1.3rem;
+            color: var(--primary);
+        }
+
+        /* RESPONSIVE - MOBILE OPTIMIZATION */
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: block;
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+                width: 260px;
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 15px;
+                padding-top: 70px;
+            }
+
+            .top-bar {
+                padding: 15px 18px;
+                margin-bottom: 20px;
+            }
+
+            .top-bar h1 {
+                font-size: 1.3rem;
+            }
+
+            .top-actions {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .top-actions .btn {
+                flex: 1;
+                min-width: 120px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+
+            .stat-card {
+                padding: 16px;
+            }
+
+            .stat-icon {
+                width: 45px;
+                height: 45px;
+                font-size: 1.2rem;
+            }
+
+            .stat-content h3 {
+                font-size: 0.75rem;
+            }
+
+            .stat-content p {
+                font-size: 1.2rem;
+            }
+
+            .card {
+                padding: 16px;
+                margin-bottom: 20px;
+            }
+
+            .card-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+                margin-bottom: 16px;
+                padding-bottom: 12px;
+            }
+
+            .card-header h2 {
+                font-size: 1.1rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .form-actions .btn {
+                width: 100%;
+            }
+
+            table {
+                font-size: 0.75rem;
+                min-width: 500px;
+            }
+
+            th, td {
+                padding: 10px 8px;
+            }
+
+            .badge {
+                padding: 4px 10px;
+                font-size: 0.7rem;
+            }
+
+            .btn-sm {
+                padding: 6px 10px;
+                font-size: 0.75rem;
+            }
+        }
+
+        /* SMALL PHONES */
+        @media (max-width: 480px) {
+            .login-box {
+                padding: 25px 20px;
+            }
+
+            .login-header h1 {
+                font-size: 1.3rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-card {
+                padding: 14px;
+            }
+
+            table {
+                min-width: 450px;
+            }
         }
     </style>
 </head>
@@ -629,8 +772,12 @@
 
     <!-- 📊 DASHBOARD -->
     <div id="dashboard" class="dashboard-container">
+        <button class="menu-toggle" onclick="toggleSidebar()">
+            <i class="fas fa-bars"></i>
+        </button>
+
         <!-- SIDEBAR -->
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="logo">
                     <i class="fas fa-coffee"></i>
@@ -831,7 +978,7 @@
                 <div class="card">
                     <div class="card-header">
                         <h2><i class="fas fa-filter"></i> Filter Cabang</h2>
-                        <select id="inventoryBranch" onchange="loadInventory()" style="padding: 10px 16px; border-radius: 8px; border: 2px solid var(--light);">
+                        <select id="inventoryBranch" onchange="loadInventory()" style="padding: 10px 14px; border-radius: 8px; border: 2px solid var(--light);">
                             <option value="cabang_01">📍 Sport Center Bandara Soetta</option>
                             <option value="cabang_02">📍 TOD M1, Benda</option>
                         </select>
@@ -902,6 +1049,7 @@
         </main>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         // 🔥 FIREBASE CONFIG
         const firebaseConfig = {
@@ -954,10 +1102,14 @@
             location.reload();
         }
 
+        // 📱 MOBILE SIDEBAR TOGGLE
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
         // 📊 DASHBOARD
         async function loadDashboard() {
             try {
-                // Load transactions
                 const trxSnap = await db.collection('transactions').orderBy('timestamp', 'desc').limit(100).get();
                 allData = [];
                 trxSnap.forEach(doc => {
@@ -966,25 +1118,19 @@
                     allData.push(d);
                 });
 
-                // Load users
                 const userSnap = await db.collection('users').where('role', '==', 'cashier').where('active', '==', true).get();
-                
-                // Load low stock
                 const invSnap = await db.collection('inventory').where('stock', '<=', 20).get();
 
-                // Calculate stats
                 const totalRevenue = allData.reduce((s, t) => s + (t.total || 0), 0);
                 const totalOrders = allData.length;
                 const totalCashiers = userSnap.size;
                 const lowStock = invSnap.size;
 
-                // Update UI
                 document.getElementById('dashRevenue').textContent = formatRp(totalRevenue);
                 document.getElementById('dashOrders').textContent = totalOrders;
                 document.getElementById('dashCashiers').textContent = totalCashiers;
                 document.getElementById('dashLowStock').textContent = lowStock;
 
-                // Update chart
                 updateChart(allData);
 
             } catch(e) {
@@ -995,7 +1141,6 @@
         function updateChart(data) {
             const ctx = document.getElementById('revenueChart').getContext('2d');
             
-            // Group by date
             const dailyData = {};
             data.forEach(t => {
                 if(t.timestamp) {
@@ -1136,7 +1281,7 @@
                 return `
                     <tr>
                         <td><strong>${inv.productName}</strong></td>
-                        <td><input type="number" value="${inv.stock}" onchange="updateStock('${doc.id}', this.value)" style="width:80px; padding:6px; border-radius:6px; border:1px solid #ddd;"></td>
+                        <td><input type="number" value="${inv.stock}" onchange="updateStock('${doc.id}', this.value)" style="width:70px; padding:6px; border-radius:6px; border:1px solid #ddd;"></td>
                         <td>${inv.minStock}</td>
                         <td><span class="badge ${statusClass}">${statusText}</span></td>
                         <td>
@@ -1230,6 +1375,11 @@
             document.getElementById('tab-' + tabName).classList.add('active');
             event.target.closest('.nav-link').classList.add('active');
             
+            // Close sidebar on mobile after clicking
+            if(window.innerWidth <= 768) {
+                document.getElementById('sidebar').classList.remove('active');
+            }
+            
             if(tabName === 'users') loadUsers();
             if(tabName === 'inventory') loadInventory();
             if(tabName === 'transactions') loadTransactions();
@@ -1238,8 +1388,5 @@
         // INIT
         if(sessionStorage.getItem('adminAuth') === 'true') showDashboard();
     </script>
-    
-    <!-- SheetJS for Excel Export -->
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </body>
 </html>
