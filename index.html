@@ -116,7 +116,6 @@
         }
         .product-card:active { transform: scale(0.98); border-color: var(--primary); }
         
-        /* ✅ GAMBAR PRODUK DIPERKECIL & DIOPTIMALKAN */
         .product-img {
             height: 120px; 
             background: linear-gradient(135deg, #FFF3E0, #FFE0B2);
@@ -144,7 +143,6 @@
         }
         .add-to-cart:active { background: var(--primary-dark); }
 
-        /* 🏷️ BADGE JUMLAH ITEM */
         .item-badge {
             position: absolute;
             top: 8px;
@@ -238,7 +236,6 @@
         .empty-cart { text-align: center; padding: 30px 15px; color: var(--gray); }
         .empty-cart i { font-size: 2.5rem; margin-bottom: 12px; opacity: 0.7; }
         
-        /* Modal Styles */
         .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 15px;
@@ -257,7 +254,6 @@
         }
         .close-modal:active { background: var(--danger); color: white; }
         
-        /* Receipt Modal */
         .receipt {
             background: white; width: 100%; max-width: 380px; border-radius: 18px;
             padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); position: relative;
@@ -277,7 +273,6 @@
         .receipt-actions { display: flex; gap: 8px; margin-top: 20px; }
         .receipt-actions .btn { flex: 1; justify-content: center; min-height: 44px; font-size: 0.9rem; }
         
-        /* Report Styles */
         .report-header {
             display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 20px; flex-wrap: wrap; gap: 12px;
@@ -348,7 +343,6 @@
             display: flex; gap: 8px; margin-top: 15px; justify-content: flex-end; flex-wrap: wrap;
         }
 
-        /* PRINT FIX CSS */
         @media print {
             @page { margin: 0; size: auto; }
             body { background: white; -webkit-print-color-adjust: exact; }
@@ -379,7 +373,6 @@
             }
         }
         
-        /* MOBILE OPTIMIZATION */
         @media (max-width: 768px) {
             body { padding: 10px; font-size: 13px; }
             header {
@@ -436,7 +429,6 @@
             .cash-input-row input { width: 100% !important; }
             .checkout-btn { padding: 12px; font-size: 0.95rem; min-height: 44px; }
             
-            /* Modal Bottom Sheet Style for Mobile */
             .modal { padding: 0; align-items: flex-end; }
             .modal.active { display: flex; }
             .receipt, .modal-content { 
@@ -683,18 +675,102 @@
         </div>
     </div>
 
+    <!-- 🔥 FIREBASE SDK (Versi CDN) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    
     <script>
-        // ✅ MENU & HARGA BARU DENGAN GAMBAR PRODUK ASLI
+      // 🔑 Konfigurasi Firebase Anda
+      const firebaseConfig = {
+        apiKey: "AIzaSyAyWr6nhroYRBTiJDkVHMJdYuTSgefHubs",
+        authDomain: "thai-tea-cst-ac9db.firebaseapp.com",
+        projectId: "thai-tea-cst-ac9db",
+        storageBucket: "thai-tea-cst-ac9db.firebasestorage.app",
+        messagingSenderId: "907107728020",
+        appId: "1:907107728020:web:7340be99b3ab4c07cdd281",
+        measurementId: "G-DJFC6NYVD1"
+      };
+
+      // 🚀 Inisialisasi Firebase
+      if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+      }
+      const db = firebase.firestore();
+      console.log("✅ Firebase terhubung!");
+
+      // 💾 Fungsi Simpan ke Cloud dengan Fallback Offline
+      async function saveTransactionToFirestore(transaction) {
+          try {
+              await db.collection('transactions').add({
+                  ...transaction,
+                  branchId: 'cabang_utama',
+                  syncedAt: firebase.firestore.FieldValue.serverTimestamp()
+              });
+              console.log("✅ Transaksi tersimpan ke Cloud");
+              clearOfflineQueue(); // Bersihkan queue jika berhasil
+          } catch (error) {
+              console.warn("⚠️ Gagal sync ke cloud, menyimpan offline:", error);
+              let queue = JSON.parse(localStorage.getItem('offlineQueue') || '[]');
+              queue.push(transaction);
+              localStorage.setItem('offlineQueue', JSON.stringify(queue));
+          }
+      }
+
+      // 📥 Fungsi Ambil Data dari Cloud
+      async function fetchTransactionsFromFirestore() {
+          try {
+              const snapshot = await db.collection('transactions')
+                  .orderBy('timestamp', 'desc')
+                  .limit(500)
+                  .get();
+              
+              const cloudData = [];
+              snapshot.forEach(doc => {
+                  const data = doc.data();
+                  // Konversi Firestore timestamp ke ISO string
+                  if (data.timestamp && data.timestamp.toDate) {
+                      data.timestamp = data.timestamp.toDate().toISOString();
+                  }
+                  cloudData.push(data);
+              });
+              
+              transactions = cloudData;
+              localStorage.setItem('thaiTeaTransactions', JSON.stringify(transactions));
+              console.log("✅ Data berhasil dimuat dari Cloud");
+              return true;
+          } catch (error) {
+              console.warn("⚠️ Gagal ambil dari cloud, pakai data lokal");
+              transactions = JSON.parse(localStorage.getItem('thaiTeaTransactions')) || [];
+              return false;
+          }
+      }
+
+      // 🔄 Bersihkan Offline Queue setelah sync berhasil
+      function clearOfflineQueue() {
+          localStorage.removeItem('offlineQueue');
+      }
+
+      // 🌐 Auto Sync saat Online Kembali
+      window.addEventListener('online', async () => {
+          console.log("🌐 Koneksi pulih! Melakukan sync...");
+          const queue = JSON.parse(localStorage.getItem('offlineQueue') || '[]');
+          if (queue.length > 0) {
+              for (const trx of queue) {
+                  await saveTransactionToFirestore(trx);
+              }
+          }
+          await fetchTransactionsFromFirestore();
+      });
+    </script>
+
+    <script>
         const products = [
-            // Premium Best Seller
             { id: 1, name: "Premium Thai Tea", description: "with Cream Cheese & Shredded Cheese", price: 20000, category: "premium", image: "https://i.ibb.co.com/S44X01hn/Premium-Thai-Tea-with-Cream-Cheese-Shredded-Cheese.jpg" },
             { id: 2, name: "Premium Matcha", description: "with Cream Cheese & Shredded Cheese", price: 25000, category: "premium", image: "https://i.ibb.co.com/XZ2k5y1T/Premium-Matcha-with-Cream-Cheese-Shredded-Cheese.jpg" },
             { id: 3, name: "Premium Chocolate", description: "with Cream Cheese & Shredded Cheese", price: 20000, category: "premium", image: "https://i.ibb.co.com/ZzSGpkQB/Premium-Chocolate-with-Cream-Cheese-Shredded-Cheese.jpg" },
-            // Original - ✅ HARGA DIPERBARUI MENJADI 10K
             { id: 4, name: "Thai Tea", description: "Original choice without premium cheese topping", price: 10000, category: "original", image: "https://i.ibb.co.com/N6jCd6sw/Thai-Tea-original.jpg" },
             { id: 5, name: "Matcha", description: "Original choice without premium cheese topping", price: 10000, category: "original", image: "https://i.ibb.co.com/99Tb8ZjY/Matcha-original.jpg" },
             { id: 6, name: "Chocolate", description: "Original choice without premium cheese topping", price: 10000, category: "original", image: "https://i.ibb.co.com/bjzr6NNm/Chocolate-original.jpg" },
-            // Extra Topping
             { id: 7, name: "Cream Cheese", description: "Extra topping", price: 3000, category: "extra", image: "https://i.ibb.co.com/SXyM8m2L/Extra-Topping-Cream-Cheese.jpg" },
             { id: 8, name: "Cheese (Keju Parut)", description: "Extra topping", price: 3000, category: "extra", image: "https://i.ibb.co.com/gZv3pDvz/Extra-Topping-Cheese-Keju-Parut.jpg" },
             { id: 9, name: "Bubble (Tapioca Pearl)", description: "Extra topping", price: 3000, category: "extra", image: "https://i.ibb.co.com/d0DwHSr4/Extra-Topping-Bubble-Tapioca-Pearl.jpg" }
@@ -752,7 +828,6 @@
             return `TRX${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}${String(now.getSeconds()).padStart(2,'0')}`;
         };
 
-        // 🏷️ UPDATE BADGE JUMLAH ITEM DI PRODUK
         const updateProductBadges = () => {
             document.querySelectorAll('.product-card').forEach(card => {
                 const id = parseInt(card.dataset.productId);
@@ -940,9 +1015,15 @@
                 cashPaid: selectedPaymentMethod === 'cash' ? cashPaid : 0,
                 change: selectedPaymentMethod === 'cash' ? (cashPaid - totals.total) : 0
             };
+            
+            // 1. Simpan lokal segera (agar struk bisa langsung print)
             transactions.push(transaction);
             saveTransactions();
             
+            // 2. Kirim ke Cloud di background
+            saveTransactionToFirestore(transaction);
+            
+            // 3. Tampilkan Struk & Print
             receiptDateTime.textContent = now.toLocaleString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
             receiptItems.innerHTML = '';
             cart.forEach(item => {
@@ -968,6 +1049,7 @@
             receiptModal.classList.add('active');
             setTimeout(() => window.print(), 400);
             
+            // 4. Reset Keranjang setelah print
             setTimeout(() => {
                 cart = []; saveCart(); renderCart();
                 resetCashInput();
@@ -977,7 +1059,10 @@
             }, 2500);
         };
 
-        const generateReport = () => {
+        const generateReport = async () => {
+            // Ambil data terbaru dari Cloud dulu
+            await fetchTransactionsFromFirestore();
+            
             const period = reportPeriod.value;
             const now = new Date();
             let filteredTransactions = [];
@@ -1104,7 +1189,7 @@
             XLSX.writeFile(wb, `Laporan_Penjualan_ThaiTeaCST_${today}.xlsx`);
         };
 
-        const clearAllData = () => {
+        const clearAllData = async () => {
             if (transactions.length === 0) {
                 alert('Tidak ada data untuk dihapus!');
                 return;
@@ -1114,6 +1199,16 @@
                 if (confirm('Konfirmasi terakhir: Hapus SEMUA data transaksi?')) {
                     transactions = [];
                     saveTransactions();
+                    
+                    // Hapus juga dari Cloud (opsional, hati-hati pakai ini)
+                    try {
+                        const batch = db.batch();
+                        const snapshot = await db.collection('transactions').get();
+                        snapshot.forEach(doc => batch.delete(doc.ref));
+                        await batch.commit();
+                        console.log("🗑️ Data cloud juga dihapus");
+                    } catch(e) { console.warn("Gagal hapus cloud:", e); }
+                    
                     generateReport();
                     alert('Semua data transaksi telah dihapus.');
                 }
