@@ -8,254 +8,1238 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* Gunakan style yang sama seperti admin.html sebelumnya, tambah: */
-        .tab-nav { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        .tab-btn { padding: 10px 20px; border: none; background: none; cursor: pointer; font-weight: 600; color: var(--gray); border-radius: 8px; }
-        .tab-btn.active { background: var(--primary); color: white; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .card { background: white; padding: 20px; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 20px; }
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        @media (max-width: 768px) { .form-row { grid-template-columns: 1fr; } }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #E67E22;
+            --primary-dark: #D35400;
+            --secondary: #F39C12;
+            --accent: #FF6B6B;
+            --success: #10B981;
+            --danger: #EF4444;
+            --warning: #F59E0B;
+            --info: #3B82F6;
+            --dark: #1F2937;
+            --gray: #6B7280;
+            --light: #F3F4F6;
+            --white: #FFFFFF;
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-success: linear-gradient(135deg, #10B981 0%, #059669 100%);
+            --gradient-warning: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+            --gradient-danger: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: var(--dark);
+            min-height: 100vh;
+        }
+
+        /* LOGIN SCREEN */
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .login-box {
+            background: var(--white);
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: var(--shadow-xl);
+            width: 100%;
+            max-width: 450px;
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-header .logo {
+            width: 80px;
+            height: 80px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 2.5rem;
+            color: white;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .login-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 8px;
+        }
+
+        .login-header p {
+            color: var(--gray);
+            font-size: 0.95rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 0.9rem;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            outline: none;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(230, 126, 34, 0.1);
+        }
+
+        .btn {
+            padding: 14px 24px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+            width: 100%;
+            box-shadow: var(--shadow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-success {
+            background: var(--gradient-success);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--gradient-danger);
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--gradient-warning);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 0.875rem;
+        }
+
+        .error-msg {
+            background: #FEE2E2;
+            color: var(--danger);
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+            font-size: 0.9rem;
+            border-left: 4px solid var(--danger);
+        }
+
+        /* DASHBOARD LAYOUT */
+        .dashboard-container {
+            display: none;
+            min-height: 100vh;
+        }
+
+        .dashboard-container.active {
+            display: flex;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 280px;
+            background: var(--white);
+            box-shadow: var(--shadow-lg);
+            padding: 30px 20px;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            text-align: center;
+            padding-bottom: 30px;
+            border-bottom: 2px solid var(--light);
+            margin-bottom: 30px;
+        }
+
+        .sidebar-header .logo {
+            width: 70px;
+            height: 70px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 2rem;
+            color: white;
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .sidebar-header p {
+            color: var(--gray);
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-bottom: 8px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 18px;
+            border-radius: 12px;
+            color: var(--gray);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            color: var(--primary);
+        }
+
+        .nav-link i {
+            font-size: 1.2rem;
+            width: 24px;
+        }
+
+        .user-info {
+            margin-top: auto;
+            padding: 20px;
+            background: var(--light);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .user-details h4 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .user-details p {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        /* MAIN CONTENT */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 30px;
+        }
+
+        .top-bar {
+            background: var(--white);
+            padding: 20px 30px;
+            border-radius: 16px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .top-bar h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .top-bar p {
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .top-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        /* STATS CARDS */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--white);
+            padding: 28px;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: var(--gradient-primary);
+        }
+
+        .stat-card.revenue::before { background: var(--gradient-success); }
+        .stat-card.orders::before { background: var(--gradient-warning); }
+        .stat-card.cashiers::before { background: var(--gradient-primary); }
+        .stat-card.stock::before { background: var(--gradient-danger); }
+
+        .stat-icon {
+            width: 65px;
+            height: 65px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: white;
+            background: var(--gradient-primary);
+            box-shadow: var(--shadow);
+        }
+
+        .stat-card.revenue .stat-icon { background: var(--gradient-success); }
+        .stat-card.orders .stat-icon { background: var(--gradient-warning); }
+        .stat-card.cashiers .stat-icon { background: var(--gradient-primary); }
+        .stat-card.stock .stat-icon { background: var(--gradient-danger); }
+
+        .stat-content h3 {
+            font-size: 0.9rem;
+            color: var(--gray);
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .stat-content p {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        /* CARDS */
+        .card {
+            background: var(--white);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            padding: 28px;
+            margin-bottom: 30px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--light);
+        }
+
+        .card-header h2 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .card-header h2 i {
+            color: var(--primary);
+        }
+
+        /* TABLES */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: var(--light);
+        }
+
+        th {
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 16px;
+            border-bottom: 1px solid var(--light);
+            font-size: 0.9rem;
+        }
+
+        tr:hover {
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge-success {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+
+        .badge-warning {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+
+        .badge-danger {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+
+        .badge-primary {
+            background: #DBEAFE;
+            color: #1E40AF;
+        }
+
+        /* FORMS */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .form-actions {
+            margin-top: 24px;
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        /* TABS */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s;
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* LOADING */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--gray);
+        }
+
+        .loading i {
+            font-size: 3rem;
+            animation: spin 1s linear infinite;
+            color: var(--primary);
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--gray);
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🔐 Admin Dashboard</h1>
-            <button onclick="logout()">Keluar</button>
-        </header>
-        
-        <div class="tab-nav">
-            <button class="tab-btn active" onclick="switchTab('dashboard')">📊 Dashboard</button>
-            <button class="tab-btn" onclick="switchTab('users')">👥 Kelola Kasir</button>
-            <button class="tab-btn" onclick="switchTab('inventory')">📦 Manajemen Stok</button>
-            <button class="tab-btn" onclick="switchTab('transactions')">🧾 Transaksi</button>
-        </div>
-        
-        <!-- TAB: DASHBOARD -->
-        <div id="tab-dashboard" class="tab-content active">
-            <div class="stats-grid">
-                <div class="stat-card"><h3>Total Pendapatan</h3><p id="dashRevenue">Rp 0</p></div>
-                <div class="stat-card"><h3>Total Transaksi</h3><p id="dashOrders">0</p></div>
-                <div class="stat-card"><h3>Total Kasir Aktif</h3><p id="dashCashiers">0</p></div>
-                <div class="stat-card"><h3>Produk Stok Tipis</h3><p id="dashLowStock">0</p></div>
-            </div>
-        </div>
-        
-        <!-- TAB: USER MANAGEMENT -->
-        <div id="tab-users" class="tab-content">
-            <div class="card">
-                <h3><i class="fas fa-user-plus"></i> Tambah Kasir Baru</h3>
-                <div class="form-row">
-                    <input type="text" id="newUserName" placeholder="Nama Lengkap">
-                    <input type="email" id="newUserEmail" placeholder="Email">
-                    <input type="password" id="newUserPass" placeholder="Password">
-                    <select id="newUserBranch">
-                        <option value="cabang_01">Sport Center Bandara</option>
-                        <option value="cabang_02">TOD M1, Benda</option>
-                    </select>
+
+    <!-- 🔐 LOGIN SCREEN -->
+    <div id="loginScreen" class="login-container">
+        <div class="login-box">
+            <div class="login-header">
+                <div class="logo">
+                    <i class="fas fa-shield-alt"></i>
                 </div>
-                <button class="btn btn-primary" onclick="createCashier()" style="margin-top: 15px;">
-                    <i class="fas fa-save"></i> Simpan Kasir
-                </button>
+                <h1>Admin Dashboard</h1>
+                <p>Masukkan kredensial admin untuk mengakses sistem</p>
             </div>
             
-            <div class="card">
-                <h3>Daftar Kasir</h3>
-                <table id="usersTable">
-                    <thead><tr><th>Nama</th><th>Email</th><th>Cabang</th><th>Status</th><th>Aksi</th></tr></thead>
-                    <tbody id="usersTableBody"></tbody>
-                </table>
+            <div id="loginError" class="error-msg"></div>
+            
+            <div class="form-group">
+                <label><i class="fas fa-lock"></i> Password Admin</label>
+                <input type="password" id="adminPass" placeholder="••••••••" onkeypress="if(event.key==='Enter') checkAdmin()">
             </div>
-        </div>
-        
-        <!-- TAB: INVENTORY -->
-        <div id="tab-inventory" class="tab-content">
-            <div class="card">
-                <h3><i class="fas fa-boxes"></i> Stok Inventory per Cabang</h3>
-                <select id="inventoryBranch" onchange="loadInventory()">
-                    <option value="cabang_01">Sport Center Bandara</option>
-                    <option value="cabang_02">TOD M1, Benda</option>
-                </select>
-                <table id="inventoryTable" style="margin-top: 15px;">
-                    <thead><tr><th>Produk</th><th>Stok</th><th>Min. Stok</th><th>Status</th><th>Aksi</th></tr></thead>
-                    <tbody id="inventoryTableBody"></tbody>
-                </table>
-            </div>
-        </div>
-        
-        <!-- TAB: TRANSACTIONS (sama seperti sebelumnya) -->
-        <div id="tab-transactions" class="tab-content">
-            <!-- Copy dari admin.html sebelumnya -->
+            
+            <button class="btn btn-primary" onclick="checkAdmin()">
+                <i class="fas fa-sign-in-alt"></i> Masuk Dashboard
+            </button>
+            
+            <p style="text-align: center; margin-top: 20px; color: var(--gray); font-size: 0.85rem;">
+                © 2025 Thai Tea CST | PT CAHAYA SEJATI TEKNOLOGI
+            </p>
         </div>
     </div>
 
+    <!-- 📊 DASHBOARD -->
+    <div id="dashboard" class="dashboard-container">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-coffee"></i>
+                </div>
+                <h2>Thai Tea CST</h2>
+                <p>Admin Dashboard</p>
+            </div>
+            
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a class="nav-link active" onclick="switchTab('dashboard')">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="switchTab('users')">
+                        <i class="fas fa-users"></i>
+                        <span>Kelola Kasir</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="switchTab('inventory')">
+                        <i class="fas fa-boxes"></i>
+                        <span>Manajemen Stok</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="switchTab('transactions')">
+                        <i class="fas fa-receipt"></i>
+                        <span>Transaksi</span>
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="user-info">
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="user-details">
+                    <h4>Administrator</h4>
+                    <p>Owner</p>
+                </div>
+                <button onclick="logout()" style="margin-left: auto; background: none; border: none; color: var(--danger); cursor: pointer;">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+            <!-- DASHBOARD TAB -->
+            <div id="tab-dashboard" class="tab-content active">
+                <div class="top-bar">
+                    <div>
+                        <h1>Dashboard Overview</h1>
+                        <p>Ringkasan performa bisnis Thai Tea CST</p>
+                    </div>
+                    <div class="top-actions">
+                        <button class="btn btn-primary btn-sm" onclick="loadDashboard()">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                        <button class="btn btn-success btn-sm" onclick="exportToExcel()">
+                            <i class="fas fa-file-excel"></i> Export
+                        </button>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card revenue">
+                        <div class="stat-icon">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3>Total Pendapatan</h3>
+                            <p id="dashRevenue">Rp 0</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card orders">
+                        <div class="stat-icon">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3>Total Transaksi</h3>
+                            <p id="dashOrders">0</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card cashiers">
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3>Total Kasir Aktif</h3>
+                            <p id="dashCashiers">0</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card stock">
+                        <div class="stat-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3>Produk Stok Tipis</h3>
+                            <p id="dashLowStock">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-chart-bar"></i> Statistik Transaksi</h2>
+                    </div>
+                    <div id="chartContainer" style="height: 300px;">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- USERS TAB -->
+            <div id="tab-users" class="tab-content">
+                <div class="top-bar">
+                    <div>
+                        <h1>Kelola Kasir</h1>
+                        <p>Kelola akun kasir dan akses sistem</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-user-plus"></i> Tambah Kasir Baru</h2>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Nama Lengkap</label>
+                            <input type="text" id="newUserName" placeholder="Masukkan nama lengkap">
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="newUserEmail" placeholder="email@thaiteacst.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Password</label>
+                            <input type="password" id="newUserPass" placeholder="Minimal 6 karakter">
+                        </div>
+                        <div class="form-group">
+                            <label>Cabang</label>
+                            <select id="newUserBranch">
+                                <option value="cabang_01">📍 Sport Center Bandara Soetta</option>
+                                <option value="cabang_02">📍 TOD M1, Benda</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button class="btn btn-primary" onclick="createCashier()">
+                            <i class="fas fa-save"></i> Simpan Kasir
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-list"></i> Daftar Kasir</h2>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Nama</th>
+                                    <th>Email</th>
+                                    <th>Cabang</th>
+                                    <th>Status</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody">
+                                <tr>
+                                    <td colspan="5" class="loading">
+                                        <i class="fas fa-spinner fa-spin"></i> Memuat data...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INVENTORY TAB -->
+            <div id="tab-inventory" class="tab-content">
+                <div class="top-bar">
+                    <div>
+                        <h1>Manajemen Stok</h1>
+                        <p>Kelola inventory produk per cabang</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-filter"></i> Filter Cabang</h2>
+                        <select id="inventoryBranch" onchange="loadInventory()" style="padding: 10px 16px; border-radius: 8px; border: 2px solid var(--light);">
+                            <option value="cabang_01">📍 Sport Center Bandara Soetta</option>
+                            <option value="cabang_02">📍 TOD M1, Benda</option>
+                        </select>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Produk</th>
+                                    <th>Stok Saat Ini</th>
+                                    <th>Min. Stok</th>
+                                    <th>Status</th>
+                                    <th>Aksi Cepat</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventoryTableBody">
+                                <tr>
+                                    <td colspan="5" class="loading">
+                                        <i class="fas fa-spinner fa-spin"></i> Memuat inventory...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TRANSACTIONS TAB -->
+            <div id="tab-transactions" class="tab-content">
+                <div class="top-bar">
+                    <div>
+                        <h1>Riwayat Transaksi</h1>
+                        <p>Daftar semua transaksi penjualan</p>
+                    </div>
+                    <div class="top-actions">
+                        <button class="btn btn-primary btn-sm" onclick="loadTransactions()">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Waktu</th>
+                                    <th>ID Transaksi</th>
+                                    <th>Cabang</th>
+                                    <th>Kasir</th>
+                                    <th>Item</th>
+                                    <th>Total</th>
+                                    <th>Metode</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactionsTableBody">
+                                <tr>
+                                    <td colspan="8" class="loading">
+                                        <i class="fas fa-spinner fa-spin"></i> Memuat transaksi...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
     <script>
-        // Firebase Config (sama)
-        const firebaseConfig = { /* ... sama ... */ };
+        // 🔥 FIREBASE CONFIG
+        const firebaseConfig = {
+            apiKey: "AIzaSyAyWr6nhroYRBTiJDkVHMJdYuTSgefHubs",
+            authDomain: "thai-tea-cst-ac9db.firebaseapp.com",
+            projectId: "thai-tea-cst-ac9db",
+            storageBucket: "thai-tea-cst-ac9db.firebasestorage.app",
+            messagingSenderId: "907107728020",
+            appId: "1:907107728020:web:7340be99b3ab4c07cdd281",
+            measurementId: "G-DJFC6NYVD1"
+        };
+        
         if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
         const db = firebase.firestore();
         
-        // Tab Switching
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('tab-' + tabName).classList.add('active');
-            event.target.classList.add('active');
-            
-            if(tabName === 'users') loadUsers();
-            if(tabName === 'inventory') loadInventory();
-            if(tabName === 'dashboard') loadDashboard();
-        }
+        const ADMIN_PASSWORD = "owner123";
+        const branchNames = {
+            'cabang_01': '📍 Sport Center Bandara',
+            'cabang_02': '📍 TOD M1, Benda'
+        };
         
-        // CREATE CASHIER
+        const formatRp = (n) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n || 0);
+        
+        let allData = [];
+        let revenueChart = null;
+
+        // 🔐 AUTH
+        function checkAdmin() {
+            const pass = document.getElementById('adminPass').value;
+            const err = document.getElementById('loginError');
+            
+            if(pass === ADMIN_PASSWORD) {
+                sessionStorage.setItem('adminAuth', 'true');
+                showDashboard();
+            } else {
+                err.textContent = 'Password salah! Silakan coba lagi.';
+                err.style.display = 'block';
+                setTimeout(() => err.style.display = 'none', 3000);
+            }
+        }
+
+        function showDashboard() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('dashboard').classList.add('active');
+            loadDashboard();
+        }
+
+        function logout() {
+            sessionStorage.removeItem('adminAuth');
+            location.reload();
+        }
+
+        // 📊 DASHBOARD
+        async function loadDashboard() {
+            try {
+                // Load transactions
+                const trxSnap = await db.collection('transactions').orderBy('timestamp', 'desc').limit(100).get();
+                allData = [];
+                trxSnap.forEach(doc => {
+                    let d = doc.data();
+                    if(d.timestamp && d.timestamp.toDate) d.timestamp = d.timestamp.toDate().toISOString();
+                    allData.push(d);
+                });
+
+                // Load users
+                const userSnap = await db.collection('users').where('role', '==', 'cashier').where('active', '==', true).get();
+                
+                // Load low stock
+                const invSnap = await db.collection('inventory').where('stock', '<=', 20).get();
+
+                // Calculate stats
+                const totalRevenue = allData.reduce((s, t) => s + (t.total || 0), 0);
+                const totalOrders = allData.length;
+                const totalCashiers = userSnap.size;
+                const lowStock = invSnap.size;
+
+                // Update UI
+                document.getElementById('dashRevenue').textContent = formatRp(totalRevenue);
+                document.getElementById('dashOrders').textContent = totalOrders;
+                document.getElementById('dashCashiers').textContent = totalCashiers;
+                document.getElementById('dashLowStock').textContent = lowStock;
+
+                // Update chart
+                updateChart(allData);
+
+            } catch(e) {
+                console.error("Error loading dashboard:", e);
+            }
+        }
+
+        function updateChart(data) {
+            const ctx = document.getElementById('revenueChart').getContext('2d');
+            
+            // Group by date
+            const dailyData = {};
+            data.forEach(t => {
+                if(t.timestamp) {
+                    const date = new Date(t.timestamp).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' });
+                    dailyData[date] = (dailyData[date] || 0) + (t.total || 0);
+                }
+            });
+
+            if(revenueChart) revenueChart.destroy();
+            
+            revenueChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Object.keys(dailyData).reverse(),
+                    datasets: [{
+                        label: 'Pendapatan',
+                        data: Object.values(dailyData).reverse(),
+                        borderColor: '#E67E22',
+                        backgroundColor: 'rgba(230, 126, 34, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return 'Rp ' + (value/1000) + 'k';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 👥 USERS
+        async function loadUsers() {
+            const snap = await db.collection('users').where('role', '==', 'cashier').get();
+            const tbody = document.getElementById('usersTableBody');
+            
+            if(snap.empty) {
+                tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><i class="fas fa-inbox"></i><h3>Belum ada kasir</h3><p>Silakan tambah kasir baru</p></td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = snap.docs.map(doc => {
+                const u = doc.data();
+                const statusClass = u.active ? 'badge-success' : 'badge-danger';
+                const statusText = u.active ? '● Aktif' : '● Nonaktif';
+                
+                return `
+                    <tr>
+                        <td><strong>${u.name || '-'}</strong></td>
+                        <td>${u.email}</td>
+                        <td>${branchNames[u.branchId] || u.branchId}</td>
+                        <td><span class="badge ${statusClass}">${statusText}</span></td>
+                        <td>
+                            <button class="btn btn-sm ${u.active ? 'btn-warning' : 'btn-success'}" onclick="toggleUser('${doc.id}', ${!u.active})">
+                                ${u.active ? 'Nonaktifkan' : 'Aktifkan'}
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteUser('${doc.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
         async function createCashier() {
             const name = document.getElementById('newUserName').value;
             const email = document.getElementById('newUserEmail').value;
             const pass = document.getElementById('newUserPass').value;
             const branch = document.getElementById('newUserBranch').value;
-            
-            if(!name || !email || !pass) { alert('Semua field harus diisi!'); return; }
-            
+
+            if(!name || !email || !pass) {
+                alert('Semua field wajib diisi!');
+                return;
+            }
+
             try {
-                // 1. Create Auth User
-                const cred = await auth.createUserWithEmailAndPassword(email, pass);
-                
-                // 2. Save to Firestore
+                const cred = await firebase.auth().createUserWithEmailAndPassword(email, pass);
                 await db.collection('users').doc(cred.user.uid).set({
-                    name: name,
-                    email: email,
+                    name, email,
                     role: 'cashier',
                     branchId: branch,
                     active: true,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
-                
+
                 alert('✅ Kasir berhasil dibuat!');
                 document.getElementById('newUserName').value = '';
                 document.getElementById('newUserEmail').value = '';
                 document.getElementById('newUserPass').value = '';
                 loadUsers();
-                
-            } catch(error) {
-                alert('Error: ' + error.message);
+            } catch(e) {
+                alert('Error: ' + e.message);
             }
         }
-        
-        // LOAD USERS
-        async function loadUsers() {
-            const snap = await db.collection('users').where('role', '==', 'cashier').get();
-            const tbody = document.getElementById('usersTableBody');
-            tbody.innerHTML = '';
-            
-            snap.forEach(doc => {
-                const u = doc.data();
-                const branchName = u.branchId === 'cabang_01' ? 'Sport Center' : 'TOD M1';
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${u.name}</td>
-                        <td>${u.email}</td>
-                        <td>${branchName}</td>
-                        <td>${u.active ? '<span style="color:green">● Aktif</span>' : '<span style="color:red">● Nonaktif</span>'}</td>
-                        <td>
-                            <button onclick="toggleUser('${doc.id}', ${!u.active})" class="btn btn-sm">
-                                ${u.active ? 'Nonaktifkan' : 'Aktifkan'}
-                            </button>
-                            <button onclick="deleteUser('${doc.id}')" class="btn btn-sm btn-danger">Hapus</button>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-        
-        // TOGGLE USER STATUS
+
         async function toggleUser(uid, newStatus) {
             await db.collection('users').doc(uid).update({ active: newStatus });
             loadUsers();
         }
-        
-        // DELETE USER
+
         async function deleteUser(uid) {
-            if(confirm('Hapus kasir ini?')) {
+            if(confirm('Yakin hapus kasir ini?')) {
                 await db.collection('users').doc(uid).delete();
-                await auth.currentUser.delete(); // Optional: hapus dari auth juga
                 loadUsers();
             }
         }
-        
-        // INVENTORY MANAGEMENT
+
+        // 📦 INVENTORY
         async function loadInventory() {
             const branch = document.getElementById('inventoryBranch').value;
             const snap = await db.collection('inventory').where('branchId', '==', branch).get();
             const tbody = document.getElementById('inventoryTableBody');
-            tbody.innerHTML = '';
-            
-            snap.forEach(doc => {
+
+            if(snap.empty) {
+                tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><i class="fas fa-box-open"></i><h3>Belum ada data stok</h3></td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = snap.docs.map(doc => {
                 const inv = doc.data();
-                const status = inv.stock <= inv.minStock ? 
-                    '<span style="color:red; font-weight:bold">⚠️ Stok Tipis</span>' : 
-                    '<span style="color:green">✓ Aman</span>';
-                
-                tbody.innerHTML += `
+                const isLow = inv.stock <= inv.minStock;
+                const statusClass = isLow ? 'badge-danger' : 'badge-success';
+                const statusText = isLow ? '⚠️ Stok Tipis' : '✓ Aman';
+
+                return `
                     <tr>
-                        <td>${inv.productName}</td>
-                        <td><input type="number" value="${inv.stock}" onchange="updateStock('${doc.id}', this.value)" style="width:80px; padding:5px;"></td>
+                        <td><strong>${inv.productName}</strong></td>
+                        <td><input type="number" value="${inv.stock}" onchange="updateStock('${doc.id}', this.value)" style="width:80px; padding:6px; border-radius:6px; border:1px solid #ddd;"></td>
                         <td>${inv.minStock}</td>
-                        <td>${status}</td>
-                        <td><button onclick="addStock('${doc.id}')" class="btn btn-sm">+ Tambah</button></td>
+                        <td><span class="badge ${statusClass}">${statusText}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" onclick="addStock('${doc.id}', 10)">+10</button>
+                            <button class="btn btn-sm btn-success" onclick="addStock('${doc.id}', 50)">+50</button>
+                        </td>
                     </tr>
                 `;
-            });
+            }).join('');
         }
-        
+
         async function updateStock(docId, newStock) {
             await db.collection('inventory').doc(docId).update({ stock: parseInt(newStock) });
             loadInventory();
         }
-        
-        // CHECKOUT DENGAN STOCK DEDUCTION
-        async function checkoutWithStock(cart, branchId) {
-            const batch = db.batch();
-            
-            // 1. Kurangi stok untuk setiap item
-            for(const item of cart) {
-                const invRef = db.collection('inventory')
-                    .where('productId', '==', item.id)
-                    .where('branchId', '==', branchId)
-                    .limit(1);
-                
-                const snap = await invRef.get();
-                if(snap.empty) throw new Error(`Stok tidak ditemukan untuk ${item.name}`);
-                
-                const invDoc = snap.docs[0];
-                const invData = invDoc.data();
-                
-                if(invData.stock < item.quantity) {
-                    throw new Error(`Stok ${item.name} tidak cukup! Tersedia: ${invData.stock}`);
-                }
-                
-                batch.update(invDoc.ref, { 
-                    stock: firebase.firestore.FieldValue.increment(-item.quantity),
-                    lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
-                });
-            }
-            
-            // 2. Simpan transaksi
-            const trxRef = db.collection('transactions').doc();
-            batch.set(trxRef, {
-                items: cart,
-                branchId: branchId,
-                cashierId: currentUser.uid,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                // ... field lainnya
-            });
-            
-            await batch.commit();
-            return true;
+
+        async function addStock(docId, amount) {
+            const doc = await db.collection('inventory').doc(docId).get();
+            const current = doc.data().stock;
+            await db.collection('inventory').doc(docId).update({ stock: current + amount });
+            loadInventory();
         }
+
+        // 🧾 TRANSACTIONS
+        async function loadTransactions() {
+            const snap = await db.collection('transactions').orderBy('timestamp', 'desc').limit(100).get();
+            const tbody = document.getElementById('transactionsTableBody');
+
+            if(snap.empty) {
+                tbody.innerHTML = '<tr><td colspan="8" class="empty-state"><i class="fas fa-receipt"></i><h3>Belum ada transaksi</h3></td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = snap.docs.map(doc => {
+                const t = doc.data();
+                const date = t.timestamp ? new Date(t.timestamp).toLocaleString('id-ID') : '-';
+                const items = t.items ? t.items.map(i => i.name).join(', ') : '-';
+                
+                return `
+                    <tr>
+                        <td>${date}</td>
+                        <td><small>${t.id || doc.id}</small></td>
+                        <td>${branchNames[t.branchId] || t.branchId}</td>
+                        <td>${t.cashierName || '-'}</td>
+                        <td>${items}</td>
+                        <td><strong>${formatRp(t.total)}</strong></td>
+                        <td><span class="badge badge-primary">${(t.paymentMethod || 'cash').toUpperCase()}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-danger" onclick="deleteTransaction('${doc.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function deleteTransaction(id) {
+            if(confirm('Hapus transaksi ini?')) {
+                await db.collection('transactions').doc(id).delete();
+                loadTransactions();
+                loadDashboard();
+            }
+        }
+
+        function exportToExcel() {
+            const data = [['Tanggal', 'ID', 'Cabang', 'Kasir', 'Item', 'Total', 'Metode']];
+            allData.forEach(t => {
+                data.push([
+                    t.timestamp ? new Date(t.timestamp).toLocaleString('id-ID') : '',
+                    t.id || '',
+                    branchNames[t.branchId] || '',
+                    t.cashierName || '',
+                    t.items ? t.items.map(i => i.name).join('; ') : '',
+                    t.total || 0,
+                    (t.paymentMethod || '').toUpperCase()
+                ]);
+            });
+
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Laporan");
+            XLSX.writeFile(wb, `Laporan_Admin_${new Date().toISOString().split('T')[0]}.xlsx`);
+        }
+
+        // TABS
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(b => b.classList.remove('active'));
+            
+            document.getElementById('tab-' + tabName).classList.add('active');
+            event.target.closest('.nav-link').classList.add('active');
+            
+            if(tabName === 'users') loadUsers();
+            if(tabName === 'inventory') loadInventory();
+            if(tabName === 'transactions') loadTransactions();
+        }
+
+        // INIT
+        if(sessionStorage.getItem('adminAuth') === 'true') showDashboard();
     </script>
+    
+    <!-- SheetJS for Excel Export -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </body>
 </html>
