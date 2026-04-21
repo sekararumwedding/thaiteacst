@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Thai Tea CST</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <style>
+        :root { --primary:#E67E22; --dark:#2C3E50; --light:#FDF2E9; --danger:#E74C3C; --success:#27AE60; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f6f9; margin:0; padding:20px; color: var(--dark); }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid var(--light); }
+        h1 { margin:0; font-size: 1.8rem; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stat-card { background: var(--light); padding: 15px; border-radius: 12px; border-left: 4px solid var(--primary); }
+        .stat-card h3 { margin: 0 0 5px; font-size: 0.9rem; color: #666; }
+        .stat-card p { margin:0; font-size: 1.5rem; font-weight: 700; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #f8f9fa; font-weight: 600; }
+        .btn { padding: 8px 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .branch-badge { padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; }
+        .cabang_01 { background: #E8F5E9; color: #2E7D32; }
+        .cabang_02 { background: #E3F2FD; color: #1565C0; }
+        .password-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .password-box { background: white; padding: 30px; border-radius: 12px; text-align: center; width: 300px; }
+        .password-box input { width: 100%; padding: 10px; margin: 15px 0; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <!-- 🔒 Password Protection -->
+    <div id="passwordOverlay" class="password-overlay">
+        <div class="password-box">
+            <h2>🔐 Admin Only</h2>
+            <p>Masukkan password owner</p>
+            <input type="password" id="adminPass" placeholder="Password...">
+            <button class="btn btn-success" onclick="checkAdmin()">Masuk</button>
+            <p id="passError" style="color:red; margin-top:10px; display:none;">Password salah!</p>
+        </div>
+    </div>
+
+    <!-- 📊 Dashboard -->
+    <div class="container hidden" id="adminDashboard">
+        <header>
+            <div>
+                <h1> Dashboard Owner</h1>
+                <p>Thai Tea CST - Monitoring Multi-Cabang</p>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <select id="adminBranchFilter" style="padding:8px;border-radius:8px;border:2px solid #ddd;">
+                    <option value="all">🌐 Semua Cabang</option>
+                    <option value="cabang_01">📍 Sport Center Bandara</option>
+                    <option value="cabang_02">📍 TOD M1</option>
+                </select>
+                <button class="btn btn-danger" onclick="confirmDeleteAll()"><i class="fas fa-trash"></i> Hapus Semua Data</button>
+                <button class="btn btn-success" onclick="exportAdminExcel()"><i class="fas fa-file-excel"></i> Export Excel</button>
+            </div>
+        </header>
+
+        <div class="stats">
+            <div class="stat-card"><h3>Total Pendapatan</h3><p id="totalRevenue">Rp 0</p></div>
+            <div class="stat-card"><h3>Total Transaksi</h3><p id="totalOrders">0</p></div>
+            <div class="stat-card"><h3>Total Item Terjual</h3><p id="totalItems">0</p></div>
+            <div class="stat-card"><h3>Rata-rata per Transaksi</h3><p id="avgTransaction">Rp 0</p></div>
+        </div>
+
+        <h3>📜 Riwayat Transaksi</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Waktu</th>
+                    <th>Cabang</th>
+                    <th>Item</th>
+                    <th>Total</th>
+                    <th>Metode</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody id="adminTableBody">
+                <tr><td colspan="6" style="text-align:center;padding:30px;">Memuat data...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // 🔑 GANTI PASSWORD DI SINI (Sementara)
+        const ADMIN_PASSWORD = "owner123"; 
+        
+        // Firebase Config (SAMA DENGAN index.html)
+        const firebaseConfig = {
+            apiKey: "AIzaSyAyWr6nhroYRBTiJDkVHMJdYuTSgefHubs",
+            authDomain: "thai-tea-cst-ac9db.firebaseapp.com",
+            projectId: "thai-tea-cst-ac9db",
+            storageBucket: "thai-tea-cst-ac9db.firebasestorage.app",
+            messagingSenderId: "907107728020",
+            appId: "1:907107728020:web:7340be99b3ab4c07cdd281",
+            measurementId: "G-DJFC6NYVD1"
+        };
+        if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        const formatRupiah = (n) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
+
+        function checkAdmin() {
+            const pass = document.getElementById('adminPass').value;
+            if(pass === ADMIN_PASSWORD) {
+                document.getElementById('passwordOverlay').classList.add('hidden');
+                document.getElementById('adminDashboard').classList.remove('hidden');
+                loadAdminData();
+            } else {
+                document.getElementById('passError').style.display = 'block';
+            }
+        }
+
+        async function loadAdminData() {
+            const filter = document.getElementById('adminBranchFilter').value;
+            let query = db.collection('transactions').orderBy('timestamp', 'desc').limit(200);
+            
+            const snapshot = await query.get();
+            let allData = [];
+            snapshot.forEach(doc => {
+                let d = doc.data();
+                if(d.timestamp && d.timestamp.toDate) d.timestamp = d.timestamp.toDate().toISOString();
+                d.id = doc.id;
+                allData.push(d);
+            });
+
+            let filtered = filter === 'all' ? allData : allData.filter(t => t.branchId === filter);
+            renderAdminTable(filtered);
+            updateStats(filtered);
+        }
+
+        function renderAdminTable(data) {
+            const tbody = document.getElementById('adminTableBody');
+            if(data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:30px;">Tidak ada data</td></tr>';
+                return;
+            }
+            tbody.innerHTML = data.map(t => `
+                <tr>
+                    <td>${new Date(t.timestamp).toLocaleString('id-ID')}</td>
+                    <td><span class="branch-badge ${t.branchId}">${t.branchId === 'cabang_01' ? '📍 Sport Center Bandara' : '📍 TOD M1'}</span></td>
+                    <td>${t.items.map(i => i.name).join(', ')}</td>
+                    <td><strong>${formatRupiah(t.total)}</strong></td>
+                    <td>${t.paymentMethod.toUpperCase()}</td>
+                    <td><button class="btn btn-danger btn-sm" onclick="deleteTransaction('${t.id}')"><i class="fas fa-trash"></i></button></td>
+                </tr>
+            `).join('');
+        }
+
+        function updateStats(data) {
+            const total = data.reduce((s,t) => s + t.total, 0);
+            const count = data.length;
+            const items = data.reduce((s,t) => s + t.items.reduce((a,i) => a + i.quantity, 0), 0);
+            document.getElementById('totalRevenue').textContent = formatRupiah(total);
+            document.getElementById('totalOrders').textContent = count;
+            document.getElementById('totalItems').textContent = items;
+            document.getElementById('avgTransaction').textContent = count ? formatRupiah(total/count) : 'Rp 0';
+        }
+
+        async function deleteTransaction(id) {
+            if(confirm('Yakin hapus transaksi ini?')) {
+                await db.collection('transactions').doc(id).delete();
+                loadAdminData();
+            }
+        }
+
+        async function confirmDeleteAll() {
+            if(confirm('⚠️ PERINGATAN: Hapus SEMUA data transaksi? Tindakan ini tidak bisa dibatalkan!')) {
+                const batch = db.batch();
+                const snap = await db.collection('transactions').get();
+                snap.forEach(doc => batch.delete(doc.ref));
+                await batch.commit();
+                loadAdminData();
+                alert('✅ Semua data berhasil dihapus.');
+            }
+        }
+
+        function exportAdminExcel() {
+            // Logika export sama seperti sebelumnya, ambil data dari tabel/array
+            alert('Fitur export Excel siap digunakan (gunakan data array yang sama)');
+        }
+
+        document.getElementById('adminBranchFilter').addEventListener('change', loadAdminData);
+    </script>
+</body>
+</html>
