@@ -34,7 +34,7 @@
         .btn:disabled { opacity: 0.6; cursor: not-allowed; }
         .error-msg { background: #FADBD8; color: var(--danger); padding: 10px; border-radius: 8px; margin-bottom: 15px; display: none; font-size: 0.9rem; }
         
-        /* MAIN APP - DESKTOP */
+        /* MAIN APP */
         .app-container { max-width: 1400px; margin: 0 auto; padding: 20px; display: none; grid-template-columns: 1fr 400px; gap: 25px; }
         .app-container.active { display: grid; }
         
@@ -90,7 +90,6 @@
         .pay-method.selected { border-color: var(--primary); background: rgba(230,126,34,0.1); }
         .pay-method i { font-size: 1.5rem; margin-bottom: 5px; }
         
-        /* 💳 PAYMENT INFO PANEL */
         .payment-panel {
             display: none; margin: 15px 0; background: var(--white);
             border: 2px solid var(--light); border-radius: 14px;
@@ -154,7 +153,6 @@
         .cabang_01 { background: #E8F5E9; color: #2E7D32; }
         .cabang_02 { background: #E3F2FD; color: #1565C0; }
         
-        /* 🖨️ PRINT STYLES */
         @media print {
             @page { margin: 0; size: 58mm auto; }
             body { background: white; }
@@ -162,12 +160,9 @@
             #thermalReceipt { display: block !important; position: absolute; left: 0; top: 0; width: 100%; padding: 5px; font-family: 'Courier New', monospace; font-size: 12px; }
         }
         
-        /* 📱 MOBILE OPTIMIZATION */
         @media (max-width: 768px) {
             body { padding: 0; }
             .app-container { grid-template-columns: 1fr; padding: 10px; gap: 15px; }
-            
-            /* Header mobile */
             header { flex-direction: column; padding: 12px 15px; gap: 10px; }
             .logo { width: 100%; justify-content: center; }
             .logo-icon { width: 40px; height: 40px; font-size: 1.1rem; }
@@ -176,72 +171,23 @@
             .user-badge { width: 100%; justify-content: center; padding: 8px 12px; font-size: 0.8rem; }
             .header-actions { width: 100%; justify-content: center; }
             .header-actions .btn { flex: 1; padding: 10px 12px; font-size: 0.85rem; }
-            
-            /* Menu section mobile */
             .menu-section { padding: 15px; border-radius: 12px; }
             .section-title { margin-bottom: 15px; padding-bottom: 10px; }
             .section-title h2 { font-size: 1.2rem; }
-            
-            /* Category filter mobile */
             .category-filter { gap: 6px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 8px; -webkit-overflow-scrolling: touch; }
             .cat-btn { padding: 8px 14px; font-size: 0.8rem; white-space: nowrap; border-radius: 16px; }
-            
-            /* Products grid mobile */
-            .products-grid { 
-                grid-template-columns: repeat(2, 1fr); 
-                gap: 10px; 
-            }
+            .products-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
             .product-card { border-radius: 10px; }
-            .product-img { 
-                height: 110px; 
-                min-height: 110px;
-            }
-            .product-img img { 
-                width: 100%; 
-                height: 100%; 
-                object-fit: cover; 
-                display: block;
-            }
+            .product-img { height: 110px; min-height: 110px; }
+            .product-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
             .product-info { padding: 10px 8px; }
-            .product-name { 
-                font-size: 0.85rem; 
-                font-weight: 600; 
-                margin-bottom: 3px; 
-                line-height: 1.2;
-                display: -webkit-box;
-                -webkit-line-clamp: 2;
-                -webkit-box-orient: vertical;
-                overflow: hidden;
-            }
-            .product-desc { 
-                display: none; 
-            }
-            .product-price { 
-                font-size: 1rem; 
-                margin: 5px 0 8px;
-                color: var(--primary-dark);
-            }
+            .product-name { font-size: 0.85rem; font-weight: 600; margin-bottom: 3px; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+            .product-desc { display: none; }
+            .product-price { font-size: 1rem; margin: 5px 0 8px; color: var(--primary-dark); }
             .stock-badge { font-size: 0.7rem; margin-bottom: 5px; }
-            .add-btn { 
-                padding: 8px 6px; 
-                font-size: 0.8rem;
-                border-radius: 8px;
-            }
-            .item-badge { 
-                top: 5px; 
-                right: 5px; 
-                min-width: 20px; 
-                height: 20px; 
-                font-size: 0.7rem; 
-            }
-            
-            /* Cart section mobile */
-            .cart-section { 
-                position: static; 
-                max-height: none; 
-                padding: 15px;
-                border-radius: 12px;
-            }
+            .add-btn { padding: 8px 6px; font-size: 0.8rem; border-radius: 8px; }
+            .item-badge { top: 5px; right: 5px; min-width: 20px; height: 20px; font-size: 0.7rem; }
+            .cart-section { position: static; max-height: none; padding: 15px; border-radius: 12px; }
             .cart-items { max-height: 250px; }
             .cart-item { padding: 8px 0; gap: 8px; }
             .cart-item-img { width: 45px; height: 45px; }
@@ -250,37 +196,17 @@
             .cart-controls { gap: 6px; }
             .qty-btn { width: 26px; height: 26px; font-size: 0.9rem; }
             .remove-btn { font-size: 0.9rem; }
-            
-            /* Summary mobile */
             .summary-row { padding: 6px 0; font-size: 0.9rem; }
             .summary-row input { width: 80px; padding: 6px; font-size: 0.9rem; }
             .summary-row.total { font-size: 1.3rem; margin: 8px 0; padding-top: 10px; }
-            
-            /* Payment methods mobile */
             .payment-grid { grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0; }
-            .pay-method { 
-                padding: 10px 6px; 
-                min-height: 60px; 
-                font-size: 0.8rem; 
-            }
+            .pay-method { padding: 10px 6px; min-height: 60px; font-size: 0.8rem; }
             .pay-method i { font-size: 1.3rem; margin-bottom: 4px; }
-            
-            /* QRIS image mobile */
             .qris-img { width: 160px; height: 160px; }
-            
-            /* Modal mobile */
             .modal { padding: 0; align-items: flex-end; }
             .modal.active { display: flex; }
-            .modal-content { 
-                width: 100%; 
-                max-width: 100%; 
-                max-height: 90vh; 
-                border-radius: 16px 16px 0 0; 
-                padding: 20px 15px 30px;
-            }
+            .modal-content { width: 100%; max-width: 100%; max-height: 90vh; border-radius: 16px 16px 0 0; padding: 20px 15px 30px; }
             .close-modal { top: 12px; right: 12px; }
-            
-            /* Report mobile */
             .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
             .stat-card { padding: 10px; }
             .stat-card p { font-size: 1.1rem; }
@@ -288,7 +214,6 @@
             th, td { padding: 6px 4px; }
         }
         
-        /* Small phones */
         @media (max-width: 380px) {
             .products-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
             .product-img { height: 100px; min-height: 100px; }
@@ -395,7 +320,6 @@
                     <div class="pay-method" data-method="ewallet" onclick="selectPayment('ewallet')"><i class="fas fa-wallet" style="color: var(--secondary);"></i>E-Wallet</div>
                 </div>
 
-                <!-- 💳 PANEL INFORMASI PEMBAYARAN NON-TUNAI -->
                 <div id="paymentPanel" class="payment-panel">
                     <div class="panel-header">
                         <h4><i class="fas fa-credit-card"></i> <span id="paymentTitle">Detail Pembayaran</span></h4>
@@ -404,7 +328,7 @@
                     <div id="paymentContent" class="payment-grid-info"></div>
                     <div class="payment-note">
                         <i class="fas fa-info-circle"></i>
-                        <span>Pastikan nominal transfer sesuai total pesanan. Konfirmasi otomatis tercatat di sistem.</span>
+                        <span>Pastikan nominal transfer sesuai total pesanan.</span>
                     </div>
                 </div>
 
@@ -449,11 +373,9 @@
         </div>
     </div>
 
-    <!-- 🖨️ THERMAL PRINT TEMPLATE (Hidden) -->
     <div id="thermalReceipt" style="display:none;"></div>
 
     <script>
-        // 🔥 FIREBASE CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyAyWr6nhroYRBTiJDkVHMJdYuTSgefHubs",
             authDomain: "thai-tea-cst-ac9db.firebaseapp.com",
@@ -467,7 +389,6 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // 📦 DATA PRODUK (Master Catalog)
         const PRODUCT_CATALOG = [
             { id: 'prem_thai', name: 'Premium Thai Tea', cat: 'premium', price: 20000, img: 'https://i.ibb.co.com/S44X01hn/Premium-Thai-Tea-with-Cream-Cheese-Shredded-Cheese.jpg', desc: 'with Cream Cheese & Shredded Cheese' },
             { id: 'prem_matcha', name: 'Premium Matcha', cat: 'premium', price: 25000, img: 'https://i.ibb.co.com/XZ2k5y1T/Premium-Matcha-with-Cream-Cheese-Shredded-Cheese.jpg', desc: 'with Cream Cheese & Shredded Cheese' },
@@ -480,7 +401,6 @@
             { id: 'top_bubble', name: 'Bubble (Pearl)', cat: 'extra', price: 3000, img: 'https://i.ibb.co.com/d0DwHSr4/Extra-Topping-Bubble-Tapioca-Pearl.jpg', desc: 'Extra topping' }
         ];
 
-        // 💳 KONFIGURASI PEMBAYARAN
         const PAYMENT_CONFIG = {
             qris: {
                 title: "Scan QRIS CST",
@@ -510,7 +430,6 @@
         const formatRp = (n) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n || 0);
         const branchNames = { cabang_01: '📍 Sport Center Bandara Soetta', cabang_02: '📍 TOD M1, Benda' };
 
-        // 🔐 AUTH FUNCTIONS
         async function doLogin() {
             const email = document.getElementById('loginEmail').value.trim();
             const pass = document.getElementById('loginPass').value;
@@ -525,10 +444,10 @@
                 const cred = await auth.signInWithEmailAndPassword(email, pass);
                 const userDoc = await db.collection('users').doc(cred.user.uid).get();
                 
-                if(!userDoc.exists) throw new Error('Data pengguna tidak ditemukan di database.');
+                if(!userDoc.exists) throw new Error('Data pengguna tidak ditemukan.');
                 
                 const data = userDoc.data();
-                if(!data.active) throw new Error('Akun Anda dinonaktifkan oleh admin.');
+                if(!data.active) throw new Error('Akun dinonaktifkan.');
                 
                 currentUser = cred.user;
                 currentBranch = data.branchId === 'all' ? 'cabang_01' : data.branchId;
@@ -558,7 +477,6 @@
             }
         }
 
-        // 📦 INVENTORY MANAGEMENT
         async function loadInventory() {
             try {
                 const snap = await db.collection('inventory').where('branchId', '==', currentBranch).get();
@@ -587,7 +505,7 @@
                 card.className = 'product-card';
                 card.innerHTML = `
                     <div class="item-badge" id="badge-${p.id}" style="display:none;">0</div>
-                    <div class="product-img"><img src="${p.img}" alt="${p.name}" onerror="this.src='image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>🧋</text></svg>'"></div>
+                    <div class="product-img"><img src="${p.img}" alt="${p.name}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>🧋</text></svg>'"></div>
                     <div class="product-info">
                         <div class="product-name">${p.name}</div>
                         <div class="product-desc">${p.desc}</div>
@@ -601,7 +519,6 @@
             updateCartBadges();
         }
 
-        // 🛒 CART LOGIC
         function addToCart(pid) {
             const prod = PRODUCT_CATALOG.find(p => p.id === pid);
             const stock = getStock(pid);
@@ -626,7 +543,7 @@
             const stock = getStock(pid);
             
             if(newQty <= 0) cart = cart.filter(i => i.id !== pid);
-            else if(newQty > stock) { alert('Melebihi stok tersedia!'); return; }
+            else if(newQty > stock) { alert('Melebihi stok!'); return; }
             else item.qty = newQty;
             
             renderCart();
@@ -644,7 +561,7 @@
             
             container.innerHTML = cart.map(item => `
                 <div class="cart-item">
-                    <div class="cart-item-img"><img src="${item.img}" onerror="this.src='image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>🧋</text></svg>'"></div>
+                    <div class="cart-item-img"><img src="${item.img}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>🧋</text></svg>'"></div>
                     <div class="cart-item-info">
                         <div class="cart-item-name">${item.name}</div>
                         <div class="cart-item-price">${formatRp(item.price)}</div>
@@ -672,7 +589,6 @@
             });
         }
 
-        // ✅ PERHITUNGAN TOTAL & VALIDASI TOMBOL
         function updateTotals() {
             const sub = cart.reduce((s, i) => s + (i.price * i.qty), 0);
             const discInput = document.getElementById('discountInput');
@@ -709,7 +625,6 @@
             }
         }
 
-        // 💳 PAYMENT FUNCTIONS
         function selectPayment(method) {
             selectedPayment = method;
             document.querySelectorAll('.pay-method').forEach(m => m.classList.remove('selected'));
@@ -744,8 +659,7 @@
                         <img src="${PAYMENT_CONFIG.qris.imageUrl}" alt="QRIS Code" class="qris-img">
                         <div class="qris-meta">
                             <strong>Merchant:</strong> ${PAYMENT_CONFIG.qris.merchant}<br>
-                            <strong>NMID:</strong> ${PAYMENT_CONFIG.qris.nmid}<br>
-                            <small>Scan QR code di atas untuk pembayaran</small>
+                            <strong>NMID:</strong> ${PAYMENT_CONFIG.qris.nmid}
                         </div>
                     </div>
                 `;
@@ -801,7 +715,6 @@
             setTimeout(() => btn.innerHTML = original, 1500);
         }
 
-        // 💳 CHECKOUT & PRINT
         async function processCheckout() {
             if(cart.length === 0) return;
             const btn = document.getElementById('checkoutBtn');
@@ -841,8 +754,8 @@
                     });
                 });
                 
-                // Gunakan RawBT untuk Android, fallback print untuk desktop
-                await printWithRawBT({ 
+                // Print struk
+                printReceipt({ 
                     items: cart, subtotal: sub, discount: disc, total: total, 
                     paymentMethod: selectedPayment, cashPaid: cash, change: change 
                 });
@@ -858,7 +771,7 @@
                 
                 setTimeout(() => {
                     btn.innerHTML = '<i class="fas fa-check-circle"></i> Bayar Sekarang';
-                    alert('✅ Transaksi berhasil! Struk telah dikirim ke printer.');
+                    alert('✅ Transaksi berhasil!');
                 }, 500);
                 
             } catch(e) {
@@ -868,200 +781,70 @@
             }
         }
 
-        // 🖨️ FUNGSI CETAK STRUK DENGAN RAWBT (VERSI STABIL)
-        async function printWithRawBT(trx) {
+        // 🖨️ FUNGSI PRINT SEDERHANA (TANPA GAMBAR)
+        function printReceipt(trx) {
             const isAndroid = /Android/i.test(navigator.userAgent);
             
-            try {
-                // 1. Generate gambar struk dulu
-                const imageData = await generateReceiptImage(trx);
-                
-                if (!isAndroid) {
-                    // Desktop/iOS: print biasa
-                    window.print();
-                    return;
-                }
-
-                // 2. Buka RawBT dengan data gambar
-                const rawbtUrl = `intent://print?data=${encodeURIComponent(imageData)}&type=image/png#Intent;scheme=rawbt;package=ru.a402d.rawbt;end`;
-                
-                // Cek apakah RawBT terinstall
-                try {
-                    window.location.href = rawbtUrl;
-                    
-                    // Fallback setelah 3 detik jika tidak ada respon
-                    setTimeout(() => {
-                        if(confirm('RawBT tidak merespon. Pastikan aplikasi RawBT sudah terinstall. Ingin coba print via browser?')) {
-                            const img = document.createElement('img');
-                            img.src = 'image/png;base64,' + imageData;
-                            const w = window.open('', '_blank');
-                            w.document.write('<img src="' + img.src + '" onload="window.print()" style="width:100%">');
-                        }
-                    }, 3000);
-                    
-                } catch(e) {
-                    console.error('RawBT error:', e);
-                    alert('Error membuka RawBT: ' + e.message);
-                }
-                
-            } catch(error) {
-                console.error('Print error:', error);
-                alert('Gagal membuat struk: ' + error.message);
-                // Fallback ke print biasa
+            if (!isAndroid) {
+                // Desktop: print biasa
                 window.print();
+                return;
+            }
+
+            // Buat teks struk sederhana
+            let receiptText = `
+THAI TEA CST
+${branchNames[currentBranch].replace('📍 ', '')}
+${new Date().toLocaleString('id-ID')}
+--------------------------------
+`;
+            trx.items.forEach(item => {
+                receiptText += `${item.name} x${item.qty}
+`;
+                receiptText += `${formatRp(item.price * item.qty)}
+`;
+            });
+            
+            receiptText += `--------------------------------
+Subtotal: ${formatRp(trx.subtotal)}
+`;
+            if(trx.discount > 0) {
+                receiptText += `Diskon: -${formatRp(trx.discount)}
+`;
+            }
+            receiptText += `TOTAL: ${formatRp(trx.total)}
+`;
+            
+            if(trx.paymentMethod === 'cash') {
+                receiptText += `Bayar: ${formatRp(trx.cashPaid)}
+`;
+                receiptText += `Kembali: ${trx.change === 0 ? 'Uang Pas' : formatRp(trx.change)}
+`;
+            }
+            
+            receiptText += `--------------------------------
+Metode: ${trx.paymentMethod.toUpperCase()}
+
+✨ Terima Kasih! ✨
+Selamat Menikmati!
+
+PT CAHAYA SEJATI TEKNOLOGI
+`;
+
+            // Encode ke base64
+            const base64Text = btoa(unescape(encodeURIComponent(receiptText)));
+            
+            // Buka RawBT dengan teks
+            const rawbtUrl = `intent://print?text=${encodeURIComponent(receiptText)}#Intent;scheme=rawbt;package=ru.a402d.rawbt;end`;
+            
+            try {
+                window.location.href = rawbtUrl;
+            } catch(e) {
+                console.error('RawBT error:', e);
+                alert('Gagal membuka RawBT. Pastikan aplikasi sudah terinstall.');
             }
         }
 
-        // 🖼️ FUNGSI GENERATE GAMBAR STRUK (CANVAS)
-        function generateReceiptImage(trx) {
-            return new Promise((resolve, reject) => {
-                try {
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    const width = 384; // Lebar thermal 58mm
-                    let height = 400; // Tinggi awal
-                    
-                    canvas.width = width;
-                    canvas.height = height;
-                    
-                    // Background putih
-                    ctx.fillStyle = '#ffffff';
-                    ctx.fillRect(0, 0, width, height);
-                    
-                    ctx.fillStyle = '#000000';
-                    ctx.textAlign = 'center';
-                    ctx.font = 'bold 24px monospace';
-                    
-                    let y = 40;
-                    
-                    // Header
-                    ctx.fillText('THAI TEA CST', width/2, y);
-                    y += 30;
-                    
-                    ctx.font = '14px monospace';
-                    ctx.fillText(branchNames[currentBranch].replace('📍 ', ''), width/2, y);
-                    y += 25;
-                    ctx.fillText(new Date().toLocaleString('id-ID'), width/2, y);
-                    y += 35;
-                    
-                    // Garis putus-putus
-                    ctx.setLineDash([5, 5]);
-                    ctx.beginPath();
-                    ctx.moveTo(20, y);
-                    ctx.lineTo(width-20, y);
-                    ctx.strokeStyle = '#000';
-                    ctx.stroke();
-                    ctx.setLineDash([]);
-                    y += 20;
-                    
-                    // Items
-                    ctx.textAlign = 'left';
-                    ctx.font = '14px monospace';
-                    trx.items.forEach(item => {
-                        ctx.fillText(item.name + ' x' + item.qty, 20, y);
-                        ctx.textAlign = 'right';
-                        ctx.fillText(formatRp(item.price * item.qty), width-20, y);
-                        ctx.textAlign = 'left';
-                        y += 24;
-                    });
-                    
-                    // Garis putus-putus
-                    ctx.setLineDash([5, 5]);
-                    ctx.beginPath();
-                    ctx.moveTo(20, y);
-                    ctx.lineTo(width-20, y);
-                    ctx.stroke();
-                    ctx.setLineDash([]);
-                    y += 20;
-                    
-                    // Subtotal
-                    ctx.font = '14px monospace';
-                    ctx.fillText('Subtotal', 20, y);
-                    ctx.textAlign = 'right';
-                    ctx.fillText(formatRp(trx.subtotal), width-20, y);
-                    ctx.textAlign = 'left';
-                    y += 28;
-                    
-                    // Diskon
-                    if(trx.discount > 0) {
-                        ctx.fillText('Diskon', 20, y);
-                        ctx.textAlign = 'right';
-                        ctx.fillText('-' + formatRp(trx.discount), width-20, y);
-                        ctx.textAlign = 'left';
-                        y += 28;
-                    }
-                    
-                    // Total
-                    ctx.font = 'bold 20px monospace';
-                    ctx.fillText('TOTAL', 20, y);
-                    ctx.textAlign = 'right';
-                    ctx.fillText(formatRp(trx.total), width-20, y);
-                    y += 35;
-                    
-                    // Pembayaran
-                    if(trx.paymentMethod === 'cash') {
-                        ctx.font = '14px monospace';
-                        ctx.textAlign = 'left';
-                        ctx.fillText('Bayar', 20, y);
-                        ctx.textAlign = 'right';
-                        ctx.fillText(formatRp(trx.cashPaid), width-20, y);
-                        y += 24;
-                        
-                        ctx.textAlign = 'left';
-                        ctx.fillText('Kembali', 20, y);
-                        ctx.textAlign = 'right';
-                        ctx.fillText(trx.change === 0 ? 'Uang Pas' : formatRp(trx.change), width-20, y);
-                        y += 35;
-                    }
-                    
-                    // Garis putus-putus
-                    ctx.setLineDash([5, 5]);
-                    ctx.beginPath();
-                    ctx.moveTo(20, y);
-                    ctx.lineTo(width-20, y);
-                    ctx.stroke();
-                    ctx.setLineDash([]);
-                    y += 20;
-                    
-                    // Footer
-                    ctx.textAlign = 'center';
-                    ctx.font = '14px monospace';
-                    ctx.fillText('Metode: ' + trx.paymentMethod.toUpperCase(), width/2, y);
-                    y += 30;
-                    
-                    ctx.font = 'bold 16px monospace';
-                    ctx.fillText('✨ Terima Kasih! ✨', width/2, y);
-                    y += 25;
-                    
-                    ctx.font = '14px monospace';
-                    ctx.fillText('Selamat Menikmati!', width/2, y);
-                    y += 35;
-                    
-                    ctx.font = '12px monospace';
-                    ctx.fillText('PT CAHAYA SEJATI TEKNOLOGI', width/2, y);
-                    
-                    // Hitung tinggi akhir & crop
-                    const finalHeight = y + 50;
-                    const finalCanvas = document.createElement('canvas');
-                    finalCanvas.width = width;
-                    finalCanvas.height = finalHeight;
-                    finalCanvas.getContext('2d').drawImage(canvas, 0, 0, width, finalHeight, 0, 0, width, finalHeight);
-                    
-                    // Konversi ke base64
-                    const base64 = finalCanvas.toDataURL('image/png').split(',')[1];
-                    
-                    // Tunggu sebentar untuk memastikan canvas selesai
-                    setTimeout(() => {
-                        resolve(base64);
-                    }, 100);
-                    
-                } catch(error) {
-                    reject(error);
-                }
-            });
-        }
-
-        // 📊 REPORT FUNCTIONS
         async function loadReport() {
             const period = document.getElementById('reportPeriod').value;
             const now = new Date();
@@ -1102,7 +885,7 @@
 
         function exportExcel() {
             const rows = [['Waktu','ID','Kasir','Cabang','Item','Qty','Subtotal','Diskon','Total','Metode','Bayar','Kembali']];
-            alert('Fitur export Excel siap diintegrasikan dengan data laporan.');
+            alert('Fitur export Excel siap diintegrasikan.');
         }
 
         function setupEventListeners() {
@@ -1118,12 +901,9 @@
         function clearCart() { if(confirm('Hapus keranjang?')) { cart=[]; document.getElementById('discountInput').value=''; document.getElementById('cashInput').value=''; renderCart(); updateCartBadges(); updateTotals(); } }
         function newOrder() { cart=[]; document.getElementById('discountInput').value=''; document.getElementById('cashInput').value=''; renderCart(); updateCartBadges(); updateTotals(); }
 
-        // INIT
         window.onload = () => {
             auth.onAuthStateChanged(user => {
-                if(user) {
-                    // Auto login logic can go here
-                }
+                if(user) {}
             });
         };
     </script>
