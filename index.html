@@ -683,6 +683,7 @@
             document.getElementById('total').textContent = formatRp(total);
             document.getElementById('itemCount').textContent = `${cart.reduce((s, i) => s + i.qty, 0)} item`;
             
+            // ✅ TOMBOL BAYAR AKTIF JIKA ADA ITEM & TOTAL > 0
             const btn = document.getElementById('checkoutBtn');
             btn.disabled = !(cart.length > 0 && total > 0);
             
@@ -693,6 +694,7 @@
             updateTotals();
         }
 
+        // ✅ CEK UANG KEMBALIAN (HANYA UI)
         function checkCashInput() {
             if(selectedPayment !== 'cash') return;
             
@@ -841,7 +843,8 @@
                     });
                 });
                 
-                printThermalReceipt({ 
+                // Cetak dengan RawBT (Android) atau fallback ke print biasa
+                printWithRawBT({ 
                     items: cart, subtotal: sub, discount: disc, total: total, 
                     paymentMethod: selectedPayment, cashPaid: cash, change: change 
                 });
@@ -857,7 +860,7 @@
                 
                 setTimeout(() => {
                     btn.innerHTML = '<i class="fas fa-check-circle"></i> Bayar Sekarang';
-                    alert('✅ Transaksi berhasil! Struk telah dicetak.');
+                    alert('✅ Transaksi berhasil! Struk sedang dicetak.');
                 }, 500);
                 
             } catch(e) {
@@ -867,96 +870,145 @@
             }
         }
 
-        // 🖨️ FUNGSI CETAK STRUK
-        function printThermalReceipt(trx) {
-            const w = window.open('', '_blank', 'width=400,height=600');
-            const date = new Date().toLocaleString('id-ID');
-            const branch = branchNames[currentBranch];
+        // 🖨️ FUNGSI CETAK STRUK DENGAN RAWBT
+        function printWithRawBT(trx) {
+            // Cek apakah perangkat mobile Android
+            const isAndroid = /Android/i.test(navigator.userAgent);
+            const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
             
-            let itemsHtml = trx.items.map(i => `<tr><td>${i.name} x${i.qty}</td><td style="text-align:right">${formatRp(i.price*i.qty)}</td></tr>`).join('');
+            if (!isAndroid && !isIOS) {
+                // Desktop: gunakan print biasa
+                window.print();
+                return;
+            }
+
+            // Buat canvas untuk menggambar struk
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const width = 384; // Lebar standar printer thermal 58mm
+            canvas.width = width;
             
-            let changeText = '-';
-            if (trx.paymentMethod === 'cash') {
-                if (trx.change > 0) changeText = formatRp(trx.change);
-                else if (trx.change === 0) changeText = 'Uang Pas';
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, width, 1000);
+            
+            ctx.fillStyle = '#000000';
+            ctx.textAlign = 'center';
+            
+            // Header
+            ctx.font = 'bold 26px monospace';
+            ctx.fillText('THAI TEA CST', width/2, 40);
+            
+            ctx.font = '16px monospace';
+            ctx.fillText(branchNames[currentBranch].replace('📍 ', ''), width/2, 65);
+            ctx.fillText(new Date().toLocaleString('id-ID'), width/2, 85);
+            
+            ctx.beginPath();
+            ctx.moveTo(20, 105);
+            ctx.lineTo(width-20, 105);
+            ctx.strokeStyle = '#000';
+            ctx.stroke();
+            
+            let y = 130;
+            ctx.textAlign = 'left';
+            ctx.font = '16px monospace';
+            
+            // Items
+            trx.items.forEach(item => {
+                const line1 = `${item.name} x${item.qty}`;
+                const line2 = formatRp(item.price * item.qty);
+                
+                ctx.fillText(line1, 20, y);
+                ctx.textAlign = 'right';
+                ctx.fillText(line2, width-20, y);
+                ctx.textAlign = 'left';
+                y += 28;
+            });
+            
+            ctx.beginPath();
+            ctx.moveTo(20, y);
+            ctx.lineTo(width-20, y);
+            ctx.stroke();
+            y += 20;
+            
+            // Subtotal
+            ctx.fillText('Subtotal', 20, y);
+            ctx.textAlign = 'right';
+            ctx.fillText(formatRp(trx.subtotal), width-20, y);
+            ctx.textAlign = 'left';
+            y += 28;
+            
+            // Diskon
+            if(trx.discount > 0) {
+                ctx.fillText('Diskon', 20, y);
+                ctx.textAlign = 'right';
+                ctx.fillText(`-${formatRp(trx.discount)}`, width-20, y);
+                ctx.textAlign = 'left';
+                y += 28;
             }
             
-            let cashText = trx.paymentMethod === 'cash' ? formatRp(trx.cashPaid) : '-';
+            // Total
+            ctx.font = 'bold 22px monospace';
+            ctx.fillText('TOTAL', 20, y);
+            ctx.textAlign = 'right';
+            ctx.fillText(formatRp(trx.total), width-20, y);
+            y += 45;
             
-            w.document.write(`<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Struk Pembayaran</title>
-    <style>
-        @media print {
-            @page { margin: 0; size: 58mm auto; }
-            body { margin: 0; padding: 5px; font-family: 'Courier New', monospace; font-size: 12px; }
-        }
-        body { font-family: 'Courier New', monospace; font-size: 12px; max-width: 58mm; margin: 0 auto; padding: 5px; line-height: 1.4; }
-        table { width: 100%; border-collapse: collapse; margin: 5px 0; }
-        td { padding: 2px 0; }
-        .header { text-align: center; border-bottom: 1px dashed #000; padding-bottom: 8px; margin-bottom: 8px; }
-        .header h2 { margin: 3px 0; font-size: 16px; }
-        .header p { margin: 2px 0; font-size: 11px; }
-        .total { border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 8px 0; margin: 8px 0; }
-        .row { display: flex; justify-content: space-between; margin: 3px 0; }
-        .big { font-size: 14px; font-weight: bold; margin: 5px 0; }
-        .footer { text-align: center; margin-top: 15px; font-size: 11px; border-top: 1px dashed #000; padding-top: 8px; line-height: 1.6; }
-        .thank-you { font-size: 13px; font-weight: bold; margin: 8px 0; color: #333; }
-        .sweet-message { font-size: 11px; margin: 5px 0; font-style: italic; }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <h2>🧋 THAI TEA CST</h2>
-        <p>${branch}</p>
-        <p>${date}</p>
-    </div>
-    
-    <table>${itemsHtml}</table>
-    
-    <div class="total">
-        <div class="row"><span>Subtotal</span><span>${formatRp(trx.subtotal)}</span></div>
-        ${trx.discount ? `<div class="row"><span>Diskon</span><span>${formatRp(trx.discount)}</span></div>` : ''}
-        <div class="row big"><span>TOTAL</span><span>${formatRp(trx.total)}</span></div>
-    </div>
-    
-    ${trx.paymentMethod === 'cash' ? `
-    <div style="margin: 8px 0;">
-        <div class="row"><span>Bayar</span><span>${cashText}</span></div>
-        <div class="row"><span>Kembali</span><span>${changeText}</span></div>
-    </div>
-    ` : ''}
-    
-    <div class="footer">
-        <div class="row" style="justify-content: center; margin-bottom: 8px;">
-            <span>Metode: <strong>${trx.paymentMethod.toUpperCase()}</strong></span>
-        </div>
-        
-        <div class="thank-you">✨ Terima Kasih! ✨</div>
-        
-        <div class="sweet-message">
-            🧋 Selamat Menikmati!<br>
-            Jangan lupa datang kembali ya! 😊
-        </div>
-        
-        <div style="margin-top: 10px; font-size: 10px;">
-            PT CAHAYA SEJATI TEKNOLOGI
-        </div>
-    </div>
-    
-    <script>
-        window.onload = function() { 
-            window.print(); 
-            window.onafterprint = function() { 
-                window.close(); 
-            }; 
-        };
-    <\/script>
-</body>
-</html>`);
-            w.document.close();
+            // Cash Details
+            if(trx.paymentMethod === 'cash') {
+                ctx.font = '16px monospace';
+                ctx.fillText('Bayar', 20, y);
+                ctx.textAlign = 'right';
+                ctx.fillText(formatRp(trx.cashPaid), width-20, y);
+                ctx.textAlign = 'left';
+                y += 28;
+                
+                ctx.fillText('Kembali', 20, y);
+                ctx.textAlign = 'right';
+                ctx.fillText(trx.change === 0 ? 'Uang Pas' : formatRp(trx.change), width-20, y);
+                y += 45;
+            }
+            
+            ctx.beginPath();
+            ctx.moveTo(20, y);
+            ctx.lineTo(width-20, y);
+            ctx.stroke();
+            y += 20;
+            
+            // Footer
+            ctx.font = '16px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(`Metode: ${trx.paymentMethod.toUpperCase()}`, width/2, y);
+            y += 30;
+            ctx.font = 'bold 18px monospace';
+            ctx.fillText('✨ Terima Kasih! ✨', width/2, y);
+            y += 25;
+            ctx.font = '16px monospace';
+            ctx.fillText('Selamat Menikmati!', width/2, y);
+            y += 40;
+            ctx.font = '14px monospace';
+            ctx.fillText('PT CAHAYA SEJATI TEKNOLOGI', width/2, y);
+            
+            // Hitung tinggi aktual & crop canvas
+            const actualHeight = y + 60;
+            const finalCanvas = document.createElement('canvas');
+            finalCanvas.width = width;
+            finalCanvas.height = actualHeight;
+            finalCanvas.getContext('2d').drawImage(canvas, 0, 0);
+            
+            // Konversi ke Base64 PNG
+            const base64 = finalCanvas.toDataURL('image/png').split(',')[1];
+            
+            // URL Intent untuk RawBT
+            const rawbtUrl = `intent://print?data=${encodeURIComponent(base64)}&type=image/png#Intent;scheme=rawbt;package=ru.a402d.rawbt;end`;
+            
+            try {
+                window.location.href = rawbtUrl;
+            } catch(e) {
+                // Fallback ke print biasa jika RawBT tidak terinstall
+                if(confirm('Aplikasi RawBT tidak terdeteksi. Ingin cetak menggunakan browser?')) {
+                    window.print();
+                }
+            }
         }
 
         // 📊 REPORT FUNCTIONS
@@ -1016,9 +1068,12 @@
         function clearCart() { if(confirm('Hapus keranjang?')) { cart=[]; document.getElementById('discountInput').value=''; document.getElementById('cashInput').value=''; renderCart(); updateCartBadges(); updateTotals(); } }
         function newOrder() { cart=[]; document.getElementById('discountInput').value=''; document.getElementById('cashInput').value=''; renderCart(); updateCartBadges(); updateTotals(); }
 
+        // INIT
         window.onload = () => {
             auth.onAuthStateChanged(user => {
-                if(user) {}
+                if(user) {
+                    // Auto login logic can go here
+                }
             });
         };
     </script>
