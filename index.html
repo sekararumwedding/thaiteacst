@@ -186,7 +186,7 @@
             .category-filter { gap: 6px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 8px; -webkit-overflow-scrolling: touch; }
             .cat-btn { padding: 8px 14px; font-size: 0.8rem; white-space: nowrap; border-radius: 16px; }
             
-            /* Products grid mobile - FIXED! */
+            /* Products grid mobile */
             .products-grid { 
                 grid-template-columns: repeat(2, 1fr); 
                 gap: 10px; 
@@ -214,7 +214,7 @@
                 overflow: hidden;
             }
             .product-desc { 
-                display: none; /* Hide description on mobile for cleaner look */
+                display: none; 
             }
             .product-price { 
                 font-size: 1rem; 
@@ -683,7 +683,6 @@
             document.getElementById('total').textContent = formatRp(total);
             document.getElementById('itemCount').textContent = `${cart.reduce((s, i) => s + i.qty, 0)} item`;
             
-            // ✅ TOMBOL BAYAR AKTIF JIKA ADA ITEM & TOTAL > 0
             const btn = document.getElementById('checkoutBtn');
             btn.disabled = !(cart.length > 0 && total > 0);
             
@@ -694,7 +693,6 @@
             updateTotals();
         }
 
-        // ✅ CEK UANG KEMBALIAN (HANYA UI)
         function checkCashInput() {
             if(selectedPayment !== 'cash') return;
             
@@ -843,8 +841,8 @@
                     });
                 });
                 
-                // Cetak dengan RawBT (Android) atau fallback ke print biasa
-                printWithRawBT({ 
+                // Gunakan RawBT untuk Android, fallback print untuk desktop
+                await printWithRawBT({ 
                     items: cart, subtotal: sub, discount: disc, total: total, 
                     paymentMethod: selectedPayment, cashPaid: cash, change: change 
                 });
@@ -860,7 +858,7 @@
                 
                 setTimeout(() => {
                     btn.innerHTML = '<i class="fas fa-check-circle"></i> Bayar Sekarang';
-                    alert('✅ Transaksi berhasil! Struk sedang dicetak.');
+                    alert('✅ Transaksi berhasil! Struk telah dikirim ke printer.');
                 }, 500);
                 
             } catch(e) {
@@ -870,145 +868,197 @@
             }
         }
 
-        // 🖨️ FUNGSI CETAK STRUK DENGAN RAWBT
-        function printWithRawBT(trx) {
-            // Cek apakah perangkat mobile Android
+        // 🖨️ FUNGSI CETAK STRUK DENGAN RAWBT (VERSI STABIL)
+        async function printWithRawBT(trx) {
             const isAndroid = /Android/i.test(navigator.userAgent);
-            const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-            
-            if (!isAndroid && !isIOS) {
-                // Desktop: gunakan print biasa
-                window.print();
-                return;
-            }
-
-            // Buat canvas untuk menggambar struk
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            const width = 384; // Lebar standar printer thermal 58mm
-            canvas.width = width;
-            
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, width, 1000);
-            
-            ctx.fillStyle = '#000000';
-            ctx.textAlign = 'center';
-            
-            // Header
-            ctx.font = 'bold 26px monospace';
-            ctx.fillText('THAI TEA CST', width/2, 40);
-            
-            ctx.font = '16px monospace';
-            ctx.fillText(branchNames[currentBranch].replace('📍 ', ''), width/2, 65);
-            ctx.fillText(new Date().toLocaleString('id-ID'), width/2, 85);
-            
-            ctx.beginPath();
-            ctx.moveTo(20, 105);
-            ctx.lineTo(width-20, 105);
-            ctx.strokeStyle = '#000';
-            ctx.stroke();
-            
-            let y = 130;
-            ctx.textAlign = 'left';
-            ctx.font = '16px monospace';
-            
-            // Items
-            trx.items.forEach(item => {
-                const line1 = `${item.name} x${item.qty}`;
-                const line2 = formatRp(item.price * item.qty);
-                
-                ctx.fillText(line1, 20, y);
-                ctx.textAlign = 'right';
-                ctx.fillText(line2, width-20, y);
-                ctx.textAlign = 'left';
-                y += 28;
-            });
-            
-            ctx.beginPath();
-            ctx.moveTo(20, y);
-            ctx.lineTo(width-20, y);
-            ctx.stroke();
-            y += 20;
-            
-            // Subtotal
-            ctx.fillText('Subtotal', 20, y);
-            ctx.textAlign = 'right';
-            ctx.fillText(formatRp(trx.subtotal), width-20, y);
-            ctx.textAlign = 'left';
-            y += 28;
-            
-            // Diskon
-            if(trx.discount > 0) {
-                ctx.fillText('Diskon', 20, y);
-                ctx.textAlign = 'right';
-                ctx.fillText(`-${formatRp(trx.discount)}`, width-20, y);
-                ctx.textAlign = 'left';
-                y += 28;
-            }
-            
-            // Total
-            ctx.font = 'bold 22px monospace';
-            ctx.fillText('TOTAL', 20, y);
-            ctx.textAlign = 'right';
-            ctx.fillText(formatRp(trx.total), width-20, y);
-            y += 45;
-            
-            // Cash Details
-            if(trx.paymentMethod === 'cash') {
-                ctx.font = '16px monospace';
-                ctx.fillText('Bayar', 20, y);
-                ctx.textAlign = 'right';
-                ctx.fillText(formatRp(trx.cashPaid), width-20, y);
-                ctx.textAlign = 'left';
-                y += 28;
-                
-                ctx.fillText('Kembali', 20, y);
-                ctx.textAlign = 'right';
-                ctx.fillText(trx.change === 0 ? 'Uang Pas' : formatRp(trx.change), width-20, y);
-                y += 45;
-            }
-            
-            ctx.beginPath();
-            ctx.moveTo(20, y);
-            ctx.lineTo(width-20, y);
-            ctx.stroke();
-            y += 20;
-            
-            // Footer
-            ctx.font = '16px monospace';
-            ctx.textAlign = 'center';
-            ctx.fillText(`Metode: ${trx.paymentMethod.toUpperCase()}`, width/2, y);
-            y += 30;
-            ctx.font = 'bold 18px monospace';
-            ctx.fillText('✨ Terima Kasih! ✨', width/2, y);
-            y += 25;
-            ctx.font = '16px monospace';
-            ctx.fillText('Selamat Menikmati!', width/2, y);
-            y += 40;
-            ctx.font = '14px monospace';
-            ctx.fillText('PT CAHAYA SEJATI TEKNOLOGI', width/2, y);
-            
-            // Hitung tinggi aktual & crop canvas
-            const actualHeight = y + 60;
-            const finalCanvas = document.createElement('canvas');
-            finalCanvas.width = width;
-            finalCanvas.height = actualHeight;
-            finalCanvas.getContext('2d').drawImage(canvas, 0, 0);
-            
-            // Konversi ke Base64 PNG
-            const base64 = finalCanvas.toDataURL('image/png').split(',')[1];
-            
-            // URL Intent untuk RawBT
-            const rawbtUrl = `intent://print?data=${encodeURIComponent(base64)}&type=image/png#Intent;scheme=rawbt;package=ru.a402d.rawbt;end`;
             
             try {
-                window.location.href = rawbtUrl;
-            } catch(e) {
-                // Fallback ke print biasa jika RawBT tidak terinstall
-                if(confirm('Aplikasi RawBT tidak terdeteksi. Ingin cetak menggunakan browser?')) {
+                // 1. Generate gambar struk dulu
+                const imageData = await generateReceiptImage(trx);
+                
+                if (!isAndroid) {
+                    // Desktop/iOS: print biasa
                     window.print();
+                    return;
                 }
+
+                // 2. Buka RawBT dengan data gambar
+                const rawbtUrl = `intent://print?data=${encodeURIComponent(imageData)}&type=image/png#Intent;scheme=rawbt;package=ru.a402d.rawbt;end`;
+                
+                // Cek apakah RawBT terinstall
+                try {
+                    window.location.href = rawbtUrl;
+                    
+                    // Fallback setelah 3 detik jika tidak ada respon
+                    setTimeout(() => {
+                        if(confirm('RawBT tidak merespon. Pastikan aplikasi RawBT sudah terinstall. Ingin coba print via browser?')) {
+                            const img = document.createElement('img');
+                            img.src = 'image/png;base64,' + imageData;
+                            const w = window.open('', '_blank');
+                            w.document.write('<img src="' + img.src + '" onload="window.print()" style="width:100%">');
+                        }
+                    }, 3000);
+                    
+                } catch(e) {
+                    console.error('RawBT error:', e);
+                    alert('Error membuka RawBT: ' + e.message);
+                }
+                
+            } catch(error) {
+                console.error('Print error:', error);
+                alert('Gagal membuat struk: ' + error.message);
+                // Fallback ke print biasa
+                window.print();
             }
+        }
+
+        // 🖼️ FUNGSI GENERATE GAMBAR STRUK (CANVAS)
+        function generateReceiptImage(trx) {
+            return new Promise((resolve, reject) => {
+                try {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const width = 384; // Lebar thermal 58mm
+                    let height = 400; // Tinggi awal
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    
+                    // Background putih
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, width, height);
+                    
+                    ctx.fillStyle = '#000000';
+                    ctx.textAlign = 'center';
+                    ctx.font = 'bold 24px monospace';
+                    
+                    let y = 40;
+                    
+                    // Header
+                    ctx.fillText('THAI TEA CST', width/2, y);
+                    y += 30;
+                    
+                    ctx.font = '14px monospace';
+                    ctx.fillText(branchNames[currentBranch].replace('📍 ', ''), width/2, y);
+                    y += 25;
+                    ctx.fillText(new Date().toLocaleString('id-ID'), width/2, y);
+                    y += 35;
+                    
+                    // Garis putus-putus
+                    ctx.setLineDash([5, 5]);
+                    ctx.beginPath();
+                    ctx.moveTo(20, y);
+                    ctx.lineTo(width-20, y);
+                    ctx.strokeStyle = '#000';
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    y += 20;
+                    
+                    // Items
+                    ctx.textAlign = 'left';
+                    ctx.font = '14px monospace';
+                    trx.items.forEach(item => {
+                        ctx.fillText(item.name + ' x' + item.qty, 20, y);
+                        ctx.textAlign = 'right';
+                        ctx.fillText(formatRp(item.price * item.qty), width-20, y);
+                        ctx.textAlign = 'left';
+                        y += 24;
+                    });
+                    
+                    // Garis putus-putus
+                    ctx.setLineDash([5, 5]);
+                    ctx.beginPath();
+                    ctx.moveTo(20, y);
+                    ctx.lineTo(width-20, y);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    y += 20;
+                    
+                    // Subtotal
+                    ctx.font = '14px monospace';
+                    ctx.fillText('Subtotal', 20, y);
+                    ctx.textAlign = 'right';
+                    ctx.fillText(formatRp(trx.subtotal), width-20, y);
+                    ctx.textAlign = 'left';
+                    y += 28;
+                    
+                    // Diskon
+                    if(trx.discount > 0) {
+                        ctx.fillText('Diskon', 20, y);
+                        ctx.textAlign = 'right';
+                        ctx.fillText('-' + formatRp(trx.discount), width-20, y);
+                        ctx.textAlign = 'left';
+                        y += 28;
+                    }
+                    
+                    // Total
+                    ctx.font = 'bold 20px monospace';
+                    ctx.fillText('TOTAL', 20, y);
+                    ctx.textAlign = 'right';
+                    ctx.fillText(formatRp(trx.total), width-20, y);
+                    y += 35;
+                    
+                    // Pembayaran
+                    if(trx.paymentMethod === 'cash') {
+                        ctx.font = '14px monospace';
+                        ctx.textAlign = 'left';
+                        ctx.fillText('Bayar', 20, y);
+                        ctx.textAlign = 'right';
+                        ctx.fillText(formatRp(trx.cashPaid), width-20, y);
+                        y += 24;
+                        
+                        ctx.textAlign = 'left';
+                        ctx.fillText('Kembali', 20, y);
+                        ctx.textAlign = 'right';
+                        ctx.fillText(trx.change === 0 ? 'Uang Pas' : formatRp(trx.change), width-20, y);
+                        y += 35;
+                    }
+                    
+                    // Garis putus-putus
+                    ctx.setLineDash([5, 5]);
+                    ctx.beginPath();
+                    ctx.moveTo(20, y);
+                    ctx.lineTo(width-20, y);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    y += 20;
+                    
+                    // Footer
+                    ctx.textAlign = 'center';
+                    ctx.font = '14px monospace';
+                    ctx.fillText('Metode: ' + trx.paymentMethod.toUpperCase(), width/2, y);
+                    y += 30;
+                    
+                    ctx.font = 'bold 16px monospace';
+                    ctx.fillText('✨ Terima Kasih! ✨', width/2, y);
+                    y += 25;
+                    
+                    ctx.font = '14px monospace';
+                    ctx.fillText('Selamat Menikmati!', width/2, y);
+                    y += 35;
+                    
+                    ctx.font = '12px monospace';
+                    ctx.fillText('PT CAHAYA SEJATI TEKNOLOGI', width/2, y);
+                    
+                    // Hitung tinggi akhir & crop
+                    const finalHeight = y + 50;
+                    const finalCanvas = document.createElement('canvas');
+                    finalCanvas.width = width;
+                    finalCanvas.height = finalHeight;
+                    finalCanvas.getContext('2d').drawImage(canvas, 0, 0, width, finalHeight, 0, 0, width, finalHeight);
+                    
+                    // Konversi ke base64
+                    const base64 = finalCanvas.toDataURL('image/png').split(',')[1];
+                    
+                    // Tunggu sebentar untuk memastikan canvas selesai
+                    setTimeout(() => {
+                        resolve(base64);
+                    }, 100);
+                    
+                } catch(error) {
+                    reject(error);
+                }
+            });
         }
 
         // 📊 REPORT FUNCTIONS
