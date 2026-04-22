@@ -19,7 +19,6 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: linear-gradient(135deg, #FFF8F0 0%, #FFEBE0 100%); color: var(--dark); min-height: 100vh; overflow-x: hidden; }
         
-        /* LOGIN SCREEN */
         .login-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(44,62,80,0.95); display: flex; align-items: center; justify-content: center; z-index: 9999; backdrop-filter: blur(5px); }
         .login-box { background: white; padding: 35px; border-radius: var(--radius); width: 90%; max-width: 420px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); text-align: center; }
         .login-box h2 { color: var(--primary-dark); margin-bottom: 10px; }
@@ -34,7 +33,6 @@
         .btn:disabled { opacity: 0.6; cursor: not-allowed; }
         .error-msg { background: #FADBD8; color: var(--danger); padding: 10px; border-radius: 8px; margin-bottom: 15px; display: none; font-size: 0.9rem; }
         
-        /* MAIN APP */
         .app-container { max-width: 1400px; margin: 0 auto; padding: 20px; display: none; grid-template-columns: 1fr 400px; gap: 25px; }
         .app-container.active { display: grid; }
         
@@ -561,7 +559,7 @@
             
             container.innerHTML = cart.map(item => `
                 <div class="cart-item">
-                    <div class="cart-item-img"><img src="${item.img}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>🧋</text></svg>'"></div>
+                    <div class="cart-item-img"><img src="${item.img}" onerror="this.src='image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>🧋</text></svg>'"></div>
                     <div class="cart-item-info">
                         <div class="cart-item-name">${item.name}</div>
                         <div class="cart-item-price">${formatRp(item.price)}</div>
@@ -754,7 +752,6 @@
                     });
                 });
                 
-                // Print struk
                 printReceipt({ 
                     items: cart, subtotal: sub, discount: disc, total: total, 
                     paymentMethod: selectedPayment, cashPaid: cash, change: change 
@@ -781,23 +778,115 @@
             }
         }
 
-        // 🖨️ FUNGSI PRINT SEDERHANA (TANPA GAMBAR)
+        // 🖨️ FUNGSI PRINT YANG DIPERBAIKI
         function printReceipt(trx) {
             const isAndroid = /Android/i.test(navigator.userAgent);
+            const date = new Date().toLocaleString('id-ID');
+            const branch = branchNames[currentBranch];
+            
+            // Buat HTML struk untuk desktop
+            const receiptHTML = `
+                <div style="font-family: 'Courier New', monospace; font-size: 12px; max-width: 384px; margin: 0 auto; padding: 10px;">
+                    <div style="text-align: center; border-bottom: 1px dashed #000; padding-bottom: 10px; margin-bottom: 10px;">
+                        <h2 style="margin: 0; font-size: 16px;">THAI TEA CST</h2>
+                        <p style="margin: 5px 0; font-size: 11px;">${branch.replace('📍 ', '')}</p>
+                        <p style="margin: 5px 0; font-size: 11px;">${date}</p>
+                    </div>
+                    
+                    <div style="margin-bottom: 10px;">
+                        ${trx.items.map(item => `
+                            <div style="display: flex; justify-content: space-between; margin: 5px 0;">
+                                <span>${item.name} x${item.qty}</span>
+                                <span>${formatRp(item.price * item.qty)}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <div style="border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 10px 0; margin: 10px 0;">
+                        <div style="display: flex; justify-content: space-between; margin: 5px 0;">
+                            <span>Subtotal</span>
+                            <span>${formatRp(trx.subtotal)}</span>
+                        </div>
+                        ${trx.discount > 0 ? `
+                        <div style="display: flex; justify-content: space-between; margin: 5px 0;">
+                            <span>Diskon</span>
+                            <span>-${formatRp(trx.discount)}</span>
+                        </div>
+                        ` : ''}
+                        <div style="display: flex; justify-content: space-between; margin: 5px 0; font-weight: bold; font-size: 14px;">
+                            <span>TOTAL</span>
+                            <span>${formatRp(trx.total)}</span>
+                        </div>
+                    </div>
+                    
+                    ${trx.paymentMethod === 'cash' ? `
+                    <div style="margin-bottom: 10px;">
+                        <div style="display: flex; justify-content: space-between; margin: 5px 0;">
+                            <span>Bayar</span>
+                            <span>${formatRp(trx.cashPaid)}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin: 5px 0;">
+                            <span>Kembali</span>
+                            <span>${trx.change === 0 ? 'Uang Pas' : formatRp(trx.change)}</span>
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    <div style="text-align: center; margin-top: 15px; border-top: 1px dashed #000; padding-top: 10px;">
+                        <p style="margin: 5px 0;">Metode: ${trx.paymentMethod.toUpperCase()}</p>
+                        <p style="margin: 10px 0; font-weight: bold; font-size: 13px;">✨ Terima Kasih! ✨</p>
+                        <p style="margin: 5px 0; font-style: italic;">Selamat Menikmati!</p>
+                        <p style="margin: 15px 0; font-size: 10px;">PT CAHAYA SEJATI TEKNOLOGI</p>
+                    </div>
+                </div>
+            `;
             
             if (!isAndroid) {
-                // Desktop: print biasa
-                window.print();
+                // DESKTOP: Buka window print baru dengan konten
+                const printWindow = window.open('', '_blank', 'width=400,height=600');
+                printWindow.document.write(`
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>Struk Pembayaran</title>
+                        <style>
+                            @media print {
+                                @page { margin: 0; size: 58mm auto; }
+                                body { margin: 0; padding: 5px; }
+                            }
+                            body { 
+                                font-family: 'Courier New', monospace; 
+                                margin: 0; 
+                                padding: 10px;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        ${receiptHTML}
+                        <script>
+                            window.onload = function() {
+                                setTimeout(function() {
+                                    window.print();
+                                    setTimeout(function() {
+                                        window.close();
+                                    }, 1000);
+                                }, 250);
+                            };
+                        <\/script>
+                    </body>
+                    </html>
+                `);
+                printWindow.document.close();
                 return;
             }
 
-            // Buat teks struk sederhana
-            let receiptText = `
-THAI TEA CST
-${branchNames[currentBranch].replace('📍 ', '')}
-${new Date().toLocaleString('id-ID')}
---------------------------------
+            // ANDROID: RawBT dengan format teks
+            let receiptText = `THAI TEA CST
+${branch.replace('📍 ', '')}
+${date}
+================================
 `;
+            
             trx.items.forEach(item => {
                 receiptText += `${item.name} x${item.qty}
 `;
@@ -805,24 +894,25 @@ ${new Date().toLocaleString('id-ID')}
 `;
             });
             
-            receiptText += `--------------------------------
+            receiptText += `================================
 Subtotal: ${formatRp(trx.subtotal)}
 `;
+            
             if(trx.discount > 0) {
                 receiptText += `Diskon: -${formatRp(trx.discount)}
 `;
             }
+            
             receiptText += `TOTAL: ${formatRp(trx.total)}
 `;
             
             if(trx.paymentMethod === 'cash') {
                 receiptText += `Bayar: ${formatRp(trx.cashPaid)}
-`;
-                receiptText += `Kembali: ${trx.change === 0 ? 'Uang Pas' : formatRp(trx.change)}
+Kembali: ${trx.change === 0 ? 'Uang Pas' : formatRp(trx.change)}
 `;
             }
             
-            receiptText += `--------------------------------
+            receiptText += `================================
 Metode: ${trx.paymentMethod.toUpperCase()}
 
 ✨ Terima Kasih! ✨
@@ -831,17 +921,27 @@ Selamat Menikmati!
 PT CAHAYA SEJATI TEKNOLOGI
 `;
 
-            // Encode ke base64
-            const base64Text = btoa(unescape(encodeURIComponent(receiptText)));
-            
-            // Buka RawBT dengan teks
-            const rawbtUrl = `intent://print?text=${encodeURIComponent(receiptText)}#Intent;scheme=rawbt;package=ru.a402d.rawbt;end`;
-            
+            // Coba buka RawBT
             try {
-                window.location.href = rawbtUrl;
+                const intentUrl = `intent://print/rawbt?${encodeURIComponent(receiptText)}#Intent;scheme=rawbt;package=ru.a402d.rawbt;S.text=${encodeURIComponent(receiptText)};end`;
+                
+                window.location.href = intentUrl;
+                
+                setTimeout(() => {
+                    if(confirm('RawBT tidak terbuka. Ingin simpan sebagai file teks?')) {
+                        const blob = new Blob([receiptText], { type: 'text/plain' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `struk_${Date.now()}.txt`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                    }
+                }, 2000);
+                
             } catch(e) {
                 console.error('RawBT error:', e);
-                alert('Gagal membuka RawBT. Pastikan aplikasi sudah terinstall.');
+                alert('Gagal membuka RawBT: ' + e.message);
             }
         }
 
