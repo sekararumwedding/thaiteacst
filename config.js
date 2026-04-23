@@ -1,6 +1,6 @@
 // Firebase Configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyDt5tMCf480mDGGeDd7liKuGt3zS2_M5OI",
+  apiKey: "AIzaSyAxd7pUkloythTNPTMovUrMiC_O2BRG1t0",
   authDomain: "thai-tea-cst-ac9db.firebaseapp.com",
   projectId: "thai-tea-cst-ac9db",
   storageBucket: "thai-tea-cst-ac9db.firebasestorage.app",
