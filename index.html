@@ -5,370 +5,668 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Thai Tea CST</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
+    * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: #f5f5f5;
-      color: #333;
+      background: #f2e6db;
+      color: #222;
     }
 
-    .container {
-      max-width: 520px;
-      margin: 0 auto;
-      padding: 16px;
+    :root {
+      --primary: #e68a1f;
+      --primary-dark: #cc7410;
+      --soft: #f7efe8;
+      --card: #ffffff;
+      --muted: #777;
+      --line: #ead9ca;
+      --danger: #ef5350;
+      --success: #3cb371;
     }
 
-    .card {
+    .hidden { display: none !important; }
+
+    .login-page {
+      min-height: 100vh;
+      background: #34495e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 560px;
       background: #fff;
+      border-radius: 24px;
+      padding: 34px 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+    }
+
+    .login-logo {
+      text-align: center;
+      color: var(--primary-dark);
+      font-size: 58px;
+      line-height: 1;
+    }
+
+    .login-title {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 28px;
+      font-weight: 700;
+      color: #d45f00;
+    }
+
+    .login-subtitle {
+      text-align: center;
+      color: #95a5a6;
+      margin-top: 8px;
+      margin-bottom: 26px;
+      font-size: 15px;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 700;
+      color: #2c3e50;
+      font-size: 15px;
+    }
+
+    .form-input, .form-select {
+      width: 100%;
+      border: 2px solid #ececec;
       border-radius: 16px;
+      padding: 16px 18px;
+      font-size: 16px;
+      outline: none;
+      background: #fff;
+    }
+
+    .form-input:focus, .form-select:focus {
+      border-color: var(--primary);
+    }
+
+    .btn {
+      border: none;
+      border-radius: 12px;
+      padding: 13px 16px;
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .btn:hover { opacity: 0.95; }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .btn-secondary {
+      background: #f1f1f1;
+      color: #222;
+    }
+
+    .btn-danger {
+      background: #f3f3f3;
+      color: #222;
+    }
+
+    .btn-full {
+      width: 100%;
       padding: 16px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      border-radius: 16px;
+      font-size: 18px;
+    }
+
+    .footer-note {
+      margin-top: 18px;
+      text-align: center;
+      color: #95a5a6;
+      font-size: 14px;
+    }
+
+    .app {
+      max-width: 1480px;
+      margin: 0 auto;
+      padding: 12px;
+    }
+
+    .topbar {
+      background: #fff;
+      border-radius: 12px;
+      padding: 10px 14px;
+      display: grid;
+      grid-template-columns: 1.1fr 1fr auto auto;
+      gap: 12px;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
       margin-bottom: 16px;
     }
 
-    .header {
+    .brand {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
     }
 
-    .logo {
-      width: 52px;
-      height: 52px;
+    .brand-icon {
+      width: 34px;
+      height: 34px;
       border-radius: 50%;
-      background: #e58a1f;
+      background: var(--primary);
       color: white;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 24px;
+      font-size: 18px;
       font-weight: bold;
     }
 
-    .title h1 {
-      margin: 0;
+    .brand-title {
       font-size: 28px;
-      color: #c76000;
+      color: #d45f00;
+      font-weight: 700;
+      line-height: 1.1;
     }
 
-    .title p {
-      margin: 4px 0 0;
-      color: #888;
+    .brand-sub {
+      color: #999;
+      font-size: 12px;
+    }
+
+    .branch-box {
+      background: #f6ede6;
+      border-radius: 12px;
+      padding: 10px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .branch-left {
+      min-width: 0;
+    }
+
+    .branch-user {
+      font-weight: 700;
       font-size: 14px;
     }
 
-    .info-box {
-      margin-top: 16px;
-      background: #f6ede5;
-      border-radius: 12px;
-      padding: 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    .branch-name {
+      color: #777;
+      font-size: 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 240px;
     }
 
-    .info-box .left {
-      line-height: 1.4;
-    }
-
-    .info-box .left strong {
-      display: block;
-    }
-
-    .btn-row {
-      margin-top: 16px;
-      display: flex;
-      gap: 10px;
-    }
-
-    button {
-      border: none;
-      border-radius: 10px;
-      padding: 12px 14px;
-      cursor: pointer;
-      font-size: 15px;
-      font-weight: bold;
-    }
-
-    .btn-secondary {
-      flex: 1;
-      background: #f0f0f0;
-      color: #222;
-    }
-
-    .btn-primary {
-      flex: 1;
-      background: #e58a1f;
+    .mini-icon-btn {
+      background: #f06b52;
       color: white;
+      border: none;
+      border-radius: 8px;
+      width: 34px;
+      height: 34px;
+      cursor: pointer;
+      font-weight: 700;
     }
 
-    .section-title {
+    .top-btn {
+      min-width: 110px;
+    }
+
+    .main-layout {
+      display: grid;
+      grid-template-columns: 2.2fr 0.95fr;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      padding: 14px;
+    }
+
+    .section-head {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--line);
     }
 
-    .section-title h2 {
+    .section-head h2 {
       margin: 0;
-      font-size: 22px;
+      font-size: 28px;
+    }
+
+    .muted {
+      color: #7d8a92;
+      font-size: 13px;
     }
 
     .tabs {
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
 
     .tab {
-      background: #f2e9e1;
-      color: #333;
-      padding: 10px 14px;
-      border-radius: 20px;
+      padding: 8px 12px;
+      border-radius: 16px;
+      background: #f3e8df;
       cursor: pointer;
-      font-weight: bold;
-      font-size: 14px;
+      font-size: 12px;
+      font-weight: 700;
     }
 
     .tab.active {
-      background: #e58a1f;
-      color: white;
+      background: var(--primary);
+      color: #fff;
     }
 
-    .grid {
+    .product-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 14px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
     }
 
     .product {
-      background: #fff;
-      border-radius: 12px;
+      border: 1px solid #ececec;
+      border-radius: 10px;
       overflow: hidden;
-      box-shadow: 0 1px 8px rgba(0,0,0,0.08);
+      background: #fff;
+      display: flex;
+      flex-direction: column;
     }
 
     .product img {
       width: 100%;
-      height: 130px;
+      aspect-ratio: 1 / 1;
       object-fit: cover;
-      display: block;
       background: #eee;
     }
 
     .product-body {
       padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex: 1;
     }
 
     .product-name {
-      font-weight: bold;
-      font-size: 18px;
-      min-height: 44px;
+      font-weight: 700;
+      font-size: 16px;
+      line-height: 1.25;
+      min-height: 40px;
     }
 
-    .stock {
-      color: #888;
-      font-size: 13px;
-      margin-top: 4px;
+    .product-desc {
+      font-size: 11px;
+      color: #9b9b9b;
+      min-height: 28px;
     }
 
-    .price {
-      color: #d86b00;
-      font-size: 18px;
-      font-weight: bold;
-      margin: 10px 0;
+    .product-stock {
+      font-size: 12px;
+      color: #999;
     }
 
-    .product button {
+    .product-price {
+      color: #e06a00;
+      font-size: 24px;
+      font-weight: 700;
+      margin-top: 2px;
+    }
+
+    .add-btn {
+      margin-top: auto;
       width: 100%;
-      background: #e58a1f;
+      background: var(--primary);
       color: white;
-      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      padding: 9px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .cart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .cart-header h3 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    .clear-btn {
+      padding: 6px 10px;
+      font-size: 12px;
       border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      background: #f4f4f4;
+    }
+
+    .cart-empty {
+      text-align: center;
+      color: #bbb;
+      padding: 34px 0;
+      font-size: 15px;
     }
 
     .cart-item {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
       border-bottom: 1px solid #eee;
       padding: 10px 0;
     }
 
-    .cart-item:last-child {
-      border-bottom: none;
+    .cart-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
     }
 
     .cart-name {
-      font-weight: bold;
+      font-weight: 700;
+      font-size: 14px;
     }
 
-    .cart-sub {
-      color: #777;
-      font-size: 13px;
+    .cart-meta {
+      color: #888;
+      font-size: 12px;
       margin-top: 4px;
     }
 
-    .qty-box {
+    .qty-row {
       display: flex;
-      align-items: center;
       gap: 8px;
+      align-items: center;
       margin-top: 8px;
     }
 
     .qty-btn {
       width: 28px;
       height: 28px;
-      border-radius: 50%;
-      background: #e58a1f;
-      color: white;
-      padding: 0;
+      border: none;
+      border-radius: 6px;
+      background: var(--primary);
+      color: #fff;
       font-size: 18px;
-      line-height: 1;
+      cursor: pointer;
     }
 
-    .empty {
-      text-align: center;
-      color: #888;
-      padding: 20px 0;
+    .summary {
+      margin-top: 12px;
+      border-top: 1px solid var(--line);
+      padding-top: 10px;
     }
 
-    .summary-line {
+    .line {
       display: flex;
       justify-content: space-between;
-      margin: 8px 0;
-      font-size: 15px;
+      gap: 8px;
+      margin: 10px 0;
+      font-size: 14px;
     }
 
-    .summary-line.total {
-      font-size: 18px;
-      font-weight: bold;
-      color: #c76000;
-      margin-top: 14px;
-    }
-
-    .payment-box {
-      margin-top: 14px;
-    }
-
-    .payment-box input {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      font-size: 16px;
-      margin-top: 8px;
-    }
-
-    .footer-actions {
-      display: flex;
-      gap: 10px;
+    .line.total {
+      font-size: 28px;
+      color: #e06a00;
+      font-weight: 700;
       margin-top: 16px;
     }
 
-    .footer-actions button {
+    .payment-title {
+      margin-top: 16px;
+      font-size: 13px;
+      color: #555;
+      font-weight: 700;
+    }
+
+    .payment-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 10px;
+      margin-bottom: 12px;
+    }
+
+    .pay-btn {
+      border: 1px solid #ececec;
+      background: #fff;
+      border-radius: 8px;
+      padding: 12px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .pay-btn.active {
+      border-color: var(--primary);
+      color: var(--primary-dark);
+      background: #fffaf4;
+    }
+
+    .money-box label {
+      display: block;
+      color: var(--success);
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .money-box input {
+      width: 100%;
+      border: 1px solid #b8ead0;
+      background: #f4fff8;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 16px;
+      outline: none;
+    }
+
+    .pay-now {
+      margin-top: 12px;
+      font-size: 13px;
+      color: #777;
+    }
+
+    .cart-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .cart-actions .btn {
       flex: 1;
     }
 
-    .btn-danger {
-      background: #efefef;
-      color: #333;
-    }
-
-    .btn-print {
-      background: #e58a1f;
-      color: white;
-    }
-
-    .small-note {
-      margin-top: 10px;
-      color: #888;
-      font-size: 12px;
+    .cart-note {
+      margin-top: 12px;
       text-align: center;
+      color: #999;
+      font-size: 11px;
+    }
+
+    @media (max-width: 1100px) {
+      .product-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+      .topbar {
+        grid-template-columns: 1fr;
+      }
+      .main-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .login-card {
+        border-radius: 18px;
+        padding: 24px 18px;
+      }
+      .brand-title { font-size: 22px; }
+      .section-head h2, .cart-header h3 { font-size: 16px; }
+      .product-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .product-price {
+        font-size: 15px;
+      }
+      .line.total {
+        font-size: 20px;
+      }
+      .top-btn {
+        min-width: 0;
+      }
+      .cart-actions {
+        flex-direction: column;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="card">
-      <div class="header">
-        <div class="logo">☕</div>
-        <div class="title">
-          <h1>THAI TEA CST</h1>
-          <p>Point of Sale System</p>
+
+  <div id="loginPage" class="login-page">
+    <div class="login-card">
+      <div class="login-logo">☕</div>
+      <div class="login-title">THAI TEA CST</div>
+      <div class="login-subtitle">Sistem Kasir & Inventory Digital</div>
+
+      <div class="form-group">
+        <label class="form-label">📧 Email Kasir</label>
+        <input id="emailInput" class="form-input" type="email" placeholder="kasir@thaiteacst.com" value="kasir@thaiteacst.com" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">🔒 Password</label>
+        <input id="passwordInput" class="form-input" type="password" placeholder="Masukkan password" value="12345678" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">🏬 Cabang (Otomatis)</label>
+        <input id="branchInput" class="form-input" type="text" value="Sport Center Bandara Soetta" readonly />
+      </div>
+
+      <button class="btn btn-primary btn-full" onclick="login()">➡ Masuk Sistem</button>
+
+      <div class="footer-note">© PT CAHAYA SEJATI TEKNOLOGI</div>
+    </div>
+  </div>
+
+  <div id="appPage" class="app hidden">
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand-icon">☕</div>
+        <div>
+          <div class="brand-title">THAI TEA CST</div>
+          <div class="brand-sub">Point of Sale System</div>
         </div>
       </div>
 
-      <div class="info-box">
-        <div class="left">
-          <strong id="kasirName">seno1</strong>
-          <span>Sport Center Bandara Soetta</span>
+      <div class="branch-box">
+        <div class="branch-left">
+          <div class="branch-user" id="kasirDisplay">seno1</div>
+          <div class="branch-name" id="branchDisplay">Sport Center Bandara Soetta</div>
         </div>
-        <button class="btn-primary" onclick="resetTransaksi()">↻</button>
+        <button class="mini-icon-btn" onclick="resetTransaksi()">↻</button>
       </div>
 
-      <div class="btn-row">
-        <button class="btn-secondary" onclick="lihatLaporan()">Laporan</button>
-        <button class="btn-primary" onclick="scrollKeMenu()">+ Order Baru</button>
-      </div>
+      <button class="btn btn-secondary top-btn" onclick="lihatLaporan()">📑 Laporan</button>
+      <button class="btn btn-primary top-btn" onclick="scrollKeMenu()">+ Order Baru</button>
     </div>
 
-    <div class="card" id="menuSection">
-      <div class="section-title">
-        <h2>☰ Menu</h2>
-        <span id="itemCount">0 item</span>
+    <div class="main-layout">
+      <div class="card">
+        <div class="section-head">
+          <h2>☰ Menu</h2>
+          <span class="muted" id="itemCount">0 item</span>
+        </div>
+
+        <div class="tabs">
+          <div class="tab active" onclick="filterMenu('Semua', this)">Semua</div>
+          <div class="tab" onclick="filterMenu('Premium', this)">Premium</div>
+          <div class="tab" onclick="filterMenu('Original', this)">Original</div>
+          <div class="tab" onclick="filterMenu('Topping', this)">Topping</div>
+        </div>
+
+        <div class="product-grid" id="productGrid"></div>
       </div>
 
-      <div class="tabs">
-        <div class="tab active" onclick="filterMenu('Semua', this)">Semua</div>
-        <div class="tab" onclick="filterMenu('Premium', this)">Premium</div>
-        <div class="tab" onclick="filterMenu('Original', this)">Original</div>
-        <div class="tab" onclick="filterMenu('Topping', this)">Topping</div>
-      </div>
-
-      <div class="grid" id="productGrid"></div>
-    </div>
-
-    <div class="card">
-      <div class="section-title">
-        <h2>🛒 Keranjang</h2>
-      </div>
-
-      <div id="cartContainer" class="empty">Keranjang kosong</div>
-
-      <div id="summaryBox" style="display:none;">
-        <div class="summary-line">
-          <span>Subtotal</span>
-          <span id="subtotalText">Rp 0</span>
-        </div>
-        <div class="summary-line total">
-          <span>Total</span>
-          <span id="totalText">Rp 0</span>
+      <div class="card">
+        <div class="cart-header">
+          <h3>🛒 Keranjang</h3>
+          <button class="clear-btn" onclick="kosongkanKeranjang()">🗑 Hapus</button>
         </div>
 
-        <div class="payment-box">
-          <label for="bayarInput"><strong>Nominal Bayar</strong></label>
-          <input type="number" id="bayarInput" placeholder="Masukkan uang bayar" />
-        </div>
+        <div id="cartContainer" class="cart-empty">Keranjang kosong</div>
 
-        <div class="summary-line">
-          <span>Kembalian</span>
-          <span id="kembalianText">Rp 0</span>
-        </div>
+        <div id="summarySection">
+          <div class="line">
+            <span>Subtotal</span>
+            <span id="subtotalText">Rp 0</span>
+          </div>
 
-        <div class="footer-actions">
-          <button class="btn-danger" onclick="kosongkanKeranjang()">Kosongkan</button>
-          <button class="btn-print" onclick="printPesanan()">Print Struk</button>
-        </div>
-      </div>
+          <div class="line">
+            <span>🏷 Diskon</span>
+            <span>Rp 0</span>
+          </div>
 
-      <div class="small-note">
-        Print hanya bekerja di dalam aplikasi Android.
+          <div class="line total">
+            <span>Total</span>
+            <span id="totalText">Rp 0</span>
+          </div>
+
+          <div class="payment-title">💳 Pembayaran</div>
+          <div class="payment-grid">
+            <button class="pay-btn active" onclick="pilihPembayaran('Tunai', this)">💵 Tunai</button>
+            <button class="pay-btn" onclick="pilihPembayaran('QRIS', this)">🔳 QRIS</button>
+            <button class="pay-btn" onclick="pilihPembayaran('Transfer', this)">↔ Transfer</button>
+            <button class="pay-btn" onclick="pilihPembayaran('E-Wallet', this)">🟧 E-Wallet</button>
+          </div>
+
+          <div class="money-box">
+            <label>💵 Uang Diterima</label>
+            <input id="bayarInput" type="number" placeholder="0" value="0" oninput="updateKembalian()" />
+          </div>
+
+          <div class="line">
+            <span>Kembalian</span>
+            <span id="kembalianText">Rp 0</span>
+          </div>
+
+          <div class="pay-now">○ Bayar Sekarang</div>
+
+          <div class="cart-actions">
+            <button class="btn btn-danger" onclick="resetTransaksi()">Reset</button>
+            <button class="btn btn-primary" onclick="printPesanan()">Print Struk</button>
+          </div>
+
+          <div class="cart-note">Print hanya bekerja di dalam aplikasi Android.</div>
+        </div>
       </div>
     </div>
   </div>
@@ -379,84 +677,86 @@
         id: 1,
         nama: "Premium Thai Tea",
         kategori: "Premium",
+        deskripsi: "With cream cheese & shredded cheese",
         harga: 20000,
         stok: 48,
-        gambar: "https://images.unsplash.com/photo-1558857563-b371033873b8?auto=format&fit=crop&w=500&q=80"
+        gambar: "https://images.unsplash.com/photo-1558857563-b371033873b8?auto=format&fit=crop&w=600&q=80"
       },
       {
         id: 2,
         nama: "Premium Matcha",
         kategori: "Premium",
+        deskripsi: "With cream cheese & shredded cheese",
         harga: 25000,
         stok: 47,
-        gambar: "https://images.unsplash.com/photo-1515823064-d6e0c04616a7?auto=format&fit=crop&w=500&q=80"
+        gambar: "https://images.unsplash.com/photo-1515823064-d6e0c04616a7?auto=format&fit=crop&w=600&q=80"
       },
       {
         id: 3,
         nama: "Original Thai Tea",
         kategori: "Original",
+        deskripsi: "Classic thai tea",
         harga: 15000,
         stok: 40,
-        gambar: "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?auto=format&fit=crop&w=500&q=80"
+        gambar: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=600&q=80"
       },
       {
         id: 4,
         nama: "Green Tea",
         kategori: "Original",
+        deskripsi: "Fresh green tea",
         harga: 16000,
         stok: 35,
-        gambar: "https://images.unsplash.com/photo-1499636136210-6f4ee915583e?auto=format&fit=crop&w=500&q=80"
+        gambar: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=600&q=80"
       },
       {
         id: 5,
         nama: "Boba",
         kategori: "Topping",
+        deskripsi: "Extra topping",
         harga: 5000,
         stok: 60,
-        gambar: "https://images.unsplash.com/photo-1525385133512-2f3bdd039054?auto=format&fit=crop&w=500&q=80"
+        gambar: "https://images.unsplash.com/photo-1525385133512-2f3bdd039054?auto=format&fit=crop&w=600&q=80"
       },
       {
         id: 6,
         nama: "Cheese Foam",
         kategori: "Topping",
+        deskripsi: "Extra topping",
         harga: 7000,
         stok: 30,
-        gambar: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=500&q=80"
+        gambar: "https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&w=600&q=80"
       }
     ];
 
     let filterAktif = "Semua";
     let cart = [];
+    let metodePembayaran = "Tunai";
     let kasir = "seno1";
+    let cabang = "Sport Center Bandara Soetta";
 
     function formatRupiah(angka) {
-      return "Rp " + angka.toLocaleString("id-ID");
+      return "Rp " + Number(angka).toLocaleString("id-ID");
     }
 
-    function renderMenu() {
-      const productGrid = document.getElementById("productGrid");
-      productGrid.innerHTML = "";
+    function login() {
+      const email = document.getElementById("emailInput").value.trim();
+      const password = document.getElementById("passwordInput").value.trim();
 
-      const filtered = filterAktif === "Semua"
-        ? menuData
-        : menuData.filter(item => item.kategori === filterAktif);
+      if (!email || !password) {
+        alert("Email dan password harus diisi.");
+        return;
+      }
 
-      filtered.forEach(item => {
-        const el = document.createElement("div");
-        el.className = "product";
-        el.innerHTML = `
-          <img src="${item.gambar}" alt="${item.nama}" />
-          <div class="product-body">
-            <div class="product-name">${item.nama}</div>
-            <div class="stock">Stok: ${item.stok}</div>
-            <div class="price">${formatRupiah(item.harga)}</div>
-            <button onclick="tambahKeKeranjang(${item.id})">🛒 Tambah</button>
-          </div>
-        `;
-        productGrid.appendChild(el);
-      });
+      kasir = email.split("@")[0] || "kasir";
+      document.getElementById("kasirDisplay").innerText = kasir;
+      document.getElementById("branchDisplay").innerText = cabang;
 
-      document.getElementById("itemCount").innerText = filtered.length + " item";
+      document.getElementById("loginPage").classList.add("hidden");
+      document.getElementById("appPage").classList.remove("hidden");
+
+      renderMenu();
+      renderCart();
     }
 
     function filterMenu(kategori, el) {
@@ -464,6 +764,32 @@
       document.querySelectorAll(".tab").forEach(tab => tab.classList.remove("active"));
       el.classList.add("active");
       renderMenu();
+    }
+
+    function renderMenu() {
+      const productGrid = document.getElementById("productGrid");
+      const data = filterAktif === "Semua"
+        ? menuData
+        : menuData.filter(item => item.kategori === filterAktif);
+
+      productGrid.innerHTML = "";
+      document.getElementById("itemCount").innerText = data.length + " item";
+
+      data.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "product";
+        div.innerHTML = `
+          <img src="${item.gambar}" alt="${item.nama}">
+          <div class="product-body">
+            <div class="product-name">${item.nama}</div>
+            <div class="product-desc">${item.deskripsi}</div>
+            <div class="product-stock">Stok: ${item.stok}</div>
+            <div class="product-price">${formatRupiah(item.harga)}</div>
+            <button class="add-btn" onclick="tambahKeKeranjang(${item.id})">🛒 Tambah</button>
+          </div>
+        `;
+        productGrid.appendChild(div);
+      });
     }
 
     function tambahKeKeranjang(id) {
@@ -481,7 +807,6 @@
           qty: 1
         });
       }
-
       renderCart();
     }
 
@@ -490,29 +815,83 @@
       if (!item) return;
 
       item.qty += delta;
-
       if (item.qty <= 0) {
         cart = cart.filter(x => x.id !== id);
       }
-
       renderCart();
     }
 
     function kosongkanKeranjang() {
-      if (cart.length === 0) return;
-      if (confirm("Kosongkan semua item di keranjang?")) {
-        cart = [];
-        renderCart();
-      }
+      cart = [];
+      renderCart();
     }
 
     function resetTransaksi() {
-      if (confirm("Mulai transaksi baru?")) {
-        cart = [];
-        document.getElementById("bayarInput").value = "";
-        renderCart();
-        window.scrollTo({ top: 0, behavior: "smooth" });
+      cart = [];
+      document.getElementById("bayarInput").value = 0;
+      metodePembayaran = "Tunai";
+      document.querySelectorAll(".pay-btn").forEach(btn => btn.classList.remove("active"));
+      document.querySelector(".pay-btn").classList.add("active");
+      renderCart();
+    }
+
+    function pilihPembayaran(nama, el) {
+      metodePembayaran = nama;
+      document.querySelectorAll(".pay-btn").forEach(btn => btn.classList.remove("active"));
+      el.classList.add("active");
+    }
+
+    function renderCart() {
+      const container = document.getElementById("cartContainer");
+      const subtotalText = document.getElementById("subtotalText");
+      const totalText = document.getElementById("totalText");
+
+      if (cart.length === 0) {
+        container.className = "cart-empty";
+        container.innerHTML = "Keranjang kosong";
+        subtotalText.innerText = "Rp 0";
+        totalText.innerText = "Rp 0";
+        document.getElementById("kembalianText").innerText = "Rp 0";
+        return;
       }
+
+      container.className = "";
+      container.innerHTML = "";
+
+      let total = 0;
+      cart.forEach(item => {
+        const subtotal = item.qty * item.harga;
+        total += subtotal;
+
+        const div = document.createElement("div");
+        div.className = "cart-item";
+        div.innerHTML = `
+          <div class="cart-top">
+            <div>
+              <div class="cart-name">${item.nama}</div>
+              <div class="cart-meta">${formatRupiah(item.harga)} x ${item.qty}</div>
+              <div class="qty-row">
+                <button class="qty-btn" onclick="ubahQty(${item.id}, -1)">-</button>
+                <span>${item.qty}</span>
+                <button class="qty-btn" onclick="ubahQty(${item.id}, 1)">+</button>
+              </div>
+            </div>
+            <div><strong>${formatRupiah(subtotal)}</strong></div>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+
+      subtotalText.innerText = formatRupiah(total);
+      totalText.innerText = formatRupiah(total);
+      updateKembalian();
+    }
+
+    function updateKembalian() {
+      const total = cart.reduce((sum, item) => sum + item.qty * item.harga, 0);
+      const bayar = parseInt(document.getElementById("bayarInput").value || "0", 10);
+      const kembalian = bayar - total;
+      document.getElementById("kembalianText").innerText = formatRupiah(kembalian > 0 ? kembalian : 0);
     }
 
     function lihatLaporan() {
@@ -520,63 +899,7 @@
     }
 
     function scrollKeMenu() {
-      document.getElementById("menuSection").scrollIntoView({ behavior: "smooth" });
-    }
-
-    function renderCart() {
-      const cartContainer = document.getElementById("cartContainer");
-      const summaryBox = document.getElementById("summaryBox");
-      const bayarInput = document.getElementById("bayarInput");
-
-      if (cart.length === 0) {
-        cartContainer.className = "empty";
-        cartContainer.innerHTML = "Keranjang kosong";
-        summaryBox.style.display = "none";
-        updateKembalian();
-        return;
-      }
-
-      cartContainer.className = "";
-      cartContainer.innerHTML = "";
-
-      let total = 0;
-
-      cart.forEach(item => {
-        const subtotal = item.qty * item.harga;
-        total += subtotal;
-
-        const el = document.createElement("div");
-        el.className = "cart-item";
-        el.innerHTML = `
-          <div>
-            <div class="cart-name">${item.nama}</div>
-            <div class="cart-sub">${formatRupiah(item.harga)} x ${item.qty} = ${formatRupiah(subtotal)}</div>
-            <div class="qty-box">
-              <button class="qty-btn" onclick="ubahQty(${item.id}, -1)">-</button>
-              <span>${item.qty}</span>
-              <button class="qty-btn" onclick="ubahQty(${item.id}, 1)">+</button>
-            </div>
-          </div>
-          <div><strong>${formatRupiah(subtotal)}</strong></div>
-        `;
-        cartContainer.appendChild(el);
-      });
-
-      document.getElementById("subtotalText").innerText = formatRupiah(total);
-      document.getElementById("totalText").innerText = formatRupiah(total);
-      summaryBox.style.display = "block";
-
-      bayarInput.oninput = updateKembalian;
-      updateKembalian();
-    }
-
-    function updateKembalian() {
-      const total = cart.reduce((sum, item) => sum + (item.qty * item.harga), 0);
-      const bayar = parseInt(document.getElementById("bayarInput").value || "0", 10);
-      const kembalian = bayar - total;
-
-      document.getElementById("kembalianText").innerText =
-        formatRupiah(kembalian > 0 ? kembalian : 0);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
     function kirimKeAndroid(text) {
@@ -590,14 +913,17 @@
 
     function buatTeksStruk() {
       const orderNo = "ORD-" + Date.now();
+      const now = new Date().toLocaleString("id-ID");
       const bayar = parseInt(document.getElementById("bayarInput").value || "0", 10);
-      const total = cart.reduce((sum, item) => sum + (item.qty * item.harga), 0);
+      const total = cart.reduce((sum, item) => sum + item.qty * item.harga, 0);
       const kembalian = bayar - total;
 
       let text = "";
       text += "No. Order : " + orderNo + "\n";
       text += "Kasir     : " + kasir + "\n";
-      text += "Tanggal   : " + new Date().toLocaleString("id-ID") + "\n";
+      text += "Cabang    : " + cabang + "\n";
+      text += "Tanggal   : " + now + "\n";
+      text += "Bayar Via : " + metodePembayaran + "\n";
       text += "------------------------------\n";
 
       cart.forEach(item => {
@@ -622,20 +948,26 @@
         return;
       }
 
-      const total = cart.reduce((sum, item) => sum + (item.qty * item.harga), 0);
+      const total = cart.reduce((sum, item) => sum + item.qty * item.harga, 0);
       const bayar = parseInt(document.getElementById("bayarInput").value || "0", 10);
 
-      if (bayar < total) {
+      if (metodePembayaran === "Tunai" && bayar < total) {
         alert("Nominal bayar kurang.");
         return;
+      }
+
+      if (metodePembayaran !== "Tunai" && bayar === 0) {
+        document.getElementById("bayarInput").value = total;
+        updateKembalian();
       }
 
       const text = buatTeksStruk();
       kirimKeAndroid(text);
     }
 
-    renderMenu();
-    renderCart();
+    document.getElementById("passwordInput").addEventListener("keypress", function(e) {
+      if (e.key === "Enter") login();
+    });
   </script>
 </body>
 </html>
