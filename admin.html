@@ -458,15 +458,17 @@
                 const userDoc = await db.collection('users').doc(user.uid).get();
                 const userData = userDoc.data();
                 
+                console.log('🔍 Checking role on page load:', userData?.role);
+                
                 if (userData && userData.role === 'admin') {
-                    // Redirect admin ke admin.html
+                    console.log('🔑 Admin detected on load! Redirecting...');
                     window.location.href = 'admin.html';
                     return;
                 }
                 
                 // User adalah kasir, tampilkan POS
                 currentUser = user;
-                currentBranch = userData.branchId;
+                currentBranch = userData?.branchId;
                 showApp(userData);
                 
             } catch(error) {
@@ -474,32 +476,48 @@
             }
         }
 
+        // 🔧 FUNGSI LOGIN DENGAN DEBUGGING CONSOLE.LOG
         async function doLogin() {
             const email = document.getElementById('loginEmail').value.trim();
             const pass = document.getElementById('loginPass').value;
             const btn = document.getElementById('btnLogin');
             const err = document.getElementById('loginError');
             
-            if(!email || !pass) { err.textContent = 'Email dan password wajib diisi!'; err.style.display='block'; return; }
+            console.log('=== LOGIN ATTEMPT ===');
+            console.log('Email:', email);
             
-            btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...'; err.style.display='none';
+            if(!email || !pass) { 
+                err.textContent = 'Email dan password wajib diisi!'; 
+                err.style.display='block'; 
+                return; 
+            }
+            
+            btn.disabled = true; 
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...'; 
+            err.style.display='none';
             
             try {
                 const cred = await auth.signInWithEmailAndPassword(email, pass);
+                console.log('✅ Login berhasil, UID:', cred.user.uid);
+                
                 const userDoc = await db.collection('users').doc(cred.user.uid).get();
                 
                 if(!userDoc.exists) throw new Error('Data pengguna tidak ditemukan.');
                 
                 const data = userDoc.data();
+                console.log('📋 Data user:', data);
+                console.log('📋 Role user:', data.role);
+                
                 if(!data.active) throw new Error('Akun dinonaktifkan.');
                 
                 // CEK ROLE - AUTO REDIRECT
                 if (data.role === 'admin') {
-                    // Admin redirect ke admin.html
+                    console.log('🔑 User adalah ADMIN! Redirect ke admin.html...');
                     window.location.href = 'admin.html';
                     return;
                 }
                 
+                console.log('👨‍💼 User adalah KASIR. Tampilkan POS...');
                 // Kasir tetap di index.html (POS)
                 currentUser = cred.user;
                 currentBranch = data.branchId === 'all' ? 'cabang_01' : data.branchId;
@@ -509,8 +527,11 @@
                 showApp(data);
                 
             } catch(e) {
-                err.textContent = e.message; err.style.display='block';
-                btn.disabled = false; btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Masuk Sistem';
+                console.error('❌ Login error:', e);
+                err.textContent = e.message; 
+                err.style.display='block';
+                btn.disabled = false; 
+                btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Masuk Sistem';
             }
         }
 
@@ -557,7 +578,7 @@
                 card.className = 'product-card';
                 card.innerHTML = `
                     <div class="item-badge" id="badge-${p.id}" style="display:none;">0</div>
-                    <div class="product-img"><img src="${p.img}" alt="${p.name}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>🧋</text></svg>'"></div>
+                    <div class="product-img"><img src="${p.img}" alt="${p.name}" onerror="this.src='image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>🧋</text></svg>'"></div>
                     <div class="product-info">
                         <div class="product-name">${p.name}</div>
                         <div class="product-desc">${p.desc}</div>
