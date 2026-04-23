@@ -2,83 +2,586 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Admin - Thai Tea CST</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Thai Tea CST</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Load Config -->
     <script src="config.js"></script>
+    
+    <style>
+        :root {
+            --primary: #E67E22;
+            --primary-dark: #D35400;
+            --secondary: #3498DB;
+            --dark: #2C3E50;
+            --light: #ECF0F1;
+            --success: #27AE60;
+            --danger: #E74C3C;
+            --sidebar-width: 260px;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        body { background: #f5f6fa; display: flex; min-height: 100vh; }
+        
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--dark);
+            color: white;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        
+        .sidebar-header {
+            padding: 25px 20px;
+            background: rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        
+        .sidebar-header i { font-size: 3rem; color: var(--primary); margin-bottom: 10px; }
+        .sidebar-header h2 { font-size: 1.4rem; margin-bottom: 5px; }
+        .sidebar-header p { font-size: 0.85rem; opacity: 0.8; }
+        
+        .sidebar-menu { padding: 20px 0; }
+        .menu-item {
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: 0.3s;
+            text-decoration: none;
+            color: white;
+        }
+        
+        .menu-item:hover, .menu-item.active {
+            background: rgba(230,126,34,0.2);
+            border-left: 4px solid var(--primary);
+        }
+        
+        .menu-item i { width: 24px; text-align: center; }
+        
+        .user-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 20px;
+            background: rgba(0,0,0,0.3);
+        }
+        
+        .user-info strong { display: block; margin-bottom: 5px; }
+        .user-info small { opacity: 0.8; }
+        .logout-btn {
+            margin-top: 10px;
+            padding: 8px 15px;
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+        }
+        
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 30px;
+        }
+        
+        .page-header {
+            margin-bottom: 30px;
+        }
+        
+        .page-header h1 {
+            font-size: 2rem;
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+        
+        .breadcrumb {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+        }
+        
+        .card-title {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .card-title i { color: var(--primary); }
+        
+        /* Form */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        
+        .form-group { margin-bottom: 20px; }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ecf0f1;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: 0.3s;
+        }
+        
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: 0.3s;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            width: 100%;
+        }
+        
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+        
+        /* Table */
+        .table-responsive {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        tr:hover { background: #f8f9fa; }
+        
+        .badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .badge-success { background: #d5f4e6; color: #27ae60; }
+        .badge-danger { background: #fadbd8; color: #e74c3c; }
+        
+        .action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-right: 5px;
+            font-size: 0.85rem;
+        }
+        
+        .btn-edit { background: var(--secondary); color: white; }
+        .btn-delete { background: var(--danger); color: white; }
+        
+        /* Alert */
+        .alert {
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .alert-success { background: #d5f4e6; color: #27ae60; border: 1px solid #27ae60; }
+        .alert-error { background: #fadbd8; color: #e74c3c; border: 1px solid #e74c3c; }
+        .alert.show { display: block; }
+        
+        @media (max-width: 768px) {
+            .sidebar { width: 70px; }
+            .sidebar-header h2, .sidebar-header p, .menu-item span, .user-info { display: none; }
+            .main-content { margin-left: 70px; padding: 20px; }
+            .form-grid { grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
 <body>
-    <h1>Admin Dashboard</h1>
-    <div id="loginForm">
-        <input type="email" id="email" placeholder="Email admin"><br>
-        <input type="password" id="pass" placeholder="Password"><br>
-        <button onclick="login()">Login</button>
-        <p id="error" style="color:red"></p>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <i class="fas fa-coffee"></i>
+            <h2>THAI TEA CST</h2>
+            <p>Admin Dashboard</p>
+        </div>
+        
+        <div class="sidebar-menu">
+            <a href="admin.html" class="menu-item active">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="#kelolaKasir" class="menu-item" onclick="scrollToSection('kelolaKasir'); return false;">
+                <i class="fas fa-users"></i>
+                <span>Kelola Kasir</span>
+            </a>
+            <a href="#" class="menu-item">
+                <i class="fas fa-box"></i>
+                <span>Manajemen Stok</span>
+            </a>
+            <a href="#" class="menu-item">
+                <i class="fas fa-chart-bar"></i>
+                <span>Transaksi</span>
+            </a>
+        </div>
+        
+        <div class="user-info">
+            <strong id="adminName">Loading...</strong>
+            <small>Administrator</small>
+            <button class="logout-btn" onclick="doLogout()">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
     </div>
-    <div id="content" style="display:none">
-        <h2>Selamat datang, <span id="userName"></span>!</h2>
-        <button onclick="logout()">Logout</button>
-        <h3>Tambah Kasir</h3>
-        <input type="text" id="nama" placeholder="Nama"><br>
-        <input type="email" id="emailKasir" placeholder="Email"><br>
-        <input type="password" id="passKasir" placeholder="Password"><br>
-        <button onclick="addKasir()">Simpan</button>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="page-header">
+            <h1>Kelola Kasir</h1>
+            <div class="breadcrumb">Dashboard / Kelola Kasir</div>
+        </div>
+
+        <div id="alertBox" class="alert"></div>
+
+        <!-- Form Tambah Kasir -->
+        <div class="card" id="kelolaKasir">
+            <h2 class="card-title">
+                <i class="fas fa-user-plus"></i>
+                Tambah Kasir Baru
+            </h2>
+            
+            <form id="formKasir">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label><i class="fas fa-user"></i> Nama Lengkap</label>
+                        <input type="text" id="inputNama" placeholder="Masukkan nama lengkap" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-envelope"></i> Email</label>
+                        <input type="email" id="inputEmail" placeholder="email@contoh.com" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-lock"></i> Password</label>
+                        <input type="password" id="inputPassword" placeholder="Minimal 6 karakter" minlength="6" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-store"></i> Cabang</label>
+                        <select id="inputCabang" required>
+                            <option value="">Pilih Cabang</option>
+                            <option value="cabang_01">Sport Center Bandara Soetta</option>
+                            <option value="cabang_02">TOD M1, Benda</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button type="submit" id="btnSimpan" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Simpan Kasir
+                </button>
+            </form>
+        </div>
+
+        <!-- Daftar Kasir -->
+        <div class="card">
+            <h2 class="card-title">
+                <i class="fas fa-list"></i>
+                Daftar Kasir
+            </h2>
+            
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Nama</th>
+                            <th>Email</th>
+                            <th>Cabang</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelKasir">
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 30px;">
+                                <i class="fas fa-spinner fa-spin"></i> Memuat data...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <script>
         let auth, db;
+        let currentUser = null;
         
-        window.onload = async function() {
-            await new Promise(r => setTimeout(r, 2000));
-            auth = window.auth;
-            db = window.db;
-            
-            auth.onAuthStateChanged(async user => {
-                if(user) {
-                    const doc = await db.collection('users').doc(user.uid).get();
-                    const data = doc.data();
-                    if(data && data.role === 'admin') {
-                        document.getElementById('loginForm').style.display = 'none';
-                        document.getElementById('content').style.display = 'block';
-                        document.getElementById('userName').textContent = data.name;
-                    } else {
-                        document.getElementById('error').textContent = 'Bukan admin!';
-                    }
-                }
-            });
+        const branchNames = {
+            cabang_01: 'Sport Center Bandara Soetta',
+            cabang_02: 'TOD M1, Benda'
         };
 
-        async function login() {
-            const email = document.getElementById('email').value;
-            const pass = document.getElementById('pass').value;
+        document.addEventListener('DOMContentLoaded', async function() {
+            await waitForFirebase();
+            
+            auth.onAuthStateChanged(async (user) => {
+                if (!user) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+                
+                currentUser = user;
+                
+                try {
+                    const userDoc = await db.collection('users').doc(user.uid).get();
+                    const userData = userDoc.data();
+                    
+                    if (!userData || userData.role !== 'admin') {
+                        alert('Akses ditolak! Halaman ini hanya untuk administrator.');
+                        window.location.href = 'index.html';
+                        return;
+                    }
+                    
+                    document.getElementById('adminName').textContent = userData.name || user.email;
+                    await loadDaftarKasir();
+                    
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Gagal memuat data: ' + error.message);
+                }
+            });
+            
+            document.getElementById('formKasir').addEventListener('submit', function(e) {
+                e.preventDefault();
+                simpanKasir();
+            });
+        });
+
+        function waitForFirebase() {
+            return new Promise((resolve) => {
+                const checkFirebase = setInterval(() => {
+                    if (typeof window.auth !== 'undefined' && typeof window.db !== 'undefined') {
+                        clearInterval(checkFirebase);
+                        auth = window.auth;
+                        db = window.db;
+                        resolve();
+                    }
+                }, 100);
+                
+                setTimeout(() => {
+                    clearInterval(checkFirebase);
+                    resolve();
+                }, 5000);
+            });
+        }
+
+        async function simpanKasir() {
+            const nama = document.getElementById('inputNama').value.trim();
+            const email = document.getElementById('inputEmail').value.trim();
+            const password = document.getElementById('inputPassword').value;
+            const cabang = document.getElementById('inputCabang').value;
+            const btn = document.getElementById('btnSimpan');
+            
+            if(!nama || !email || !password || !cabang) {
+                showAlert('Semua field wajib diisi!', 'error');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+
             try {
-                await auth.signInWithEmailAndPassword(email, pass);
-            } catch(e) {
-                document.getElementById('error').textContent = e.message;
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                const newUser = userCredential.user;
+                
+                await db.collection('users').doc(newUser.uid).set({
+                    name: nama,
+                    email: email,
+                    branchId: cabang,
+                    active: true,
+                    role: 'cashier',
+                    createdAt: new Date().toISOString(),
+                    createdBy: currentUser.uid
+                });
+                
+                await newUser.delete();
+                
+                showAlert('✅ Kasir berhasil ditambahkan!', 'success');
+                document.getElementById('formKasir').reset();
+                await loadDaftarKasir();
+                
+            } catch(error) {
+                console.error('Error:', error);
+                
+                if(error.code === 'auth/email-already-in-use') {
+                    showAlert('Email sudah terdaftar! Gunakan email lain.', 'error');
+                } else if(error.code === 'auth/weak-password') {
+                    showAlert('Password terlalu lemah. Minimal 6 karakter.', 'error');
+                } else if(error.code === 'auth/invalid-email') {
+                    showAlert('Format email tidak valid.', 'error');
+                } else {
+                    showAlert('Gagal menyimpan: ' + error.message, 'error');
+                }
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save"></i> Simpan Kasir';
             }
         }
 
-        async function addKasir() {
-            const nama = document.getElementById('nama').value;
-            const email = document.getElementById('emailKasir').value;
-            const pass = document.getElementById('passKasir').value;
+        async function loadDaftarKasir() {
+            const tbody = document.getElementById('tabelKasir');
             
-            const cred = await auth.createUserWithEmailAndPassword(email, pass);
-            await db.collection('users').doc(cred.user.uid).set({
-                name: nama,
-                email: email,
-                role: 'cashier',
-                branchId: 'cabang_01',
-                active: true
-            });
-            await cred.user.delete();
-            alert('Kasir berhasil ditambahkan!');
+            try {
+                const snapshot = await db.collection('users')
+                    .where('role', '==', 'cashier')
+                    .get();
+                
+                if(snapshot.empty) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 30px; color: #7f8c8d;">
+                                <i class="fas fa-inbox"></i> Belum ada data kasir
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                let html = '';
+                let no = 1;
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const statusClass = data.active ? 'badge-success' : 'badge-danger';
+                    const statusText = data.active ? 'Aktif' : 'Nonaktif';
+                    
+                    html += `
+                        <tr>
+                            <td>${no++}</td>
+                            <td>${data.name || '-'}</td>
+                            <td>${data.email || '-'}</td>
+                            <td>${branchNames[data.branchId] || data.branchId || '-'}</td>
+                            <td><span class="badge ${statusClass}">${statusText}</span></td>
+                            <td>
+                                <button class="action-btn btn-edit" onclick="editKasir('${doc.id}')">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                                <button class="action-btn btn-delete" onclick="hapusKasir('${doc.id}', '${data.name || data.email}')">
+                                    <i class="fas fa-trash"></i> Hapus
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                tbody.innerHTML = html;
+                
+            } catch(error) {
+                console.error('Error loading data:', error);
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 30px; color: var(--danger);">
+                            <i class="fas fa-exclamation-triangle"></i> Gagal memuat data
+                        </td>
+                    </tr>
+                `;
+            }
         }
 
-        function logout() {
-            auth.signOut();
-            location.reload();
+        function editKasir(uid) {
+            alert('Fitur edit akan segera hadir.\nUID: ' + uid);
+        }
+
+        async function hapusKasir(uid, nama) {
+            if(!confirm(`Yakin ingin menghapus kasir "${nama}"?`)) return;
+            
+            try {
+                await db.collection('users').doc(uid).delete();
+                showAlert('Kasir berhasil dihapus', 'success');
+                await loadDaftarKasir();
+            } catch(error) {
+                showAlert('Gagal menghapus: ' + error.message, 'error');
+            }
+        }
+
+        function scrollToSection(sectionId) {
+            const element = document.getElementById(sectionId);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        function showAlert(message, type) {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.className = `alert alert-${type} show`;
+            alertBox.textContent = message;
+            
+            setTimeout(() => {
+                alertBox.classList.remove('show');
+            }, 5000);
+        }
+
+        async function doLogout() {
+            if(confirm('Yakin ingin logout?')) {
+                await auth.signOut();
+                window.location.href = 'index.html';
+            }
         }
     </script>
 </body>
