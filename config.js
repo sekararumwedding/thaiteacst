@@ -1,6 +1,6 @@
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// Firebase Configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyAxd7pUkloythTNPTMovUrMiC_O2BRG1t0",
+  apiKey: "AIzaSyDt5tMCf480mDGGeDd7liKuGt3zS2_M5OI",
   authDomain: "thai-tea-cst-ac9db.firebaseapp.com",
   projectId: "thai-tea-cst-ac9db",
   storageBucket: "thai-tea-cst-ac9db.firebasestorage.app",
@@ -10,4 +10,10 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-firebase.initializeApp(firebaseConfig);
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+
+// Export to global scope
+window.auth = firebase.auth();
+window.db = firebase.firestore();
