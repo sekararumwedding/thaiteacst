@@ -9,5 +9,5 @@ const firebaseConfig = {
   measurementId: "G-DJFC6NYVD1"
 };
 
-// ✅ Inisialisasi (JANGAN DIHAPUS!)
+// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
