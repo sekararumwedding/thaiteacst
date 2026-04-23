@@ -170,6 +170,7 @@
             cursor: pointer;
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 8px;
             transition: 0.3s;
         }
@@ -178,7 +179,6 @@
             background: var(--primary);
             color: white;
             width: 100%;
-            justify-content: center;
         }
         
         .btn-primary:hover { background: var(--primary-dark); }
@@ -265,7 +265,7 @@
                 <i class="fas fa-home"></i>
                 <span>Dashboard</span>
             </a>
-            <a href="#" class="menu-item">
+            <a href="#" class="menu-item" onclick="scrollToSection('kelolaKasir')">
                 <i class="fas fa-users"></i>
                 <span>Kelola Kasir</span>
             </a>
@@ -298,13 +298,13 @@
         <div id="alertBox" class="alert"></div>
 
         <!-- Form Tambah Kasir -->
-        <div class="card">
+        <div class="card" id="kelolaKasir">
             <h2 class="card-title">
                 <i class="fas fa-user-plus"></i>
                 Tambah Kasir Baru
             </h2>
             
-            <form id="formKasir" onsubmit="event.preventDefault(); simpanKasir();">
+            <form id="formKasir">
                 <div class="form-grid">
                     <div class="form-group">
                         <label><i class="fas fa-user"></i> Nama Lengkap</label>
@@ -369,9 +369,59 @@
     </div>
 
     <script>
-        // Tunggu Firebase siap
+        // Global variables
         let auth, db;
+        let currentUser = null;
         
+        const branchNames = {
+            cabang_01: 'Sport Center Bandara Soetta',
+            cabang_02: 'TOD M1, Benda'
+        };
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Wait for Firebase to be ready
+            await waitForFirebase();
+            
+            // Check auth state
+            auth.onAuthStateChanged(async (user) => {
+                if (!user) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+                
+                currentUser = user;
+                
+                // Load user data
+                try {
+                    const userDoc = await db.collection('users').doc(user.uid).get();
+                    const userData = userDoc.data();
+                    
+                    if (!userData || userData.role !== 'admin') {
+                        alert('Akses ditolak! Halaman ini hanya untuk administrator.');
+                        window.location.href = 'index.html';
+                        return;
+                    }
+                    
+                    // Display admin name
+                    document.getElementById('adminName').textContent = userData.name || user.email;
+                    
+                    // Load kasir list
+                    await loadDaftarKasir();
+                    
+                } catch (error) {
+                    console.error('Error loading user data:', error);
+                    showAlert('Gagal memuat data user: ' + error.message, 'error');
+                }
+            });
+            
+            // Setup form submit
+            document.getElementById('formKasir').addEventListener('submit', function(e) {
+                e.preventDefault();
+                simpanKasir();
+            });
+        });
+
         function waitForFirebase() {
             return new Promise((resolve) => {
                 const checkFirebase = setInterval(() => {
@@ -390,42 +440,12 @@
             });
         }
 
-        const branchNames = {
-            cabang_01: 'Sport Center Bandara Soetta',
-            cabang_02: 'TOD M1, Benda'
-        };
-
-        // Check Auth State
-        auth.onAuthStateChanged(async (user) => {
-            if (!user) {
-                window.location.href = 'index.html';
-                return;
-            }
-
-            // Cek apakah user adalah admin
-            const userDoc = await db.collection('users').doc(user.uid).get();
-            const userData = userDoc.data();
-            
-            if (!userData || userData.role !== 'admin') {
-                alert('Akses ditolak! Halaman ini hanya untuk administrator.');
-                window.location.href = 'index.html';
-                return;
-            }
-
-            // Tampilkan nama admin
-            document.getElementById('adminName').textContent = userData.name || user.email;
-            
-            // Load daftar kasir
-            loadDaftarKasir();
-        });
-
         async function simpanKasir() {
             const nama = document.getElementById('inputNama').value.trim();
             const email = document.getElementById('inputEmail').value.trim();
             const password = document.getElementById('inputPassword').value;
             const cabang = document.getElementById('inputCabang').value;
             const btn = document.getElementById('btnSimpan');
-            const alertBox = document.getElementById('alertBox');
             
             if(!nama || !email || !password || !cabang) {
                 showAlert('Semua field wajib diisi!', 'error');
@@ -436,14 +456,11 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
 
             try {
-                // Simpan credential admin saat ini
-                const currentAdmin = auth.currentUser;
-                
-                // Buat user baru
+                // Create new user
                 const userCredential = await auth.createUserWithEmailAndPassword(email, password);
                 const newUser = userCredential.user;
                 
-                // Simpan data user ke Firestore
+                // Save to Firestore
                 await db.collection('users').doc(newUser.uid).set({
                     name: nama,
                     email: email,
@@ -451,23 +468,19 @@
                     active: true,
                     role: 'kasir',
                     createdAt: new Date().toISOString(),
-                    createdBy: currentAdmin.uid
+                    createdBy: currentUser.uid
                 });
                 
-                // Logout user baru dan login kembali sebagai admin
-                await auth.signOut();
-                await auth.signInWithEmailAndPassword(currentAdmin.email, currentAdmin.uid);
-                
-                // Reload auth state
-                await waitForFirebase();
+                // Delete the new user from auth (keep only in Firestore)
+                await newUser.delete();
                 
                 showAlert('✅ Kasir berhasil ditambahkan!', 'success');
                 
                 // Reset form
                 document.getElementById('formKasir').reset();
                 
-                // Reload tabel
-                loadDaftarKasir();
+                // Reload table
+                await loadDaftarKasir();
                 
             } catch(error) {
                 console.error('Error:', error);
@@ -476,6 +489,8 @@
                     showAlert('Email sudah terdaftar! Gunakan email lain.', 'error');
                 } else if(error.code === 'auth/weak-password') {
                     showAlert('Password terlalu lemah. Minimal 6 karakter.', 'error');
+                } else if(error.code === 'auth/invalid-email') {
+                    showAlert('Format email tidak valid.', 'error');
                 } else if(error.code === 'permission-denied') {
                     showAlert('Akses ditolak. Periksa Firestore Rules.', 'error');
                 } else {
@@ -493,7 +508,6 @@
             try {
                 const snapshot = await db.collection('users')
                     .where('role', '==', 'kasir')
-                    .orderBy('createdAt', 'desc')
                     .get();
                 
                 if(snapshot.empty) {
@@ -518,16 +532,16 @@
                     html += `
                         <tr>
                             <td>${no++}</td>
-                            <td>${data.name}</td>
-                            <td>${data.email}</td>
-                            <td>${branchNames[data.branchId] || data.branchId}</td>
+                            <td>${data.name || '-'}</td>
+                            <td>${data.email || '-'}</td>
+                            <td>${branchNames[data.branchId] || data.branchId || '-'}</td>
                             <td><span class="badge ${statusClass}">${statusText}</span></td>
                             <td>
                                 <button class="action-btn btn-edit" onclick="editKasir('${doc.id}')">
-                                    <i class="fas fa-edit"></i>
+                                    <i class="fas fa-edit"></i> Edit
                                 </button>
-                                <button class="action-btn btn-delete" onclick="hapusKasir('${doc.id}', '${data.name}')">
-                                    <i class="fas fa-trash"></i>
+                                <button class="action-btn btn-delete" onclick="hapusKasir('${doc.id}', '${data.name || data.email}')">
+                                    <i class="fas fa-trash"></i> Hapus
                                 </button>
                             </td>
                         </tr>
@@ -541,7 +555,7 @@
                 tbody.innerHTML = `
                     <tr>
                         <td colspan="6" style="text-align: center; padding: 30px; color: var(--danger);">
-                            <i class="fas fa-exclamation-triangle"></i> Gagal memuat data
+                            <i class="fas fa-exclamation-triangle"></i> Gagal memuat data: ${error.message}
                         </td>
                     </tr>
                 `;
@@ -549,7 +563,7 @@
         }
 
         function editKasir(uid) {
-            alert('Fitur edit akan segera hadir. UID: ' + uid);
+            alert('Fitur edit akan segera hadir.\nUID: ' + uid);
         }
 
         async function hapusKasir(uid, nama) {
@@ -558,9 +572,16 @@
             try {
                 await db.collection('users').doc(uid).delete();
                 showAlert('Kasir berhasil dihapus', 'success');
-                loadDaftarKasir();
+                await loadDaftarKasir();
             } catch(error) {
                 showAlert('Gagal menghapus: ' + error.message, 'error');
+            }
+        }
+
+        function scrollToSection(sectionId) {
+            const element = document.getElementById(sectionId);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
             }
         }
 
@@ -576,15 +597,14 @@
 
         async function doLogout() {
             if(confirm('Yakin ingin logout?')) {
-                await auth.signOut();
-                window.location.href = 'index.html';
+                try {
+                    await auth.signOut();
+                    window.location.href = 'index.html';
+                } catch(error) {
+                    showAlert('Gagal logout: ' + error.message, 'error');
+                }
             }
         }
-
-        // Initialize
-        window.onload = async () => {
-            await waitForFirebase();
-        };
     </script>
 </body>
 </html>
