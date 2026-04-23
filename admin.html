@@ -265,7 +265,7 @@
                 <i class="fas fa-home"></i>
                 <span>Dashboard</span>
             </a>
-            <a href="#" class="menu-item" onclick="scrollToSection('kelolaKasir')">
+            <a href="#kelolaKasir" class="menu-item" onclick="scrollToSection('kelolaKasir'); return false;">
                 <i class="fas fa-users"></i>
                 <span>Kelola Kasir</span>
             </a>
@@ -378,7 +378,7 @@
             cabang_02: 'TOD M1, Benda'
         };
 
-        // Initialize app
+        // Initialize app when DOM is ready
         document.addEventListener('DOMContentLoaded', async function() {
             // Wait for Firebase to be ready
             await waitForFirebase();
@@ -392,26 +392,44 @@
                 
                 currentUser = user;
                 
-                // Load user data
                 try {
+                    // Ambil data user dari Firestore
                     const userDoc = await db.collection('users').doc(user.uid).get();
-                    const userData = userDoc.data();
                     
+                    if (!userDoc.exists) {
+                        // Jika dokumen tidak ada, buat dokumen admin default
+                        await db.collection('users').doc(user.uid).set({
+                            name: user.displayName || user.email || 'Administrator',
+                            email: user.email,
+                            role: 'admin',
+                            branchId: 'all',
+                            active: true,
+                            createdAt: new Date().toISOString()
+                        });
+                        
+                        // Reload dokumen yang baru dibuat
+                        const newUserDoc = await db.collection('users').doc(user.uid).get();
+                        var userData = newUserDoc.data();
+                    } else {
+                        var userData = userDoc.data();
+                    }
+                    
+                    // Cek role admin
                     if (!userData || userData.role !== 'admin') {
                         alert('Akses ditolak! Halaman ini hanya untuk administrator.');
                         window.location.href = 'index.html';
                         return;
                     }
                     
-                    // Display admin name
+                    // Tampilkan nama admin
                     document.getElementById('adminName').textContent = userData.name || user.email;
                     
-                    // Load kasir list
+                    // Load daftar kasir
                     await loadDaftarKasir();
                     
                 } catch (error) {
-                    console.error('Error loading user data:', error);
-                    showAlert('Gagal memuat data user: ' + error.message, 'error');
+                    console.error('Error:', error);
+                    showAlert('Gagal memuat data: ' + error.message, 'error');
                 }
             });
             
