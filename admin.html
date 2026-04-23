@@ -2,1391 +2,589 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Thai Tea CST</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Load Config -->
+    <script src="config.js"></script>
+    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        
         :root {
             --primary: #E67E22;
             --primary-dark: #D35400;
-            --secondary: #F39C12;
-            --accent: #FF6B6B;
-            --success: #10B981;
-            --danger: #EF4444;
-            --warning: #F59E0B;
-            --info: #3B82F6;
-            --dark: #1F2937;
-            --gray: #6B7280;
-            --light: #F3F4F6;
-            --white: #FFFFFF;
-            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --gradient-success: linear-gradient(135deg, #10B981 0%, #059669 100%);
-            --gradient-warning: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
-            --gradient-danger: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --secondary: #3498DB;
+            --dark: #2C3E50;
+            --light: #ECF0F1;
+            --success: #27AE60;
+            --danger: #E74C3C;
+            --sidebar-width: 260px;
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-        }
-
-        body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            color: var(--dark);
-            min-height: 100vh;
-        }
-
-        /* LOGIN SCREEN */
-        .login-container {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-
-        .login-box {
-            background: var(--white);
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: var(--shadow-xl);
-            width: 100%;
-            max-width: 400px;
-            animation: slideUp 0.5s ease;
-        }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .login-header {
-            text-align: center;
-            margin-bottom: 25px;
-        }
-
-        .login-header .logo {
-            width: 70px;
-            height: 70px;
-            background: var(--gradient-primary);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 15px;
-            font-size: 2rem;
-            color: white;
-            box-shadow: var(--shadow-lg);
-        }
-
-        .login-header h1 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--dark);
-            margin-bottom: 8px;
-        }
-
-        .login-header p {
-            color: var(--gray);
-            font-size: 0.9rem;
-        }
-
-        .form-group {
-            margin-bottom: 18px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 600;
-            color: var(--dark);
-            font-size: 0.9rem;
-        }
-
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 12px 14px;
-            border: 2px solid #e5e7eb;
-            border-radius: 10px;
-            font-size: 1rem;
-            transition: all 0.3s;
-            outline: none;
-        }
-
-        .form-group input:focus, .form-group select:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(230, 126, 34, 0.1);
-        }
-
-        .btn {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 10px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            font-size: 0.95rem;
-        }
-
-        .btn-primary {
-            background: var(--gradient-primary);
-            color: white;
-            width: 100%;
-            box-shadow: var(--shadow);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .btn-success {
-            background: var(--gradient-success);
-            color: white;
-        }
-
-        .btn-danger {
-            background: var(--gradient-danger);
-            color: white;
-        }
-
-        .btn-warning {
-            background: var(--gradient-warning);
-            color: white;
-        }
-
-        .btn-sm {
-            padding: 8px 14px;
-            font-size: 0.85rem;
-        }
-
-        .error-msg {
-            background: #FEE2E2;
-            color: var(--danger);
-            padding: 10px 14px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            display: none;
-            font-size: 0.9rem;
-            border-left: 4px solid var(--danger);
-        }
-
-        /* DASHBOARD LAYOUT */
-        .dashboard-container {
-            display: none;
-            min-height: 100vh;
-        }
-
-        .dashboard-container.active {
-            display: flex;
-        }
-
-        /* SIDEBAR */
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        body { background: #f5f6fa; display: flex; min-height: 100vh; }
+        
+        /* Sidebar */
         .sidebar {
-            width: 260px;
-            background: var(--white);
-            box-shadow: var(--shadow-lg);
-            padding: 25px 15px;
+            width: var(--sidebar-width);
+            background: var(--dark);
+            color: white;
             position: fixed;
             height: 100vh;
             overflow-y: auto;
-            z-index: 100;
-            transition: transform 0.3s;
         }
-
+        
         .sidebar-header {
+            padding: 25px 20px;
+            background: rgba(0,0,0,0.2);
             text-align: center;
-            padding-bottom: 20px;
-            border-bottom: 2px solid var(--light);
-            margin-bottom: 25px;
         }
-
-        .sidebar-header .logo {
-            width: 60px;
-            height: 60px;
-            background: var(--gradient-primary);
-            border-radius: 50%;
+        
+        .sidebar-header i { font-size: 3rem; color: var(--primary); margin-bottom: 10px; }
+        .sidebar-header h2 { font-size: 1.4rem; margin-bottom: 5px; }
+        .sidebar-header p { font-size: 0.85rem; opacity: 0.8; }
+        
+        .sidebar-menu { padding: 20px 0; }
+        .menu-item {
+            padding: 14px 20px;
             display: flex;
             align-items: center;
-            justify-content: center;
-            margin: 0 auto 12px;
-            font-size: 1.8rem;
-            color: white;
-        }
-
-        .sidebar-header h2 {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: var(--dark);
-        }
-
-        .sidebar-header p {
-            color: var(--gray);
-            font-size: 0.8rem;
-            margin-top: 4px;
-        }
-
-        .nav-menu {
-            list-style: none;
-        }
-
-        .nav-item {
-            margin-bottom: 6px;
-        }
-
-        .nav-link {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px 15px;
-            border-radius: 10px;
-            color: var(--gray);
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.3s;
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
-
-        .nav-link:hover, .nav-link.active {
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-            color: var(--primary);
-        }
-
-        .nav-link i {
-            font-size: 1.1rem;
-            width: 22px;
-        }
-
-        .user-info {
-            margin-top: auto;
-            padding: 15px;
-            background: var(--light);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            background: var(--gradient-primary);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-
-        .user-details h4 {
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--dark);
-        }
-
-        .user-details p {
-            font-size: 0.75rem;
-            color: var(--gray);
-        }
-
-        /* MAIN CONTENT */
-        .main-content {
-            flex: 1;
-            margin-left: 260px;
-            padding: 25px;
-            transition: margin-left 0.3s;
-        }
-
-        .top-bar {
-            background: var(--white);
-            padding: 18px 25px;
-            border-radius: 14px;
-            box-shadow: var(--shadow-sm);
-            margin-bottom: 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .top-bar h1 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--dark);
-        }
-
-        .top-bar p {
-            color: var(--gray);
-            font-size: 0.85rem;
-            margin-top: 4px;
-        }
-
-        .top-actions {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        /* STATS CARDS */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 25px;
-        }
-
-        .stat-card {
-            background: var(--white);
-            padding: 22px;
-            border-radius: 16px;
-            box-shadow: var(--shadow);
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            transition: all 0.3s;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-xl);
-        }
-
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 4px;
-            height: 100%;
-            background: var(--gradient-primary);
-        }
-
-        .stat-card.revenue::before { background: var(--gradient-success); }
-        .stat-card.orders::before { background: var(--gradient-warning); }
-        .stat-card.cashiers::before { background: var(--gradient-primary); }
-        .stat-card.stock::before { background: var(--gradient-danger); }
-
-        .stat-icon {
-            width: 55px;
-            height: 55px;
-            border-radius: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            color: white;
-            background: var(--gradient-primary);
-            box-shadow: var(--shadow);
-        }
-
-        .stat-card.revenue .stat-icon { background: var(--gradient-success); }
-        .stat-card.orders .stat-icon { background: var(--gradient-warning); }
-        .stat-card.cashiers .stat-icon { background: var(--gradient-primary); }
-        .stat-card.stock .stat-icon { background: var(--gradient-danger); }
-
-        .stat-content h3 {
-            font-size: 0.85rem;
-            color: var(--gray);
-            font-weight: 500;
-            margin-bottom: 6px;
-        }
-
-        .stat-content p {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--dark);
-        }
-
-        /* CARDS */
-        .card {
-            background: var(--white);
-            border-radius: 16px;
-            box-shadow: var(--shadow);
-            padding: 22px;
-            margin-bottom: 25px;
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid var(--light);
-            flex-wrap: wrap;
             gap: 12px;
+            cursor: pointer;
+            transition: 0.3s;
+            text-decoration: none;
+            color: white;
         }
-
-        .card-header h2 {
-            font-size: 1.2rem;
-            font-weight: 700;
+        
+        .menu-item:hover, .menu-item.active {
+            background: rgba(230,126,34,0.2);
+            border-left: 4px solid var(--primary);
+        }
+        
+        .menu-item i { width: 24px; text-align: center; }
+        
+        .user-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 20px;
+            background: rgba(0,0,0,0.3);
+        }
+        
+        .user-info strong { display: block; margin-bottom: 5px; }
+        .user-info small { opacity: 0.8; }
+        .logout-btn {
+            margin-top: 10px;
+            padding: 8px 15px;
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+        }
+        
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 30px;
+        }
+        
+        .page-header {
+            margin-bottom: 30px;
+        }
+        
+        .page-header h1 {
+            font-size: 2rem;
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+        
+        .breadcrumb {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+        }
+        
+        .card-title {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
             color: var(--dark);
             display: flex;
             align-items: center;
             gap: 10px;
         }
-
-        .card-header h2 i {
-            color: var(--primary);
-        }
-
-        /* TABLES */
-        .table-container {
-            overflow-x: auto;
-            margin: 0 -22px -22px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 600px;
-        }
-
-        thead {
-            background: var(--light);
-        }
-
-        th {
-            padding: 14px 12px;
-            text-align: left;
-            font-weight: 600;
-            color: var(--dark);
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        td {
-            padding: 14px 12px;
-            border-bottom: 1px solid var(--light);
-            font-size: 0.85rem;
-        }
-
-        tr:hover {
-            background: rgba(102, 126, 234, 0.05);
-        }
-
-        .badge {
-            padding: 5px 12px;
-            border-radius: 16px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            display: inline-block;
-        }
-
-        .badge-success {
-            background: #D1FAE5;
-            color: #065F46;
-        }
-
-        .badge-warning {
-            background: #FEF3C7;
-            color: #92400E;
-        }
-
-        .badge-danger {
-            background: #FEE2E2;
-            color: #991B1B;
-        }
-
-        .badge-primary {
-            background: #DBEAFE;
-            color: #1E40AF;
-        }
-
-        /* FORMS */
+        
+        .card-title i { color: var(--primary); }
+        
+        /* Form */
         .form-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
+            gap: 20px;
         }
-
-        .form-actions {
-            margin-top: 20px;
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-            flex-wrap: wrap;
-        }
-
-        /* TABS */
-        .tab-content {
-            display: none;
-            animation: fadeIn 0.4s ease;
-        }
-
-        .tab-content.active {
+        
+        .form-group { margin-bottom: 20px; }
+        .form-group label {
             display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* LOADING & EMPTY */
-        .loading {
-            text-align: center;
-            padding: 30px;
-            color: var(--gray);
-        }
-
-        .loading i {
-            font-size: 2.5rem;
-            animation: spin 1s linear infinite;
-            color: var(--primary);
-        }
-
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 50px 20px;
-            color: var(--gray);
-        }
-
-        .empty-state i {
-            font-size: 3.5rem;
-            margin-bottom: 15px;
-            opacity: 0.5;
-        }
-
-        .empty-state h3 {
-            font-size: 1.2rem;
             margin-bottom: 8px;
+            font-weight: 600;
             color: var(--dark);
         }
-
-        /* MOBILE MENU TOGGLE */
-        .menu-toggle {
-            display: none;
-            position: fixed;
-            top: 15px;
-            left: 15px;
-            z-index: 101;
-            background: var(--white);
-            border: none;
-            padding: 10px;
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ecf0f1;
             border-radius: 8px;
-            box-shadow: var(--shadow);
+            font-size: 1rem;
+            transition: 0.3s;
+        }
+        
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
             cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
         }
-
-        .menu-toggle i {
-            font-size: 1.3rem;
-            color: var(--primary);
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            width: 100%;
+            justify-content: center;
         }
-
-        /* RESPONSIVE - MOBILE OPTIMIZATION */
+        
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+        
+        /* Table */
+        .table-responsive {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        tr:hover { background: #f8f9fa; }
+        
+        .badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .badge-success { background: #d5f4e6; color: #27ae60; }
+        .badge-danger { background: #fadbd8; color: #e74c3c; }
+        
+        .action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-right: 5px;
+            font-size: 0.85rem;
+        }
+        
+        .btn-edit { background: var(--secondary); color: white; }
+        .btn-delete { background: var(--danger); color: white; }
+        
+        /* Alert */
+        .alert {
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .alert-success { background: #d5f4e6; color: #27ae60; border: 1px solid #27ae60; }
+        .alert-error { background: #fadbd8; color: #e74c3c; border: 1px solid #e74c3c; }
+        .alert.show { display: block; }
+        
         @media (max-width: 768px) {
-            .menu-toggle {
-                display: block;
-            }
-
-            .sidebar {
-                transform: translateX(-100%);
-                width: 260px;
-            }
-
-            .sidebar.active {
-                transform: translateX(0);
-            }
-
-            .main-content {
-                margin-left: 0;
-                padding: 15px;
-                padding-top: 70px;
-            }
-
-            .top-bar {
-                padding: 15px 18px;
-                margin-bottom: 20px;
-            }
-
-            .top-bar h1 {
-                font-size: 1.3rem;
-            }
-
-            .top-actions {
-                width: 100%;
-                justify-content: center;
-            }
-
-            .top-actions .btn {
-                flex: 1;
-                min-width: 120px;
-            }
-
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 12px;
-            }
-
-            .stat-card {
-                padding: 16px;
-            }
-
-            .stat-icon {
-                width: 45px;
-                height: 45px;
-                font-size: 1.2rem;
-            }
-
-            .stat-content h3 {
-                font-size: 0.75rem;
-            }
-
-            .stat-content p {
-                font-size: 1.2rem;
-            }
-
-            .card {
-                padding: 16px;
-                margin-bottom: 20px;
-            }
-
-            .card-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 10px;
-                margin-bottom: 16px;
-                padding-bottom: 12px;
-            }
-
-            .card-header h2 {
-                font-size: 1.1rem;
-            }
-
-            .form-grid {
-                grid-template-columns: 1fr;
-                gap: 12px;
-            }
-
-            .form-actions {
-                flex-direction: column;
-            }
-
-            .form-actions .btn {
-                width: 100%;
-            }
-
-            table {
-                font-size: 0.75rem;
-                min-width: 500px;
-            }
-
-            th, td {
-                padding: 10px 8px;
-            }
-
-            .badge {
-                padding: 4px 10px;
-                font-size: 0.7rem;
-            }
-
-            .btn-sm {
-                padding: 6px 10px;
-                font-size: 0.75rem;
-            }
-        }
-
-        /* SMALL PHONES */
-        @media (max-width: 480px) {
-            .login-box {
-                padding: 25px 20px;
-            }
-
-            .login-header h1 {
-                font-size: 1.3rem;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .stat-card {
-                padding: 14px;
-            }
-
-            table {
-                min-width: 450px;
-            }
+            .sidebar { width: 70px; }
+            .sidebar-header h2, .sidebar-header p, .menu-item span, .user-info { display: none; }
+            .main-content { margin-left: 70px; padding: 20px; }
+            .form-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
 
-    <!-- 🔐 LOGIN SCREEN -->
-    <div id="loginScreen" class="login-container">
-        <div class="login-box">
-            <div class="login-header">
-                <div class="logo">
-                    <i class="fas fa-shield-alt"></i>
-                </div>
-                <h1>Admin Dashboard</h1>
-                <p>Masukkan kredensial admin untuk mengakses sistem</p>
-            </div>
-            
-            <div id="loginError" class="error-msg"></div>
-            
-            <div class="form-group">
-                <label><i class="fas fa-lock"></i> Password Admin</label>
-                <input type="password" id="adminPass" placeholder="••••••••" onkeypress="if(event.key==='Enter') checkAdmin()">
-            </div>
-            
-            <button class="btn btn-primary" onclick="checkAdmin()">
-                <i class="fas fa-sign-in-alt"></i> Masuk Dashboard
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <i class="fas fa-coffee"></i>
+            <h2>THAI TEA CST</h2>
+            <p>Admin Dashboard</p>
+        </div>
+        
+        <div class="sidebar-menu">
+            <a href="admin.html" class="menu-item active">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="menu-item">
+                <i class="fas fa-users"></i>
+                <span>Kelola Kasir</span>
+            </a>
+            <a href="#" class="menu-item">
+                <i class="fas fa-box"></i>
+                <span>Manajemen Stok</span>
+            </a>
+            <a href="#" class="menu-item">
+                <i class="fas fa-chart-bar"></i>
+                <span>Transaksi</span>
+            </a>
+        </div>
+        
+        <div class="user-info">
+            <strong id="adminName">Loading...</strong>
+            <small>Administrator</small>
+            <button class="logout-btn" onclick="doLogout()">
+                <i class="fas fa-sign-out-alt"></i> Logout
             </button>
-            
-            <p style="text-align: center; margin-top: 20px; color: var(--gray); font-size: 0.85rem;">
-                © 2025 Thai Tea CST | PT CAHAYA SEJATI TEKNOLOGI
-            </p>
         </div>
     </div>
 
-    <!-- 📊 DASHBOARD -->
-    <div id="dashboard" class="dashboard-container">
-        <button class="menu-toggle" onclick="toggleSidebar()">
-            <i class="fas fa-bars"></i>
-        </button>
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="page-header">
+            <h1>Kelola Kasir</h1>
+            <div class="breadcrumb">Dashboard / Kelola Kasir</div>
+        </div>
 
-        <!-- SIDEBAR -->
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <div class="logo">
-                    <i class="fas fa-coffee"></i>
-                </div>
-                <h2>Thai Tea CST</h2>
-                <p>Admin Dashboard</p>
-            </div>
+        <div id="alertBox" class="alert"></div>
+
+        <!-- Form Tambah Kasir -->
+        <div class="card">
+            <h2 class="card-title">
+                <i class="fas fa-user-plus"></i>
+                Tambah Kasir Baru
+            </h2>
             
-            <ul class="nav-menu">
-                <li class="nav-item">
-                    <a class="nav-link active" onclick="switchTab('dashboard')">
-                        <i class="fas fa-chart-line"></i>
-                        <span>Dashboard</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" onclick="switchTab('users')">
-                        <i class="fas fa-users"></i>
-                        <span>Kelola Kasir</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" onclick="switchTab('inventory')">
-                        <i class="fas fa-boxes"></i>
-                        <span>Manajemen Stok</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" onclick="switchTab('transactions')">
-                        <i class="fas fa-receipt"></i>
-                        <span>Transaksi</span>
-                    </a>
-                </li>
-            </ul>
-            
-            <div class="user-info">
-                <div class="user-avatar">
-                    <i class="fas fa-user"></i>
-                </div>
-                <div class="user-details">
-                    <h4>Administrator</h4>
-                    <p>Owner</p>
-                </div>
-                <button onclick="logout()" style="margin-left: auto; background: none; border: none; color: var(--danger); cursor: pointer;">
-                    <i class="fas fa-sign-out-alt"></i>
-                </button>
-            </div>
-        </aside>
-
-        <!-- MAIN CONTENT -->
-        <main class="main-content">
-            <!-- DASHBOARD TAB -->
-            <div id="tab-dashboard" class="tab-content active">
-                <div class="top-bar">
-                    <div>
-                        <h1>Dashboard Overview</h1>
-                        <p>Ringkasan performa bisnis Thai Tea CST</p>
-                    </div>
-                    <div class="top-actions">
-                        <button class="btn btn-primary btn-sm" onclick="loadDashboard()">
-                            <i class="fas fa-sync-alt"></i> Refresh
-                        </button>
-                        <button class="btn btn-success btn-sm" onclick="exportToExcel()">
-                            <i class="fas fa-file-excel"></i> Export
-                        </button>
-                    </div>
-                </div>
-
-                <div class="stats-grid">
-                    <div class="stat-card revenue">
-                        <div class="stat-icon">
-                            <i class="fas fa-money-bill-wave"></i>
-                        </div>
-                        <div class="stat-content">
-                            <h3>Total Pendapatan</h3>
-                            <p id="dashRevenue">Rp 0</p>
-                        </div>
+            <form id="formKasir" onsubmit="event.preventDefault(); simpanKasir();">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label><i class="fas fa-user"></i> Nama Lengkap</label>
+                        <input type="text" id="inputNama" placeholder="Masukkan nama lengkap" required>
                     </div>
                     
-                    <div class="stat-card orders">
-                        <div class="stat-icon">
-                            <i class="fas fa-shopping-cart"></i>
-                        </div>
-                        <div class="stat-content">
-                            <h3>Total Transaksi</h3>
-                            <p id="dashOrders">0</p>
-                        </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-envelope"></i> Email</label>
+                        <input type="email" id="inputEmail" placeholder="email@contoh.com" required>
                     </div>
                     
-                    <div class="stat-card cashiers">
-                        <div class="stat-icon">
-                            <i class="fas fa-users"></i>
-                        </div>
-                        <div class="stat-content">
-                            <h3>Total Kasir Aktif</h3>
-                            <p id="dashCashiers">0</p>
-                        </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-lock"></i> Password</label>
+                        <input type="password" id="inputPassword" placeholder="Minimal 6 karakter" minlength="6" required>
                     </div>
                     
-                    <div class="stat-card stock">
-                        <div class="stat-icon">
-                            <i class="fas fa-exclamation-triangle"></i>
-                        </div>
-                        <div class="stat-content">
-                            <h3>Produk Stok Tipis</h3>
-                            <p id="dashLowStock">0</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div class="card-header">
-                        <h2><i class="fas fa-chart-bar"></i> Statistik Transaksi</h2>
-                    </div>
-                    <div id="chartContainer" style="height: 300px;">
-                        <canvas id="revenueChart"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <!-- USERS TAB -->
-            <div id="tab-users" class="tab-content">
-                <div class="top-bar">
-                    <div>
-                        <h1>Kelola Kasir</h1>
-                        <p>Kelola akun kasir dan akses sistem</p>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div class="card-header">
-                        <h2><i class="fas fa-user-plus"></i> Tambah Kasir Baru</h2>
-                    </div>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Nama Lengkap</label>
-                            <input type="text" id="newUserName" placeholder="Masukkan nama lengkap">
-                        </div>
-                        <div class="form-group">
-                            <label>Email</label>
-                            <input type="email" id="newUserEmail" placeholder="email@thaiteacst.com">
-                        </div>
-                        <div class="form-group">
-                            <label>Password</label>
-                            <input type="password" id="newUserPass" placeholder="Minimal 6 karakter">
-                        </div>
-                        <div class="form-group">
-                            <label>Cabang</label>
-                            <select id="newUserBranch">
-                                <option value="cabang_01">📍 Sport Center Bandara Soetta</option>
-                                <option value="cabang_02">📍 TOD M1, Benda</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-actions">
-                        <button class="btn btn-primary" onclick="createCashier()">
-                            <i class="fas fa-save"></i> Simpan Kasir
-                        </button>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div class="card-header">
-                        <h2><i class="fas fa-list"></i> Daftar Kasir</h2>
-                    </div>
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Nama</th>
-                                    <th>Email</th>
-                                    <th>Cabang</th>
-                                    <th>Status</th>
-                                    <th>Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody id="usersTableBody">
-                                <tr>
-                                    <td colspan="5" class="loading">
-                                        <i class="fas fa-spinner fa-spin"></i> Memuat data...
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- INVENTORY TAB -->
-            <div id="tab-inventory" class="tab-content">
-                <div class="top-bar">
-                    <div>
-                        <h1>Manajemen Stok</h1>
-                        <p>Kelola inventory produk per cabang</p>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div class="card-header">
-                        <h2><i class="fas fa-filter"></i> Filter Cabang</h2>
-                        <select id="inventoryBranch" onchange="loadInventory()" style="padding: 10px 14px; border-radius: 8px; border: 2px solid var(--light);">
-                            <option value="cabang_01">📍 Sport Center Bandara Soetta</option>
-                            <option value="cabang_02">📍 TOD M1, Benda</option>
+                    <div class="form-group">
+                        <label><i class="fas fa-store"></i> Cabang</label>
+                        <select id="inputCabang" required>
+                            <option value="">Pilih Cabang</option>
+                            <option value="cabang_01">Sport Center Bandara Soetta</option>
+                            <option value="cabang_02">TOD M1, Benda</option>
                         </select>
                     </div>
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Produk</th>
-                                    <th>Stok Saat Ini</th>
-                                    <th>Min. Stok</th>
-                                    <th>Status</th>
-                                    <th>Aksi Cepat</th>
-                                </tr>
-                            </thead>
-                            <tbody id="inventoryTableBody">
-                                <tr>
-                                    <td colspan="5" class="loading">
-                                        <i class="fas fa-spinner fa-spin"></i> Memuat inventory...
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
                 </div>
-            </div>
+                
+                <button type="submit" id="btnSimpan" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Simpan Kasir
+                </button>
+            </form>
+        </div>
 
-            <!-- TRANSACTIONS TAB -->
-            <div id="tab-transactions" class="tab-content">
-                <div class="top-bar">
-                    <div>
-                        <h1>Riwayat Transaksi</h1>
-                        <p>Daftar semua transaksi penjualan</p>
-                    </div>
-                    <div class="top-actions">
-                        <button class="btn btn-primary btn-sm" onclick="loadTransactions()">
-                            <i class="fas fa-sync-alt"></i> Refresh
-                        </button>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Waktu</th>
-                                    <th>ID Transaksi</th>
-                                    <th>Cabang</th>
-                                    <th>Kasir</th>
-                                    <th>Item</th>
-                                    <th>Total</th>
-                                    <th>Metode</th>
-                                    <th>Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody id="transactionsTableBody">
-                                <tr>
-                                    <td colspan="8" class="loading">
-                                        <i class="fas fa-spinner fa-spin"></i> Memuat transaksi...
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+        <!-- Daftar Kasir -->
+        <div class="card">
+            <h2 class="card-title">
+                <i class="fas fa-list"></i>
+                Daftar Kasir
+            </h2>
+            
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Nama</th>
+                            <th>Email</th>
+                            <th>Cabang</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelKasir">
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 30px;">
+                                <i class="fas fa-spinner fa-spin"></i> Memuat data...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
-        </main>
+        </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // 🔥 FIREBASE CONFIG
-        const firebaseConfig = {
-            apiKey: "AIzaSyAyWr6nhroYRBTiJDkVHMJdYuTSgefHubs",
-            authDomain: "thai-tea-cst-ac9db.firebaseapp.com",
-            projectId: "thai-tea-cst-ac9db",
-            storageBucket: "thai-tea-cst-ac9db.firebasestorage.app",
-            messagingSenderId: "907107728020",
-            appId: "1:907107728020:web:7340be99b3ab4c07cdd281",
-            measurementId: "G-DJFC6NYVD1"
-        };
+        // Tunggu Firebase siap
+        let auth, db;
         
-        if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        
-        const ADMIN_PASSWORD = "owner123";
-        const branchNames = {
-            'cabang_01': '📍 Sport Center Bandara',
-            'cabang_02': '📍 TOD M1, Benda'
-        };
-        
-        const formatRp = (n) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n || 0);
-        
-        let allData = [];
-        let revenueChart = null;
-
-        // 🔐 AUTH
-        function checkAdmin() {
-            const pass = document.getElementById('adminPass').value;
-            const err = document.getElementById('loginError');
-            
-            if(pass === ADMIN_PASSWORD) {
-                sessionStorage.setItem('adminAuth', 'true');
-                showDashboard();
-            } else {
-                err.textContent = 'Password salah! Silakan coba lagi.';
-                err.style.display = 'block';
-                setTimeout(() => err.style.display = 'none', 3000);
-            }
-        }
-
-        function showDashboard() {
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('dashboard').classList.add('active');
-            loadDashboard();
-        }
-
-        function logout() {
-            sessionStorage.removeItem('adminAuth');
-            location.reload();
-        }
-
-        // 📱 MOBILE SIDEBAR TOGGLE
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('active');
-        }
-
-        // 📊 DASHBOARD
-        async function loadDashboard() {
-            try {
-                const trxSnap = await db.collection('transactions').orderBy('timestamp', 'desc').limit(100).get();
-                allData = [];
-                trxSnap.forEach(doc => {
-                    let d = doc.data();
-                    if(d.timestamp && d.timestamp.toDate) d.timestamp = d.timestamp.toDate().toISOString();
-                    allData.push(d);
-                });
-
-                const userSnap = await db.collection('users').where('role', '==', 'cashier').where('active', '==', true).get();
-                const invSnap = await db.collection('inventory').where('stock', '<=', 20).get();
-
-                const totalRevenue = allData.reduce((s, t) => s + (t.total || 0), 0);
-                const totalOrders = allData.length;
-                const totalCashiers = userSnap.size;
-                const lowStock = invSnap.size;
-
-                document.getElementById('dashRevenue').textContent = formatRp(totalRevenue);
-                document.getElementById('dashOrders').textContent = totalOrders;
-                document.getElementById('dashCashiers').textContent = totalCashiers;
-                document.getElementById('dashLowStock').textContent = lowStock;
-
-                updateChart(allData);
-
-            } catch(e) {
-                console.error("Error loading dashboard:", e);
-            }
-        }
-
-        function updateChart(data) {
-            const ctx = document.getElementById('revenueChart').getContext('2d');
-            
-            const dailyData = {};
-            data.forEach(t => {
-                if(t.timestamp) {
-                    const date = new Date(t.timestamp).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' });
-                    dailyData[date] = (dailyData[date] || 0) + (t.total || 0);
-                }
-            });
-
-            if(revenueChart) revenueChart.destroy();
-            
-            revenueChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: Object.keys(dailyData).reverse(),
-                    datasets: [{
-                        label: 'Pendapatan',
-                        data: Object.values(dailyData).reverse(),
-                        borderColor: '#E67E22',
-                        backgroundColor: 'rgba(230, 126, 34, 0.1)',
-                        tension: 0.4,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return 'Rp ' + (value/1000) + 'k';
-                                }
-                            }
-                        }
+        function waitForFirebase() {
+            return new Promise((resolve) => {
+                const checkFirebase = setInterval(() => {
+                    if (typeof window.auth !== 'undefined' && typeof window.db !== 'undefined') {
+                        clearInterval(checkFirebase);
+                        auth = window.auth;
+                        db = window.db;
+                        resolve();
                     }
-                }
+                }, 100);
+                
+                setTimeout(() => {
+                    clearInterval(checkFirebase);
+                    resolve();
+                }, 5000);
             });
         }
 
-        // 👥 USERS
-        async function loadUsers() {
-            const snap = await db.collection('users').where('role', '==', 'cashier').get();
-            const tbody = document.getElementById('usersTableBody');
+        const branchNames = {
+            cabang_01: 'Sport Center Bandara Soetta',
+            cabang_02: 'TOD M1, Benda'
+        };
+
+        // Check Auth State
+        auth.onAuthStateChanged(async (user) => {
+            if (!user) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // Cek apakah user adalah admin
+            const userDoc = await db.collection('users').doc(user.uid).get();
+            const userData = userDoc.data();
             
-            if(snap.empty) {
-                tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><i class="fas fa-inbox"></i><h3>Belum ada kasir</h3><p>Silakan tambah kasir baru</p></td></tr>';
+            if (!userData || userData.role !== 'admin') {
+                alert('Akses ditolak! Halaman ini hanya untuk administrator.');
+                window.location.href = 'index.html';
                 return;
             }
 
-            tbody.innerHTML = snap.docs.map(doc => {
-                const u = doc.data();
-                const statusClass = u.active ? 'badge-success' : 'badge-danger';
-                const statusText = u.active ? '● Aktif' : '● Nonaktif';
-                
-                return `
-                    <tr>
-                        <td><strong>${u.name || '-'}</strong></td>
-                        <td>${u.email}</td>
-                        <td>${branchNames[u.branchId] || u.branchId}</td>
-                        <td><span class="badge ${statusClass}">${statusText}</span></td>
-                        <td>
-                            <button class="btn btn-sm ${u.active ? 'btn-warning' : 'btn-success'}" onclick="toggleUser('${doc.id}', ${!u.active})">
-                                ${u.active ? 'Nonaktifkan' : 'Aktifkan'}
-                            </button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteUser('${doc.id}')">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-        }
+            // Tampilkan nama admin
+            document.getElementById('adminName').textContent = userData.name || user.email;
+            
+            // Load daftar kasir
+            loadDaftarKasir();
+        });
 
-        async function createCashier() {
-            const name = document.getElementById('newUserName').value;
-            const email = document.getElementById('newUserEmail').value;
-            const pass = document.getElementById('newUserPass').value;
-            const branch = document.getElementById('newUserBranch').value;
-
-            if(!name || !email || !pass) {
-                alert('Semua field wajib diisi!');
+        async function simpanKasir() {
+            const nama = document.getElementById('inputNama').value.trim();
+            const email = document.getElementById('inputEmail').value.trim();
+            const password = document.getElementById('inputPassword').value;
+            const cabang = document.getElementById('inputCabang').value;
+            const btn = document.getElementById('btnSimpan');
+            const alertBox = document.getElementById('alertBox');
+            
+            if(!nama || !email || !password || !cabang) {
+                showAlert('Semua field wajib diisi!', 'error');
                 return;
             }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
 
             try {
-                const cred = await firebase.auth().createUserWithEmailAndPassword(email, pass);
-                await db.collection('users').doc(cred.user.uid).set({
-                    name, email,
-                    role: 'cashier',
-                    branchId: branch,
-                    active: true,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-
-                alert('✅ Kasir berhasil dibuat!');
-                document.getElementById('newUserName').value = '';
-                document.getElementById('newUserEmail').value = '';
-                document.getElementById('newUserPass').value = '';
-                loadUsers();
-            } catch(e) {
-                alert('Error: ' + e.message);
-            }
-        }
-
-        async function toggleUser(uid, newStatus) {
-            await db.collection('users').doc(uid).update({ active: newStatus });
-            loadUsers();
-        }
-
-        async function deleteUser(uid) {
-            if(confirm('Yakin hapus kasir ini?')) {
-                await db.collection('users').doc(uid).delete();
-                loadUsers();
-            }
-        }
-
-        // 📦 INVENTORY
-        async function loadInventory() {
-            const branch = document.getElementById('inventoryBranch').value;
-            const snap = await db.collection('inventory').where('branchId', '==', branch).get();
-            const tbody = document.getElementById('inventoryTableBody');
-
-            if(snap.empty) {
-                tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><i class="fas fa-box-open"></i><h3>Belum ada data stok</h3></td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = snap.docs.map(doc => {
-                const inv = doc.data();
-                const isLow = inv.stock <= inv.minStock;
-                const statusClass = isLow ? 'badge-danger' : 'badge-success';
-                const statusText = isLow ? '⚠️ Stok Tipis' : '✓ Aman';
-
-                return `
-                    <tr>
-                        <td><strong>${inv.productName}</strong></td>
-                        <td><input type="number" value="${inv.stock}" onchange="updateStock('${doc.id}', this.value)" style="width:70px; padding:6px; border-radius:6px; border:1px solid #ddd;"></td>
-                        <td>${inv.minStock}</td>
-                        <td><span class="badge ${statusClass}">${statusText}</span></td>
-                        <td>
-                            <button class="btn btn-sm btn-primary" onclick="addStock('${doc.id}', 10)">+10</button>
-                            <button class="btn btn-sm btn-success" onclick="addStock('${doc.id}', 50)">+50</button>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        async function updateStock(docId, newStock) {
-            await db.collection('inventory').doc(docId).update({ stock: parseInt(newStock) });
-            loadInventory();
-        }
-
-        async function addStock(docId, amount) {
-            const doc = await db.collection('inventory').doc(docId).get();
-            const current = doc.data().stock;
-            await db.collection('inventory').doc(docId).update({ stock: current + amount });
-            loadInventory();
-        }
-
-        // 🧾 TRANSACTIONS
-        async function loadTransactions() {
-            const snap = await db.collection('transactions').orderBy('timestamp', 'desc').limit(100).get();
-            const tbody = document.getElementById('transactionsTableBody');
-
-            if(snap.empty) {
-                tbody.innerHTML = '<tr><td colspan="8" class="empty-state"><i class="fas fa-receipt"></i><h3>Belum ada transaksi</h3></td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = snap.docs.map(doc => {
-                const t = doc.data();
-                const date = t.timestamp ? new Date(t.timestamp).toLocaleString('id-ID') : '-';
-                const items = t.items ? t.items.map(i => i.name).join(', ') : '-';
+                // Simpan credential admin saat ini
+                const currentAdmin = auth.currentUser;
                 
-                return `
+                // Buat user baru
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                const newUser = userCredential.user;
+                
+                // Simpan data user ke Firestore
+                await db.collection('users').doc(newUser.uid).set({
+                    name: nama,
+                    email: email,
+                    branchId: cabang,
+                    active: true,
+                    role: 'kasir',
+                    createdAt: new Date().toISOString(),
+                    createdBy: currentAdmin.uid
+                });
+                
+                // Logout user baru dan login kembali sebagai admin
+                await auth.signOut();
+                await auth.signInWithEmailAndPassword(currentAdmin.email, currentAdmin.uid);
+                
+                // Reload auth state
+                await waitForFirebase();
+                
+                showAlert('✅ Kasir berhasil ditambahkan!', 'success');
+                
+                // Reset form
+                document.getElementById('formKasir').reset();
+                
+                // Reload tabel
+                loadDaftarKasir();
+                
+            } catch(error) {
+                console.error('Error:', error);
+                
+                if(error.code === 'auth/email-already-in-use') {
+                    showAlert('Email sudah terdaftar! Gunakan email lain.', 'error');
+                } else if(error.code === 'auth/weak-password') {
+                    showAlert('Password terlalu lemah. Minimal 6 karakter.', 'error');
+                } else if(error.code === 'permission-denied') {
+                    showAlert('Akses ditolak. Periksa Firestore Rules.', 'error');
+                } else {
+                    showAlert('Gagal menyimpan: ' + error.message, 'error');
+                }
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save"></i> Simpan Kasir';
+            }
+        }
+
+        async function loadDaftarKasir() {
+            const tbody = document.getElementById('tabelKasir');
+            
+            try {
+                const snapshot = await db.collection('users')
+                    .where('role', '==', 'kasir')
+                    .orderBy('createdAt', 'desc')
+                    .get();
+                
+                if(snapshot.empty) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 30px; color: #7f8c8d;">
+                                <i class="fas fa-inbox"></i> Belum ada data kasir
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                let html = '';
+                let no = 1;
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const statusClass = data.active ? 'badge-success' : 'badge-danger';
+                    const statusText = data.active ? 'Aktif' : 'Nonaktif';
+                    
+                    html += `
+                        <tr>
+                            <td>${no++}</td>
+                            <td>${data.name}</td>
+                            <td>${data.email}</td>
+                            <td>${branchNames[data.branchId] || data.branchId}</td>
+                            <td><span class="badge ${statusClass}">${statusText}</span></td>
+                            <td>
+                                <button class="action-btn btn-edit" onclick="editKasir('${doc.id}')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="action-btn btn-delete" onclick="hapusKasir('${doc.id}', '${data.name}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                tbody.innerHTML = html;
+                
+            } catch(error) {
+                console.error('Error loading data:', error);
+                tbody.innerHTML = `
                     <tr>
-                        <td>${date}</td>
-                        <td><small>${t.id || doc.id}</small></td>
-                        <td>${branchNames[t.branchId] || t.branchId}</td>
-                        <td>${t.cashierName || '-'}</td>
-                        <td>${items}</td>
-                        <td><strong>${formatRp(t.total)}</strong></td>
-                        <td><span class="badge badge-primary">${(t.paymentMethod || 'cash').toUpperCase()}</span></td>
-                        <td>
-                            <button class="btn btn-sm btn-danger" onclick="deleteTransaction('${doc.id}')">
-                                <i class="fas fa-trash"></i>
-                            </button>
+                        <td colspan="6" style="text-align: center; padding: 30px; color: var(--danger);">
+                            <i class="fas fa-exclamation-triangle"></i> Gagal memuat data
                         </td>
                     </tr>
                 `;
-            }).join('');
-        }
-
-        async function deleteTransaction(id) {
-            if(confirm('Hapus transaksi ini?')) {
-                await db.collection('transactions').doc(id).delete();
-                loadTransactions();
-                loadDashboard();
             }
         }
 
-        function exportToExcel() {
-            const data = [['Tanggal', 'ID', 'Cabang', 'Kasir', 'Item', 'Total', 'Metode']];
-            allData.forEach(t => {
-                data.push([
-                    t.timestamp ? new Date(t.timestamp).toLocaleString('id-ID') : '',
-                    t.id || '',
-                    branchNames[t.branchId] || '',
-                    t.cashierName || '',
-                    t.items ? t.items.map(i => i.name).join('; ') : '',
-                    t.total || 0,
-                    (t.paymentMethod || '').toUpperCase()
-                ]);
-            });
-
-            const ws = XLSX.utils.aoa_to_sheet(data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Laporan");
-            XLSX.writeFile(wb, `Laporan_Admin_${new Date().toISOString().split('T')[0]}.xlsx`);
+        function editKasir(uid) {
+            alert('Fitur edit akan segera hadir. UID: ' + uid);
         }
 
-        // TABS
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.nav-link').forEach(b => b.classList.remove('active'));
+        async function hapusKasir(uid, nama) {
+            if(!confirm(`Yakin ingin menghapus kasir "${nama}"?`)) return;
             
-            document.getElementById('tab-' + tabName).classList.add('active');
-            event.target.closest('.nav-link').classList.add('active');
-            
-            // Close sidebar on mobile after clicking
-            if(window.innerWidth <= 768) {
-                document.getElementById('sidebar').classList.remove('active');
+            try {
+                await db.collection('users').doc(uid).delete();
+                showAlert('Kasir berhasil dihapus', 'success');
+                loadDaftarKasir();
+            } catch(error) {
+                showAlert('Gagal menghapus: ' + error.message, 'error');
             }
-            
-            if(tabName === 'users') loadUsers();
-            if(tabName === 'inventory') loadInventory();
-            if(tabName === 'transactions') loadTransactions();
         }
 
-        // INIT
-        if(sessionStorage.getItem('adminAuth') === 'true') showDashboard();
+        function showAlert(message, type) {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.className = `alert alert-${type} show`;
+            alertBox.textContent = message;
+            
+            setTimeout(() => {
+                alertBox.classList.remove('show');
+            }, 5000);
+        }
+
+        async function doLogout() {
+            if(confirm('Yakin ingin logout?')) {
+                await auth.signOut();
+                window.location.href = 'index.html';
+            }
+        }
+
+        // Initialize
+        window.onload = async () => {
+            await waitForFirebase();
+        };
     </script>
 </body>
 </html>
