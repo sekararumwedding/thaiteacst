@@ -16,231 +16,82 @@
     
     <style>
         :root {
-            --primary: #E67E22;
-            --primary-dark: #D35400;
-            --secondary: #3498DB;
-            --dark: #2C3E50;
-            --light: #ECF0F1;
-            --success: #27AE60;
-            --danger: #E74C3C;
+            --primary: #E67E22; --primary-dark: #D35400;
+            --dark: #2C3E50; --light: #ECF0F1;
+            --success: #27AE60; --danger: #E74C3C;
             --sidebar-width: 260px;
         }
-        
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        
         body { background: #f5f6fa; display: flex; min-height: 100vh; }
         
-        /* Sidebar */
         .sidebar {
-            width: var(--sidebar-width);
-            background: var(--dark);
-            color: white;
-            position: fixed;
-            height: 100vh;
-            overflow-y: auto;
+            width: var(--sidebar-width); background: var(--dark); color: white;
+            position: fixed; height: 100vh; overflow-y: auto; z-index: 100;
         }
-        
-        .sidebar-header {
-            padding: 25px 20px;
-            background: rgba(0,0,0,0.2);
-            text-align: center;
-        }
-        
+        .sidebar-header { padding: 25px 20px; background: rgba(0,0,0,0.2); text-align: center; }
         .sidebar-header i { font-size: 3rem; color: var(--primary); margin-bottom: 10px; }
         .sidebar-header h2 { font-size: 1.4rem; margin-bottom: 5px; }
         .sidebar-header p { font-size: 0.85rem; opacity: 0.8; }
         
         .sidebar-menu { padding: 20px 0; }
         .menu-item {
-            padding: 14px 20px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            cursor: pointer;
-            transition: 0.3s;
-            text-decoration: none;
-            color: white;
+            padding: 14px 20px; display: flex; align-items: center; gap: 12px;
+            cursor: pointer; transition: 0.3s; text-decoration: none; color: white;
         }
-        
-        .menu-item:hover, .menu-item.active {
-            background: rgba(230,126,34,0.2);
-            border-left: 4px solid var(--primary);
-        }
-        
+        .menu-item:hover, .menu-item.active { background: rgba(230,126,34,0.2); border-left: 4px solid var(--primary); }
         .menu-item i { width: 24px; text-align: center; }
         
-        .user-info {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 20px;
-            background: rgba(0,0,0,0.3);
-        }
-        
+        .user-info { position: absolute; bottom: 0; left: 0; right: 0; padding: 20px; background: rgba(0,0,0,0.3); }
         .user-info strong { display: block; margin-bottom: 5px; }
         .user-info small { opacity: 0.8; }
-        .logout-btn {
-            margin-top: 10px;
-            padding: 8px 15px;
-            background: var(--danger);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            width: 100%;
-        }
+        .logout-btn { margin-top: 10px; padding: 8px 15px; background: var(--danger); color: white; border: none; border-radius: 6px; cursor: pointer; width: 100%; }
         
-        /* Main Content */
-        .main-content {
-            margin-left: var(--sidebar-width);
-            flex: 1;
-            padding: 30px;
-        }
+        .main-content { margin-left: var(--sidebar-width); flex: 1; padding: 30px; }
+        .page-header { margin-bottom: 30px; }
+        .page-header h1 { font-size: 2rem; color: var(--dark); margin-bottom: 5px; }
+        .breadcrumb { color: #7f8c8d; font-size: 0.9rem; }
         
-        .page-header {
-            margin-bottom: 30px;
-        }
-        
-        .page-header h1 {
-            font-size: 2rem;
-            color: var(--dark);
-            margin-bottom: 5px;
-        }
-        
-        .breadcrumb {
-            color: #7f8c8d;
-            font-size: 0.9rem;
-        }
-        
-        /* Cards */
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-            margin-bottom: 25px;
-        }
-        
-        .card-title {
-            font-size: 1.3rem;
-            margin-bottom: 20px;
-            color: var(--dark);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
+        .card { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 25px; }
+        .card-title { font-size: 1.3rem; margin-bottom: 20px; color: var(--dark); display: flex; align-items: center; gap: 10px; }
         .card-title i { color: var(--primary); }
         
-        /* Form */
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-        }
-        
+        .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
         .form-group { margin-bottom: 20px; }
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--dark);
-        }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--dark); }
+        .form-group input, .form-group select { width: 100%; padding: 12px; border: 2px solid #ecf0f1; border-radius: 8px; font-size: 1rem; transition: 0.3s; }
+        .form-group input:focus, .form-group select:focus { border-color: var(--primary); outline: none; }
         
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #ecf0f1;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: 0.3s;
-        }
-        
-        .form-group input:focus, .form-group select:focus {
-            border-color: var(--primary);
-            outline: none;
-        }
-        
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: 0.3s;
-        }
-        
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-            width: 100%;
-        }
-        
+        .btn { padding: 12px 24px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; }
+        .btn-primary { background: var(--primary); color: white; width: 100%; }
         .btn-primary:hover { background: var(--primary-dark); }
         .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
         
-        /* Table */
-        .table-responsive {
-            overflow-x: auto;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ecf0f1;
-        }
-        
-        th {
-            background: #f8f9fa;
-            font-weight: 600;
-            color: var(--dark);
-        }
-        
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ecf0f1; }
+        th { background: #f8f9fa; font-weight: 600; color: var(--dark); }
         tr:hover { background: #f8f9fa; }
-        
-        .badge {
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-        
+        .badge { padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
         .badge-success { background: #d5f4e6; color: #27ae60; }
         .badge-danger { background: #fadbd8; color: #e74c3c; }
-        
-        .action-btn {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            margin-right: 5px;
-            font-size: 0.85rem;
-        }
-        
+        .action-btn { padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; margin-right: 5px; font-size: 0.85rem; }
         .btn-edit { background: var(--secondary); color: white; }
         .btn-delete { background: var(--danger); color: white; }
         
-        /* Alert */
-        .alert {
-            padding: 12px 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: none;
-        }
-        
+        .alert { padding: 12px 20px; border-radius: 8px; margin-bottom: 20px; display: none; }
         .alert-success { background: #d5f4e6; color: #27ae60; border: 1px solid #27ae60; }
         .alert-error { background: #fadbd8; color: #e74c3c; border: 1px solid #e74c3c; }
         .alert.show { display: block; }
+        
+        /* Stats Grid */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-left: 4px solid var(--primary); }
+        .stat-card h4 { font-size: 0.9rem; color: #7f8c8d; margin-bottom: 5px; }
+        .stat-card p { font-size: 1.8rem; font-weight: 700; color: var(--dark); }
+        
+        /* Section Visibility */
+        .section { display: none; }
+        .section.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
         @media (max-width: 768px) {
             .sidebar { width: 70px; }
@@ -261,21 +112,17 @@
         </div>
         
         <div class="sidebar-menu">
-            <a href="admin.html" class="menu-item active">
-                <i class="fas fa-home"></i>
-                <span>Dashboard</span>
+            <a href="#" class="menu-item active" onclick="showSection('dashboard', this); return false;">
+                <i class="fas fa-home"></i> <span>Dashboard</span>
             </a>
-            <a href="#kelolaKasir" class="menu-item" onclick="scrollToSection('kelolaKasir'); return false;">
-                <i class="fas fa-users"></i>
-                <span>Kelola Kasir</span>
+            <a href="#" class="menu-item" onclick="showSection('kasir', this); return false;">
+                <i class="fas fa-users"></i> <span>Kelola Kasir</span>
             </a>
-            <a href="#" class="menu-item">
-                <i class="fas fa-box"></i>
-                <span>Manajemen Stok</span>
+            <a href="#" class="menu-item" onclick="showSection('stok', this); return false;">
+                <i class="fas fa-box"></i> <span>Manajemen Stok</span>
             </a>
-            <a href="#" class="menu-item">
-                <i class="fas fa-chart-bar"></i>
-                <span>Transaksi</span>
+            <a href="#" class="menu-item" onclick="showSection('transaksi', this); return false;">
+                <i class="fas fa-chart-bar"></i> <span>Transaksi</span>
             </a>
         </div>
         
@@ -291,79 +138,91 @@
     <!-- Main Content -->
     <div class="main-content">
         <div class="page-header">
-            <h1>Kelola Kasir</h1>
-            <div class="breadcrumb">Dashboard / Kelola Kasir</div>
+            <h1 id="pageTitle">Dashboard</h1>
+            <div class="breadcrumb">Admin / <span id="breadcrumbSection">Dashboard</span></div>
         </div>
 
         <div id="alertBox" class="alert"></div>
 
-        <!-- Form Tambah Kasir -->
-        <div class="card" id="kelolaKasir">
-            <h2 class="card-title">
-                <i class="fas fa-user-plus"></i>
-                Tambah Kasir Baru
-            </h2>
-            
-            <form id="formKasir">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label><i class="fas fa-user"></i> Nama Lengkap</label>
-                        <input type="text" id="inputNama" placeholder="Masukkan nama lengkap" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label><i class="fas fa-envelope"></i> Email</label>
-                        <input type="email" id="inputEmail" placeholder="email@contoh.com" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label><i class="fas fa-lock"></i> Password</label>
-                        <input type="password" id="inputPassword" placeholder="Minimal 6 karakter" minlength="6" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label><i class="fas fa-store"></i> Cabang</label>
-                        <select id="inputCabang" required>
-                            <option value="">Pilih Cabang</option>
-                            <option value="cabang_01">Sport Center Bandara Soetta</option>
-                            <option value="cabang_02">TOD M1, Benda</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <button type="submit" id="btnSimpan" class="btn btn-primary">
-                    <i class="fas fa-save"></i> Simpan Kasir
-                </button>
-            </form>
+        <!-- ✅ SECTION: DASHBOARD -->
+        <div id="section-dashboard" class="section active">
+            <div class="stats-grid">
+                <div class="stat-card"><h4>Total Kasir</h4><p id="statKasir">0</p></div>
+                <div class="stat-card"><h4>Produk Aktif</h4><p>9</p></div>
+                <div class="stat-card"><h4>Cabang</h4><p>2</p></div>
+                <div class="stat-card"><h4>Status Sistem</h4><p style="color: var(--success);">Online</p></div>
+            </div>
+            <div class="card">
+                <h2 class="card-title"><i class="fas fa-info-circle"></i> Selamat Datang, Admin!</h2>
+                <p>Gunakan menu di sidebar untuk mengelola sistem. Fitur <b>Kelola Kasir</b> sudah aktif. Fitur Stok & Transaksi dapat dikembangkan sesuai kebutuhan operasional.</p>
+            </div>
         </div>
 
-        <!-- Daftar Kasir -->
-        <div class="card">
-            <h2 class="card-title">
-                <i class="fas fa-list"></i>
-                Daftar Kasir
-            </h2>
-            
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>No</th>
-                            <th>Nama</th>
-                            <th>Email</th>
-                            <th>Cabang</th>
-                            <th>Status</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabelKasir">
-                        <tr>
-                            <td colspan="6" style="text-align: center; padding: 30px;">
-                                <i class="fas fa-spinner fa-spin"></i> Memuat data...
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+        <!-- ✅ SECTION: KELOLA KASIR -->
+        <div id="section-kasir" class="section">
+            <div class="card">
+                <h2 class="card-title"><i class="fas fa-user-plus"></i> Tambah Kasir Baru</h2>
+                <form id="formKasir">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label><i class="fas fa-user"></i> Nama Lengkap</label>
+                            <input type="text" id="inputNama" placeholder="Masukkan nama lengkap" required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-envelope"></i> Email</label>
+                            <input type="email" id="inputEmail" placeholder="email@contoh.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-lock"></i> Password</label>
+                            <input type="password" id="inputPassword" placeholder="Minimal 6 karakter" minlength="6" required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-store"></i> Cabang</label>
+                            <select id="inputCabang" required>
+                                <option value="">Pilih Cabang</option>
+                                <option value="cabang_01">Sport Center Bandara Soetta</option>
+                                <option value="cabang_02">TOD M1, Benda</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" id="btnSimpan" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Simpan Kasir
+                    </button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2 class="card-title"><i class="fas fa-list"></i> Daftar Kasir</h2>
+                <div class="table-responsive">
+                    <table>
+                        <thead><tr><th>No</th><th>Nama</th><th>Email</th><th>Cabang</th><th>Status</th><th>Aksi</th></tr></thead>
+                        <tbody id="tabelKasir">
+                            <tr><td colspan="6" style="text-align:center;padding:30px;"><i class="fas fa-spinner fa-spin"></i> Memuat data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ✅ SECTION: MANAJEMEN STOK -->
+        <div id="section-stok" class="section">
+            <div class="card">
+                <h2 class="card-title"><i class="fas fa-box"></i> Manajemen Stok</h2>
+                <p>Fitur ini sedang dalam pengembangan. Anda dapat menambahkan data stok secara manual melalui Firestore Database sementara.</p>
+                <div style="margin-top:20px; padding:15px; background:#f8f9fa; border-radius:8px;">
+                    <i class="fas fa-code" style="color:var(--primary);"></i> <b>Developer Note:</b> Stok sudah terintegrasi otomatis dengan transaksi di `index.html`. Pengurangan stok berjalan real-time.
+                </div>
+            </div>
+        </div>
+
+        <!-- ✅ SECTION: TRANSAKSI -->
+        <div id="section-transaksi" class="section">
+            <div class="card">
+                <h2 class="card-title"><i class="fas fa-chart-line"></i> Riwayat Transaksi</h2>
+                <p>Fitur ini sedang dalam pengembangan. Data transaksi sudah tersimpan di collection `transactions` Firestore dan dapat diakses untuk laporan.</p>
+                <div style="margin-top:20px; padding:15px; background:#f8f9fa; border-radius:8px;">
+                    <i class="fas fa-database" style="color:var(--secondary);"></i> <b>Developer Note:</b> Semua transaksi tercatat dengan timestamp, metode pembayaran, dan kasir yang melayani.
+                </div>
             </div>
         </div>
     </div>
@@ -371,64 +230,59 @@
     <script>
         let auth, db;
         let currentUser = null;
-        
-        const branchNames = {
-            cabang_01: 'Sport Center Bandara Soetta',
-            cabang_02: 'TOD M1, Benda'
-        };
+        const branchNames = { cabang_01: 'Sport Center Bandara Soetta', cabang_02: 'TOD M1, Benda' };
+
+        // Navigasi SPA
+        function showSection(sectionId, element) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            
+            document.getElementById('section-' + sectionId).classList.add('active');
+            if(element) element.classList.add('active');
+            
+            const titles = { dashboard: 'Dashboard', kasir: 'Kelola Kasir', stok: 'Manajemen Stok', transaksi: 'Transaksi' };
+            document.getElementById('pageTitle').textContent = titles[sectionId];
+            document.getElementById('breadcrumbSection').textContent = titles[sectionId];
+            
+            if(sectionId === 'dashboard') updateStats();
+            if(sectionId === 'kasir') loadDaftarKasir();
+        }
 
         document.addEventListener('DOMContentLoaded', async function() {
             await waitForFirebase();
             
             auth.onAuthStateChanged(async (user) => {
-                if (!user) {
-                    window.location.href = 'index.html';
-                    return;
-                }
-                
+                if (!user) { window.location.href = 'index.html'; return; }
                 currentUser = user;
                 
                 try {
                     const userDoc = await db.collection('users').doc(user.uid).get();
                     const userData = userDoc.data();
-                    
                     if (!userData || userData.role !== 'admin') {
-                        alert('Akses ditolak! Halaman ini hanya untuk administrator.');
-                        window.location.href = 'index.html';
-                        return;
+                        alert('Akses ditolak!'); window.location.href = 'index.html'; return;
                     }
-                    
                     document.getElementById('adminName').textContent = userData.name || user.email;
-                    await loadDaftarKasir();
-                    
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert('Gagal memuat data: ' + error.message);
-                }
+                    updateStats();
+                } catch (error) { console.error('Auth error:', error); }
             });
             
-            document.getElementById('formKasir').addEventListener('submit', function(e) {
-                e.preventDefault();
-                simpanKasir();
-            });
+            document.getElementById('formKasir').addEventListener('submit', function(e) { e.preventDefault(); simpanKasir(); });
         });
 
         function waitForFirebase() {
             return new Promise((resolve) => {
-                const checkFirebase = setInterval(() => {
-                    if (typeof window.auth !== 'undefined' && typeof window.db !== 'undefined') {
-                        clearInterval(checkFirebase);
-                        auth = window.auth;
-                        db = window.db;
-                        resolve();
-                    }
+                const check = setInterval(() => {
+                    if (window.auth && window.db) { clearInterval(check); auth = window.auth; db = window.db; resolve(); }
                 }, 100);
-                
-                setTimeout(() => {
-                    clearInterval(checkFirebase);
-                    resolve();
-                }, 5000);
+                setTimeout(() => { clearInterval(check); resolve(); }, 5000);
             });
+        }
+
+        async function updateStats() {
+            try {
+                const snap = await db.collection('users').where('role', '==', 'cashier').get();
+                document.getElementById('statKasir').textContent = snap.size;
+            } catch(e) { console.error(e); }
         }
 
         async function simpanKasir() {
@@ -438,148 +292,65 @@
             const cabang = document.getElementById('inputCabang').value;
             const btn = document.getElementById('btnSimpan');
             
-            if(!nama || !email || !password || !cabang) {
-                showAlert('Semua field wajib diisi!', 'error');
-                return;
-            }
-
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+            if(!nama || !email || !password || !cabang) { showAlert('Semua field wajib diisi!', 'error'); return; }
+            btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
 
             try {
-                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-                const newUser = userCredential.user;
-                
-                await db.collection('users').doc(newUser.uid).set({
-                    name: nama,
-                    email: email,
-                    branchId: cabang,
-                    active: true,
-                    role: 'cashier',
-                    createdAt: new Date().toISOString(),
-                    createdBy: currentUser.uid
+                const cred = await auth.createUserWithEmailAndPassword(email, password);
+                await db.collection('users').doc(cred.user.uid).set({
+                    name: nama, email: email, branchId: cabang, active: true, role: 'cashier',
+                    createdAt: new Date().toISOString(), createdBy: currentUser.uid
                 });
-                
-                await newUser.delete();
-                
+                await cred.user.delete(); // Hapus sesi user baru agar tidak login otomatis
                 showAlert('✅ Kasir berhasil ditambahkan!', 'success');
                 document.getElementById('formKasir').reset();
-                await loadDaftarKasir();
-                
+                await loadDaftarKasir(); updateStats();
             } catch(error) {
-                console.error('Error:', error);
-                
-                if(error.code === 'auth/email-already-in-use') {
-                    showAlert('Email sudah terdaftar! Gunakan email lain.', 'error');
-                } else if(error.code === 'auth/weak-password') {
-                    showAlert('Password terlalu lemah. Minimal 6 karakter.', 'error');
-                } else if(error.code === 'auth/invalid-email') {
-                    showAlert('Format email tidak valid.', 'error');
-                } else {
-                    showAlert('Gagal menyimpan: ' + error.message, 'error');
-                }
+                showAlert('Gagal: ' + (error.code === 'auth/email-already-in-use' ? 'Email sudah terdaftar!' : error.message), 'error');
             } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-save"></i> Simpan Kasir';
+                btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Simpan Kasir';
             }
         }
 
         async function loadDaftarKasir() {
             const tbody = document.getElementById('tabelKasir');
-            
             try {
-                const snapshot = await db.collection('users')
-                    .where('role', '==', 'cashier')
-                    .get();
-                
-                if(snapshot.empty) {
-                    tbody.innerHTML = `
-                        <tr>
-                            <td colspan="6" style="text-align: center; padding: 30px; color: #7f8c8d;">
-                                <i class="fas fa-inbox"></i> Belum ada data kasir
-                            </td>
-                        </tr>
-                    `;
-                    return;
-                }
-                
-                let html = '';
-                let no = 1;
-                
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    const statusClass = data.active ? 'badge-success' : 'badge-danger';
-                    const statusText = data.active ? 'Aktif' : 'Nonaktif';
-                    
-                    html += `
-                        <tr>
-                            <td>${no++}</td>
-                            <td>${data.name || '-'}</td>
-                            <td>${data.email || '-'}</td>
-                            <td>${branchNames[data.branchId] || data.branchId || '-'}</td>
-                            <td><span class="badge ${statusClass}">${statusText}</span></td>
-                            <td>
-                                <button class="action-btn btn-edit" onclick="editKasir('${doc.id}')">
-                                    <i class="fas fa-edit"></i> Edit
-                                </button>
-                                <button class="action-btn btn-delete" onclick="hapusKasir('${doc.id}', '${data.name || data.email}')">
-                                    <i class="fas fa-trash"></i> Hapus
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                });
-                
-                tbody.innerHTML = html;
-                
-            } catch(error) {
-                console.error('Error loading data:', error);
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="6" style="text-align: center; padding: 30px; color: var(--danger);">
-                            <i class="fas fa-exclamation-triangle"></i> Gagal memuat data
+                const snap = await db.collection('users').where('role', '==', 'cashier').get();
+                if(snap.empty) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:30px;color:#7f8c8d;"><i class="fas fa-inbox"></i> Belum ada data kasir</td></tr>'; return; }
+                let html = '', no = 1;
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    html += `<tr>
+                        <td>${no++}</td><td>${d.name||'-'}</td><td>${d.email||'-'}</td>
+                        <td>${branchNames[d.branchId]||d.branchId||'-'}</td>
+                        <td><span class="badge ${d.active?'badge-success':'badge-danger'}">${d.active?'Aktif':'Nonaktif'}</span></td>
+                        <td>
+                            <button class="action-btn btn-edit" onclick="editKasir('${doc.id}')"><i class="fas fa-edit"></i></button>
+                            <button class="action-btn btn-delete" onclick="hapusKasir('${doc.id}','${d.name||d.email}')"><i class="fas fa-trash"></i></button>
                         </td>
-                    </tr>
-                `;
-            }
+                    </tr>`;
+                });
+                tbody.innerHTML = html;
+            } catch(e) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--danger);">Gagal memuat data</td></tr>'; }
         }
 
-        function editKasir(uid) {
-            alert('Fitur edit akan segera hadir.\nUID: ' + uid);
-        }
-
+        function editKasir(uid) { alert('Fitur edit akan segera hadir. UID: ' + uid); }
         async function hapusKasir(uid, nama) {
-            if(!confirm(`Yakin ingin menghapus kasir "${nama}"?`)) return;
-            
-            try {
-                await db.collection('users').doc(uid).delete();
-                showAlert('Kasir berhasil dihapus', 'success');
-                await loadDaftarKasir();
-            } catch(error) {
-                showAlert('Gagal menghapus: ' + error.message, 'error');
-            }
+            if(!confirm(`Hapus kasir "${nama}"?`)) return;
+            try { await db.collection('users').doc(uid).delete(); showAlert('Berhasil dihapus', 'success'); loadDaftarKasir(); updateStats(); }
+            catch(e) { showAlert('Gagal: ' + e.message, 'error'); }
         }
 
-        function scrollToSection(sectionId) {
-            const element = document.getElementById(sectionId);
-            if (element) {
-                element.scrollIntoView({ behavior: 'smooth' });
-            }
-        }
-
-        function showAlert(message, type) {
-            const alertBox = document.getElementById('alertBox');
-            alertBox.className = `alert alert-${type} show`;
-            alertBox.textContent = message;
-            
-            setTimeout(() => {
-                alertBox.classList.remove('show');
-            }, 5000);
+        function showAlert(msg, type) {
+            const box = document.getElementById('alertBox');
+            box.className = `alert alert-${type} show`; box.textContent = msg;
+            setTimeout(() => box.classList.remove('show'), 5000);
         }
 
         async function doLogout() {
             if(confirm('Yakin ingin logout?')) {
                 await auth.signOut();
+                // Paksa reload ke halaman login
                 window.location.href = 'index.html';
             }
         }
