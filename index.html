@@ -666,7 +666,7 @@
         ];
         
         const branchNames = { cabang_01: 'Sport Center Bandara Soetta', cabang_02: 'TOD M1, Benda' };
-        const formatRp = n => 'Rp ' + new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0 }).format(n || 0);
+        const formatRp = n => new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0 }).format(n || 0);
 
         // Initialize
         window.onload = async function() {
@@ -753,7 +753,7 @@
                         <h4>${p.name}</h4>
                         <p>${p.desc}</p>
                         <div class="stock ${stock < 10 ? 'low' : ''}">Stok: ${stock}</div>
-                        <div class="price">${formatRp(p.price)}</div>
+                        <div class="price">Rp ${formatRp(p.price)}</div>
                         <button class="add-btn" onclick="addToCart('${p.id}')" ${stock <= 0 ? 'disabled' : ''}>
                             ${stock > 0 ? '<i class="fas fa-cart-plus"></i> Tambah' : 'Stok Habis'}
                         </button>
@@ -797,7 +797,7 @@
                     <img src="${item.img}" alt="${item.name}" onerror="this.src='image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23f8f9fa%22 width=%22100%22 height=%22100%22/><text y=%22.9em%22 font-size=%2280%22 x=%2250%22 text-anchor=%22middle%22>🧋</text></svg>'">
                     <div class="cart-item-info">
                         <div class="cart-item-name">${item.name}</div>
-                        <div class="cart-item-price">${formatRp(item.price)}</div>
+                        <div class="cart-item-price">Rp ${formatRp(item.price)}</div>
                         <div class="cart-controls">
                             <button class="qty-btn minus" onclick="decreaseQty('${item.id}')"><i class="fas fa-minus"></i></button>
                             <span class="qty-value">${item.qty}</span>
@@ -859,8 +859,8 @@
             const discount = parseInt(document.getElementById('discount').value) || 0;
             const total = Math.max(0, subtotal - discount);
             
-            document.getElementById('subtotal').textContent = formatRp(subtotal);
-            document.getElementById('total').textContent = formatRp(total);
+            document.getElementById('subtotal').textContent = 'Rp ' + formatRp(subtotal);
+            document.getElementById('total').textContent = 'Rp ' + formatRp(total);
         }
 
         function selectPay(method, btn) {
@@ -930,7 +930,7 @@
                 // Show action buttons
                 document.getElementById('actionButtons').style.display = 'grid';
                 
-                // Auto print dengan fungsi printStruk
+                // Auto print
                 setTimeout(() => printStruk(), 500);
                 
             } catch (e) {
@@ -943,7 +943,7 @@
         }
 
         // ============================================
-        // PRINT STRUK - PROFESSIONAL FORMAT
+        // PRINT STRUK - PROFESSIONAL FORMAT (FINAL)
         // ============================================
         function printStruk() {
             if (!lastTransaction) {
@@ -953,38 +953,40 @@
             
             const customerName = lastTransaction.customerName || 'Pelanggan';
             const date = new Date();
-            const dateStr = date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+            const dateStr = date.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
             const timeStr = date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-            const branch = branchNames[currentBranch] || currentBranch;
             
-            // Clean text function - remove non-ASCII characters
+            // Clean text - remove non-ASCII
             function cleanText(text) {
                 return text.replace(/[^\x00-\x7F]/g, '').trim();
             }
             
-            // Build professional receipt
+            // Right pad function for alignment (32 chars width for 58mm thermal)
+            function padRight(str, len) {
+                return str.toString().padEnd(len, ' ');
+            }
+            
+            // Build receipt
             let receipt = '';
             
             // Header - Centered
             receipt += '       THAI TEA CST\n';
             receipt += '--------------------------------\n';
             receipt += `Pelanggan: ${customerName}\n`;
-            receipt += `${branch}\n`;
-            receipt += `${dateStr}, ${timeStr}\n`;
+            receipt += `Tgl: ${dateStr} ${timeStr}\n`;
             receipt += '--------------------------------\n\n';
             
-            // Items - Left and Right aligned
+            // Items - One line each: Name + Qty + Price (right aligned)
             lastTransaction.items.forEach(item => {
-                const itemName = item.name.padEnd(20, ' ');
-                const itemQty = `${item.qty} x ${formatRp(item.price)}`.padEnd(18, ' ');
+                const itemName = item.name;
                 const itemTotal = formatRp(item.price * item.qty);
                 
-                receipt += `${itemName}\n`;
-                receipt += `${itemQty}\n`;
-                receipt += `${itemTotal}\n\n`;
+                // Format: Item Name (left) + Price (right, padded)
+                receipt += padRight(itemName, 22);
+                receipt += padRight(itemTotal, 10) + '\n';
             });
             
-            receipt += '--------------------------------\n';
+            receipt += '\n--------------------------------\n';
             receipt += `Subtotal:       ${formatRp(lastTransaction.subtotal)}\n`;
             
             if (lastTransaction.discount > 0) {
@@ -996,22 +998,20 @@
             receipt += `Pembayaran:     ${selectedPayment.toUpperCase()}\n`;
             receipt += '--------------------------------\n\n';
             
-            // Footer - Sweet message
-            receipt += 'Pesanan Kembali: +62 822-9999-7227\n\n';
-            receipt += '     Terima Kasih!\n';
-            receipt += '  Selamat Menikmati!\n\n';
-            receipt += ' Follow us on Instagram\n';
-            receipt += '    @thaiteacst\n';
+            // Footer - Centered
+            receipt += 'WA: +62 822-9999-7227\n\n';
+            receipt += '      Terima Kasih!\n';
+            receipt += '   Selamat Menikmati!\n';
             
-            // Clean the receipt text before encoding
+            // Clean before encoding
             const cleanReceipt = cleanText(receipt);
             
-            // Use rawbt:base64 format
+            // Use rawbt:base64
             try {
                 const encodedData = btoa(cleanReceipt);
                 window.location.href = "rawbt:base64," + encodedData;
                 
-                // Fallback after 2 seconds
+                // Fallback
                 setTimeout(() => {
                     if (!document.hidden) {
                         if (confirm('RawBT tidak terbuka. Install aplikasi RawBT Printer?')) {
@@ -1120,7 +1120,7 @@
                             hour: '2-digit', minute: '2-digit'
                         });
                         
-                        // View-only untuk kasir (tanpa tombol hapus)
+                        // View-only untuk kasir
                         const actionCell = currentUserRole === 'cashier' ? 
                             '<td style="text-align:center;"><small style="color:#7f8c8d;">View Only</small></td>' :
                             `<td style="text-align:center;">
@@ -1133,7 +1133,7 @@
                             <td>${timeStr}</td>
                             <td>${d.cashierName || '-'}</td>
                             <td>${Array.isArray(d.items) ? d.items.map(i => i.name).join(', ') : '-'}</td>
-                            <td><b>${formatRp(d.total)}</b></td>
+                            <td><b>Rp ${formatRp(d.total)}</b></td>
                             <td><span style="padding:4px 10px; background:#e3f2fd; color:#1565c0; border-radius:12px; font-size:0.75rem; font-weight:600;">${d.paymentMethod}</span></td>
                             ${actionCell}
                         </tr>`;
