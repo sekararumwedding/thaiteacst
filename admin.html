@@ -370,18 +370,16 @@
         function renderChart(data) {
             const ctx = document.getElementById('salesChart');
             if (!ctx) return;
-            
             const labels = Object.keys(data).slice(-7);
             const values = Object.values(data).slice(-7);
-            
+    
             if (chartInstance) chartInstance.destroy();
-            
             chartInstance = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: labels.length ? labels : ['Tidak ada data'],
                     datasets: [{
-                        label: 'Omset Harian',
+                        label: 'Omset',
                         data: values.length ? values : [0],
                         backgroundColor: '#E67E22',
                         borderRadius: 6
@@ -390,8 +388,19 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    scales: { y: { beginAtZero: true, ticks: { callback: v => 'Rp ' + (v/1000) + 'k' } } },
-                    plugins: { legend: { display: false } }
+                    scales: {
+                         y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return 'Rp ' + (value/1000) + 'k';
+                                }
+                            }
+                         }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
                 }
             });
         }
