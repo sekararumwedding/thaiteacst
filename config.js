@@ -1,5 +1,5 @@
 const firebaseConfig = {
-    apiKey: "AIzaSyDt5tMCf480mDGGeDd7liKuGt3zS2_M5OI",  // <-- GANTI DENGAN API KEY ANDA
+    apiKey: "AIzaSyAWuzMWsOycxq0gjNm5rP3hDVOKuYuKLvA",  // <-- GANTI DENGAN API KEY ANDA
     authDomain: "thai-tea-cst-ac9db.firebaseapp.com",
     projectId: "thai-tea-cst-ac9db",
     storageBucket: "thai-tea-cst-ac9db.firebasestorage.app",
