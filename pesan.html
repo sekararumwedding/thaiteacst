@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#E67E22">
+    <title>Thai Tea CST - Pesan Online</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Load Config -->
+    <script src="config.js"></script>
+    
+    <style>
+        :root {
+            --primary: #E67E22;
+            --primary-dark: #D35400;
+            --dark: #2C3E50;
+            --light: #ECF0F1;
+            --success: #27AE60;
+            --danger: #E74C3C;
+            --white: #ffffff;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        html {
+            font-size: 16px;
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            background: #f5f6fa;
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+        
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: var(--white);
+            padding: 20px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header-logo {
+            width: 80px;
+            height: auto;
+            margin-bottom: 10px;
+            background: white;
+            padding: 10px;
+            border-radius: 50%;
+        }
+        
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        /* Auth Section */
+        .auth-section {
+            background: var(--white);
+            padding: 30px 20px;
+            margin: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .auth-section h2 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+        
+        .auth-section p {
+            color: #7f8c8d;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 0.9rem;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid var(--light);
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: 0.3s;
+        }
+        
+        .form-group input:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: var(--white);
+        }
+        
+        .btn-primary:active {
+            transform: scale(0.98);
+            background: var(--primary-dark);
+        }
+        
+        /* Store Description */
+        .store-desc {
+            background: var(--white);
+            padding: 20px;
+            margin: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-left: 4px solid var(--primary);
+        }
+        
+        .store-desc h3 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .store-desc p {
+            color: #555;
+            line-height: 1.7;
+            font-size: 0.95rem;
+        }
+        
+        /* Menu Section */
+        .menu-section {
+            padding: 20px;
+            display: none;
+        }
+        
+        .menu-section.active {
+            display: block;
+        }
+        
+        .section-title {
+            color: var(--dark);
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-title i {
+            color: var(--primary);
+        }
+        
+        /* Products Grid */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 100px;
+        }
+        
+        .product-card {
+            background: var(--white);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: 0.3s;
+        }
+        
+        .product-card:active {
+            transform: scale(0.98);
+        }
+        
+        .product-img {
+            width: 100%;
+            height: 140px;
+            object-fit: cover;
+            background: #f8f9fa;
+        }
+        
+        .product-info {
+            padding: 12px;
+        }
+        
+        .product-name {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 5px;
+            font-size: 0.95rem;
+        }
+        
+        .product-price {
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+        
+        .add-to-cart {
+            width: 100%;
+            padding: 10px;
+            background: var(--primary);
+            color: var(--white);
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        
+        .add-to-cart:active {
+            background: var(--primary-dark);
+        }
+        
+        /* Cart Button (Floating) */
+        .cart-fab {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--success);
+            color: var(--white);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            cursor: pointer;
+            z-index: 90;
+            transition: 0.3s;
+            border: none;
+            font-size: 1.5rem;
+        }
+        
+        .cart-fab:active {
+            transform: scale(0.95);
+        }
+        
+        .cart-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--danger);
+            color: var(--white);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+        
+        /* Custom Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            backdrop-filter: blur(4px);
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: var(--white);
+            padding: 30px;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: modalSlide 0.3s ease;
+        }
+        
+        @keyframes modalSlide {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--light);
+        }
+        
+        .modal-title {
+            font-size: 1.3rem;
+            color: var(--primary);
+            font-weight: 700;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #7f8c8d;
+            cursor: pointer;
+            padding: 0 5px;
+        }
+        
+        .modal-close:active {
+            color: var(--danger);
+        }
+        
+        /* Cart Items */
+        .cart-item {
+            display: flex;
+            gap: 12px;
+            padding: 15px 0;
+            border-bottom: 1px solid var(--light);
+        }
+        
+        .cart-item-img {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            object-fit: cover;
+            background: #f8f9fa;
+        }
+        
+        .cart-item-info {
+            flex: 1;
+        }
+        
+        .cart-item-name {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+        
+        .cart-item-price {
+            color: var(--primary);
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .cart-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .qty-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            background: var(--light);
+            color: var(--dark);
+        }
+        
+        .qty-btn:active {
+            background: var(--primary);
+            color: var(--white);
+        }
+        
+        .qty-value {
+            font-weight: 600;
+            min-width: 30px;
+            text-align: center;
+        }
+        
+        .cart-notes {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid var(--light);
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            resize: none;
+        }
+        
+        .cart-notes:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+        
+        /* Cart Summary */
+        .cart-summary {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid var(--light);
+        }
+        
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+        
+        .summary-total {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 2px solid var(--light);
+        }
+        
+        .checkout-btn {
+            width: 100%;
+            padding: 16px;
+            background: var(--success);
+            color: var(--white);
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: 0.3s;
+        }
+        
+        .checkout-btn:active {
+            transform: scale(0.98);
+            background: #229954;
+        }
+        
+        .checkout-btn:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+        
+        /* User Info Bar */
+        .user-bar {
+            background: var(--white);
+            padding: 15px 20px;
+            margin: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            display: none;
+        }
+        
+        .user-bar.active {
+            display: flex;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            color: var(--white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .user-phone {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+        }
+        
+        .logout-btn {
+            background: var(--danger);
+            color: var(--white);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        /* Responsive */
+        @media (min-width: 768px) {
+            .products-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        @media (min-width: 1024px) {
+            .products-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+        
+        /* Loading Spinner */
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top: 3px solid white;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #7f8c8d;
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 15px;
+            opacity: 0.3;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <div class="header">
+        <img src="https://i.ibb.co.com/mC3npXRW/Gemini-Generated-Image-8aemtl8aemtl8aem-removebg-preview.png" 
+             alt="Thai Tea CST" 
+             class="header-logo">
+        <h1>THAI TEA CST</h1>
+        <p>Pesan Online - Cepat & Mudah</p>
+    </div>
+
+    <!-- User Info Bar -->
+    <div class="user-bar" id="userBar">
+        <div class="user-info">
+            <div class="user-avatar" id="userAvatar">U</div>
+            <div>
+                <div class="user-name" id="userName">User</div>
+                <div class="user-phone" id="userPhone">08xx-xxxx-xxxx</div>
+            </div>
+        </div>
+        <button class="logout-btn" onclick="showLogoutConfirm()">Logout</button>
+    </div>
+
+    <!-- Auth Section -->
+    <div class="auth-section" id="authSection">
+        <h2><i class="fas fa-user-circle"></i> Selamat Datang</h2>
+        <p>Thai Tea CST menyajikan minuman thai tea segar dengan rasa autentik dan bahan berkualitas. Tersedia berbagai varian rasa dengan harga terjangkau, cocok untuk dinikmati kapan saja. Dibuat fresh setiap pesanan, manisnya pas dan bikin nagih!</p>
+        
+        <div class="form-group">
+            <label><i class="fas fa-user"></i> Nama Lengkap</label>
+            <input type="text" id="customerName" placeholder="Masukkan nama lengkap">
+        </div>
+        
+        <div class="form-group">
+            <label><i class="fab fa-whatsapp"></i> Nomor WhatsApp</label>
+            <input type="tel" id="customerPhone" placeholder="Contoh: 081234567890">
+        </div>
+        
+        <button class="btn btn-primary" onclick="registerCustomer()">
+            <i class="fas fa-sign-in-alt"></i> Mulai Pesan
+        </button>
+    </div>
+
+    <!-- Store Description (Always Visible) -->
+    <div class="store-desc">
+        <h3><i class="fas fa-info-circle"></i> Tentang Kami</h3>
+        <p>Thai Tea CST menyajikan minuman thai tea segar dengan rasa autentik dan bahan berkualitas. Tersedia berbagai varian rasa dengan harga terjangkau, cocok untuk dinikmati kapan saja. Dibuat fresh setiap pesanan, manisnya pas dan bikin nagih!</p>
+    </div>
+
+    <!-- Menu Section -->
+    <div class="menu-section" id="menuSection">
+        <h2 class="section-title">
+            <i class="fas fa-coffee"></i> Menu Kami
+        </h2>
+        
+        <div class="products-grid" id="productsGrid">
+            <!-- Products will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Floating Cart Button -->
+    <button class="cart-fab" id="cartFab" onclick="openCartModal()" style="display: none;">
+        <i class="fas fa-shopping-cart"></i>
+        <span class="cart-badge" id="cartBadge">0</span>
+    </button>
+
+    <!-- Cart Modal -->
+    <div class="modal" id="cartModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title"><i class="fas fa-shopping-cart"></i> Keranjang Pesanan</h2>
+                <button class="modal-close" onclick="closeCartModal()">&times;</button>
+            </div>
+            
+            <div id="cartItems">
+                <div class="empty-state">
+                    <i class="fas fa-shopping-cart"></i>
+                    <p>Keranjang masih kosong</p>
+                </div>
+            </div>
+            
+            <div class="cart-summary" id="cartSummary" style="display: none;">
+                <div class="summary-row">
+                    <span>Subtotal</span>
+                    <span id="cartSubtotal">Rp 0</span>
+                </div>
+                <div class="summary-row summary-total">
+                    <span>Total</span>
+                    <span id="cartTotal">Rp 0</span>
+                </div>
+                
+                <button class="checkout-btn" onclick="checkout()">
+                    <i class="fab fa-whatsapp"></i> Selesaikan Pesanan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Confirm Modal -->
+    <div class="modal" id="confirmModal">
+        <div class="modal-content" style="text-align: center;">
+            <img src="https://i.ibb.co.com/mC3npXRW/Gemini-Generated-Image-8aemtl8aemtl8aem-removebg-preview.png" 
+                 alt="CST SYSTEM" 
+                 style="width: 80px; margin-bottom: 15px;">
+            <h2 class="modal-title" style="margin-bottom: 15px;">CST SYSTEM</h2>
+            <p class="modal-message" id="confirmMessage" style="margin-bottom: 25px; color: #555;">Apakah Anda yakin?</p>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button class="btn" style="background: var(--light); color: var(--dark); flex: 1;" onclick="closeCustomConfirm()">Batal</button>
+                <button class="btn btn-primary" style="flex: 1;" id="confirmBtn">Ya</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- WhatsApp Redirect Modal -->
+    <div class="modal" id="waModal">
+        <div class="modal-content" style="text-align: center;">
+            <img src="https://i.ibb.co.com/mC3npXRW/Gemini-Generated-Image-8aemtl8aemtl8aem-removebg-preview.png" 
+                 alt="CST SYSTEM" 
+                 style="width: 80px; margin-bottom: 15px;">
+            <h2 class="modal-title" style="margin-bottom: 15px;">CST SYSTEM</h2>
+            <div style="margin: 20px 0;">
+                <i class="fab fa-whatsapp" style="font-size: 4rem; color: var(--success); margin-bottom: 15px;"></i>
+                <p class="modal-message" style="color: #555; line-height: 1.6;">
+                    Pesanan sedang dialihkan ke WhatsApp Admin...<br><br>
+                    <small style="color: #7f8c8d;">Silakan kirim pesan untuk konfirmasi pesanan Anda</small>
+                </p>
+            </div>
+            <button class="btn btn-primary" onclick="closeWAModal()">
+                <i class="fas fa-check"></i> Mengerti
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Global Variables
+        let cart = [];
+        let currentUser = null;
+        let products = [];
+        let confirmCallback = null;
+        const ADMIN_PHONE = '6282299997227'; // Admin WhatsApp number
+        
+        const branchNames = { cabang_01: 'Sport Center Bandara Soetta', cabang_02: 'TOD M1, Benda' };
+        const formatRp = n => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n || 0);
+        
+        // Default Products
+        const defaultProducts = [
+            { id: 'prem_thai', name: 'Premium Thai Tea', price: 20000, img: 'https://i.ibb.co.com/S44X01hn/Premium-Thai-Tea-with-Cream-Cheese-Shredded-Cheese.jpg', desc: 'with Cream Cheese & Shredded Cheese' },
+            { id: 'prem_matcha', name: 'Premium Matcha', price: 25000, img: 'https://i.ibb.co.com/XZ2k5y1T/Premium-Matcha-with-Cream-Cheese-Shredded-Cheese.jpg', desc: 'with Cream Cheese & Shredded Cheese' },
+            { id: 'prem_choco', name: 'Premium Chocolate', price: 20000, img: 'https://i.ibb.co.com/ZzSGpkQB/Premium-Chocolate-with-Cream-Cheese-Shredded-Cheese.jpg', desc: 'with Cream Cheese & Shredded Cheese' },
+            { id: 'orig_thai', name: 'Thai Tea', price: 10000, img: 'https://i.ibb.co.com/N6jCd6sw/Thai-Tea-original.jpg', desc: 'Original choice' },
+            { id: 'orig_matcha', name: 'Matcha', price: 10000, img: 'https://i.ibb.co.com/99Tb8ZjY/Matcha-original.jpg', desc: 'Original choice' },
+            { id: 'orig_choco', name: 'Chocolate', price: 10000, img: 'https://i.ibb.co.com/bjzr6NNm/Chocolate-original.jpg', desc: 'Original choice' },
+            { id: 'top_cream', name: 'Cream Cheese', price: 3000, img: 'https://i.ibb.co.com/SXyM8m2L/Extra-Topping-Cream-Cheese.jpg', desc: 'Extra topping' },
+            { id: 'top_cheese', name: 'Cheese Parut', price: 3000, img: 'https://i.ibb.co.com/gZv3pDvz/Extra-Topping-Cheese-Keju-Parut.jpg', desc: 'Extra topping' },
+            { id: 'top_bubble', name: 'Bubble', price: 3000, img: 'https://i.ibb.co.com/d0DwHSr4/Extra-Topping-Bubble-Tapioca-Pearl.jpg', desc: 'Extra topping' }
+        ];
+
+        // Initialize
+        window.onload = async function() {
+            await new Promise(r => setTimeout(r, 1000));
+            
+            // Check if user already registered
+            const savedCustomer = localStorage.getItem('cst_customer');
+            if (savedCustomer) {
+                currentUser = JSON.parse(savedCustomer);
+                showMenu();
+            }
+            
+            // Load products
+            loadProducts();
+        };
+
+        // Load Products from Firestore or use defaults
+        async function loadProducts() {
+            try {
+                const snap = await db.collection('products').get();
+                if (!snap.empty) {
+                    products = [];
+                    snap.forEach(doc => {
+                        products.push({ id: doc.id, ...doc.data() });
+                    });
+                } else {
+                    products = defaultProducts;
+                }
+                renderProducts();
+            } catch (e) {
+                console.error('Error loading products:', e);
+                products = defaultProducts;
+                renderProducts();
+            }
+        }
+
+        function renderProducts() {
+            const grid = document.getElementById('productsGrid');
+            grid.innerHTML = products.map(p => `
+                <div class="product-card">
+                    <img src="${p.img}" alt="${p.name}" class="product-img" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23f8f9fa%22 width=%22100%22 height=%22100%22/><text y=%22.9em%22 font-size=%2280%22 x=%2250%22 text-anchor=%22middle%22>🧋</text></svg>'">
+                    <div class="product-info">
+                        <div class="product-name">${p.name}</div>
+                        <div class="product-price">${formatRp(p.price)}</div>
+                        <button class="add-to-cart" onclick="addToCart('${p.id}')">
+                            <i class="fas fa-cart-plus"></i> Tambah
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Customer Registration
+        async function registerCustomer() {
+            const name = document.getElementById('customerName').value.trim();
+            const phone = document.getElementById('customerPhone').value.trim();
+            
+            if (!name || !phone) {
+                showCustomConfirm('Mohon lengkapi nama dan nomor WhatsApp!', null);
+                setTimeout(closeCustomConfirm, 2000);
+                return;
+            }
+            
+            // Validate phone number
+            if (!phone.match(/^08[0-9]{8,11}$/)) {
+                showCustomConfirm('Nomor WhatsApp tidak valid. Gunakan format 08xx-xxxx-xxxx', null);
+                setTimeout(closeCustomConfirm, 3000);
+                return;
+            }
+            
+            try {
+                // Save to Firestore
+                const customerRef = db.collection('customers').doc(phone);
+                await customerRef.set({
+                    name: name,
+                    phone: phone,
+                    registeredAt: new Date().toISOString(),
+                    lastOrder: new Date().toISOString()
+                }, { merge: true });
+                
+                // Save to localStorage
+                currentUser = { name, phone };
+                localStorage.setItem('cst_customer', JSON.stringify(currentUser));
+                
+                showMenu();
+                
+            } catch (e) {
+                console.error('Registration error:', e);
+                showCustomConfirm('Gagal menyimpan data. Silakan coba lagi.', null);
+                setTimeout(closeCustomConfirm, 3000);
+            }
+        }
+
+        function showMenu() {
+            document.getElementById('authSection').style.display = 'none';
+            document.getElementById('menuSection').classList.add('active');
+            document.getElementById('cartFab').style.display = 'flex';
+            document.getElementById('userBar').classList.add('active');
+            document.getElementById('userName').textContent = currentUser.name;
+            document.getElementById('userPhone').textContent = currentUser.phone;
+            document.getElementById('userAvatar').textContent = currentUser.name.charAt(0).toUpperCase();
+        }
+
+        function showLogoutConfirm() {
+            showCustomConfirm('Yakin ingin logout?', () => {
+                localStorage.removeItem('cst_customer');
+                location.reload();
+            });
+        }
+
+        // Cart Functions
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+            
+            const existingItem = cart.find(item => item.id === productId);
+            
+            if (existingItem) {
+                existingItem.qty++;
+            } else {
+                cart.push({
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    img: product.img,
+                    qty: 1,
+                    notes: ''
+                });
+            }
+            
+            updateCartUI();
+            showCustomConfirm(`${product.name} ditambahkan ke keranjang`, null);
+            setTimeout(closeCustomConfirm, 1500);
+        }
+
+        function updateCartUI() {
+            const badge = document.getElementById('cartBadge');
+            const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
+            badge.textContent = totalItems;
+            
+            if (totalItems > 0) {
+                badge.style.display = 'flex';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        function openCartModal() {
+            const modal = document.getElementById('cartModal');
+            const cartItems = document.getElementById('cartItems');
+            const cartSummary = document.getElementById('cartSummary');
+            
+            if (cart.length === 0) {
+                cartItems.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-shopping-cart"></i>
+                        <p>Keranjang masih kosong</p>
+                    </div>
+                `;
+                cartSummary.style.display = 'none';
+            } else {
+                cartItems.innerHTML = cart.map((item, index) => `
+                    <div class="cart-item">
+                        <img src="${item.img}" alt="${item.name}" class="cart-item-img">
+                        <div class="cart-item-info">
+                            <div class="cart-item-name">${item.name}</div>
+                            <div class="cart-item-price">${formatRp(item.price)}</div>
+                            <div class="cart-controls">
+                                <button class="qty-btn" onclick="decreaseQty(${index})"><i class="fas fa-minus"></i></button>
+                                <span class="qty-value">${item.qty}</span>
+                                <button class="qty-btn" onclick="increaseQty(${index})"><i class="fas fa-plus"></i></button>
+                                <button class="qty-btn" style="background: var(--danger); color: white; margin-left: auto;" onclick="removeFromCart(${index})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                            <textarea class="cart-notes" placeholder="Catatan (opsional): contoh kurang gula, tanpa es..." 
+                                      onchange="updateNotes(${index}, this.value)">${item.notes || ''}</textarea>
+                        </div>
+                    </div>
+                `).join('');
+                
+                const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+                document.getElementById('cartSubtotal').textContent = formatRp(subtotal);
+                document.getElementById('cartTotal').textContent = formatRp(subtotal);
+                cartSummary.style.display = 'block';
+            }
+            
+            modal.classList.add('active');
+        }
+
+        function closeCartModal() {
+            document.getElementById('cartModal').classList.remove('active');
+        }
+
+        function increaseQty(index) {
+            cart[index].qty++;
+            openCartModal();
+            updateCartUI();
+        }
+
+        function decreaseQty(index) {
+            if (cart[index].qty > 1) {
+                cart[index].qty--;
+                openCartModal();
+                updateCartUI();
+            } else {
+                removeFromCart(index);
+            }
+        }
+
+        function removeFromCart(index) {
+            showCustomConfirm('Hapus item dari keranjang?', () => {
+                cart.splice(index, 1);
+                openCartModal();
+                updateCartUI();
+            });
+        }
+
+        function updateNotes(index, notes) {
+            cart[index].notes = notes;
+        }
+
+        // Checkout with WhatsApp Integration
+        async function checkout() {
+            if (cart.length === 0) {
+                showCustomConfirm('Keranjang masih kosong!', null);
+                setTimeout(closeCustomConfirm, 2000);
+                return;
+            }
+            
+            const total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            const orderData = {
+                customerName: currentUser.name,
+                customerPhone: currentUser.phone,
+                items: cart,
+                total: total,
+                status: 'pending',
+                orderType: 'online',
+                createdAt: new Date().toISOString(),
+                branchId: 'cabang_01' // Default branch
+            };
+            
+            try {
+                // 1. Save to Firestore - orders collection
+                await db.collection('orders').add(orderData);
+                
+                // 2. Save to transactions collection (for cashier compatibility)
+                await db.collection('transactions').add({
+                    ...orderData,
+                    paymentMethod: 'pending',
+                    cashierName: 'Online Order',
+                    cashierId: 'online',
+                    timestamp: new Date()
+                });
+                
+                // 3. Show WhatsApp redirect modal
+                document.getElementById('waModal').classList.add('active');
+                
+                // 4. Wait a moment, then open WhatsApp
+                setTimeout(() => {
+                    sendWhatsAppMessage(orderData);
+                }, 2000);
+                
+            } catch (e) {
+                console.error('Checkout error:', e);
+                showCustomConfirm('Gagal mengirim pesanan. Silakan coba lagi.', null);
+                setTimeout(closeCustomConfirm, 3000);
+            }
+        }
+
+        // WhatsApp Message Function
+        function sendWhatsAppMessage(orderData) {
+            // Build WhatsApp message
+            let message = `Halo Thai Tea CST, saya ${orderData.customerName}.\n\n`;
+            message += `Saya ingin memesan:\n`;
+            
+            orderData.items.forEach(item => {
+                message += `-${item.name} x${item.qty}`;
+                if (item.notes) {
+                    message += ` (${item.notes})`;
+                }
+                message += `\n`;
+            });
+            
+            message += `\nTotal: ${formatRp(orderData.total)}`;
+            message += `\n\nNomor WA: ${orderData.customerPhone}`;
+            message += `\n\nMohon segera diproses, terima kasih!`;
+            
+            // Encode message for URL
+            const encodedMessage = encodeURIComponent(message);
+            
+            // WhatsApp API link
+            const waUrl = `https://wa.me/${ADMIN_PHONE}?text=${encodedMessage}`;
+            
+            // Open WhatsApp
+            window.open(waUrl, '_blank');
+        }
+
+        function closeWAModal() {
+            document.getElementById('waModal').classList.remove('active');
+        }
+
+        // Custom Confirm Modal
+        function showCustomConfirm(message, callback) {
+            document.getElementById('confirmMessage').textContent = message;
+            document.getElementById('confirmModal').classList.add('active');
+            confirmCallback = callback;
+            
+            document.getElementById('confirmBtn').onclick = function() {
+                if (confirmCallback) {
+                    confirmCallback();
+                }
+                closeCustomConfirm();
+            };
+        }
+
+        function closeCustomConfirm() {
+            document.getElementById('confirmModal').classList.remove('active');
+            confirmCallback = null;
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+            }
+        }
+    </script>
+</body>
+</html>
