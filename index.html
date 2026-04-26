@@ -26,10 +26,11 @@
             --success: #27AE60; 
             --danger: #E74C3C;
             --warning: #F39C12;
+            --light: #ECF0F1;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
         html { font-size: 16px; }
-        body { background: #f5f6fa; min-height: 100vh; padding-bottom: 20px; }
+        body { background: #f5f6fa; min-height: 100vh; }
         
         /* Login Screen */
         .login-box { 
@@ -46,7 +47,7 @@
         .form-group label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.9rem; color: var(--dark); }
         .form-group input { 
             width: 100%; padding: 14px; border: 2px solid #e0e0e0; border-radius: 10px; 
-            font-size: 1rem; transition: 0.3s; -webkit-appearance: none;
+            font-size: 1rem; transition: 0.3s;
         }
         .form-group input:focus { border-color: var(--primary); outline: none; }
         .btn { 
@@ -66,21 +67,34 @@
             margin-bottom: 15px; display: none; font-size: 0.9rem; text-align: center;
         }
         
-        /* Main App */
-        .app { display: none; max-width: 1200px; margin: 0 auto; padding: 15px; }
-        .app.active { display: grid; grid-template-columns: 1fr 350px; gap: 15px; }
+        /* Main App - DESKTOP DEFAULT (2 kolom) */
+        .app { 
+            display: none; 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            padding: 15px;
+            grid-template-columns: 1fr 380px;
+            gap: 15px;
+        }
+        .app.active { display: grid; }
         
         /* Header */
         header { 
-            grid-column: 1/-1; background: white; padding: 15px 20px; border-radius: 12px; 
-            display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05); flex-wrap: wrap; gap: 10px;
+            grid-column: 1/-1; 
+            background: white; 
+            padding: 15px 20px; 
+            border-radius: 12px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
         .logo { display: flex; align-items: center; gap: 12px; }
         .logo i { font-size: 2rem; color: var(--primary); }
         .logo h1 { font-size: 1.4rem; color: var(--primary); line-height: 1.2; }
         .logo small { display: block; color: #7f8c8d; font-size: 0.75rem; }
-        .user-info { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .user-info { display: flex; align-items: center; gap: 10px; }
         .user-info span { font-weight: 600; color: var(--dark); font-size: 0.9rem; }
         .logout { 
             background: var(--danger); color: white; padding: 8px 14px; border: none; 
@@ -88,61 +102,175 @@
         }
         
         /* Sections */
-        .menu-section, .cart-section { background: white; border-radius: 12px; padding: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .cart-section { position: sticky; top: 15px; height: fit-content; }
+        .menu-section, .cart-section { 
+            background: white; 
+            border-radius: 12px; 
+            padding: 15px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .cart-section { 
+            position: sticky; 
+            top: 15px; 
+            height: fit-content;
+        }
         
         .section-header { 
-            display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 15px;
         }
-        .section-header h2 { font-size: 1.2rem; color: var(--dark); display: flex; align-items: center; gap: 8px; }
+        .section-header h2 { 
+            font-size: 1.2rem; 
+            color: var(--dark); 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+        }
         
         /* Category Buttons */
-        .category { display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
+        .category { 
+            display: flex; 
+            gap: 8px; 
+            margin-bottom: 15px; 
+            flex-wrap: wrap;
+        }
         .cat-btn { 
-            padding: 10px 18px; background: #ecf0f1; border: none; border-radius: 25px; 
-            cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: 0.3s;
+            padding: 10px 18px; 
+            background: var(--light); 
+            border: none; 
+            border-radius: 25px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            font-size: 0.9rem; 
+            transition: 0.3s;
             white-space: nowrap;
         }
         .cat-btn:active { transform: scale(0.95); }
         .cat-btn.active { background: var(--primary); color: white; }
         
         /* Products Grid */
-        .products { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+        .products { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); 
+            gap: 12px; 
+        }
         .product { 
-            background: white; border: 2px solid #ecf0f1; border-radius: 12px; overflow: hidden; 
-            transition: 0.3s; display: flex; flex-direction: column;
+            background: white; 
+            border: 2px solid var(--light); 
+            border-radius: 12px; 
+            overflow: hidden; 
+            transition: 0.3s; 
+            display: flex; 
+            flex-direction: column;
         }
         .product:active { transform: scale(0.97); border-color: var(--primary); }
-        .product img { width: 100%; height: 120px; object-fit: cover; background: #f8f9fa; }
-        .product-info { padding: 12px; flex: 1; display: flex; flex-direction: column; }
-        .product h4 { font-size: 0.9rem; margin-bottom: 4px; color: var(--dark); line-height: 1.3; }
-        .product p { color: #7f8c8d; font-size: 0.75rem; margin-bottom: 6px; line-height: 1.3; }
-        .stock { font-size: 0.75rem; color: #7f8c8d; margin-bottom: 6px; }
+        .product img { 
+            width: 100%; 
+            height: 140px; 
+            object-fit: cover; 
+            background: #f8f9fa; 
+        }
+        .product-info { 
+            padding: 12px; 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+        }
+        .product h4 { 
+            font-size: 0.95rem; 
+            margin-bottom: 4px; 
+            color: var(--dark); 
+            line-height: 1.3;
+            font-weight: 600;
+        }
+        .product p { 
+            color: #7f8c8d; 
+            font-size: 0.8rem; 
+            margin-bottom: 6px; 
+            line-height: 1.3; 
+        }
+        .stock { 
+            font-size: 0.8rem; 
+            color: #7f8c8d; 
+            margin-bottom: 6px; 
+        }
         .stock.low { color: var(--danger); font-weight: 600; }
-        .price { color: var(--primary); font-weight: 700; font-size: 1rem; margin-bottom: 8px; }
+        .price { 
+            color: var(--primary); 
+            font-weight: 700; 
+            font-size: 1.1rem; 
+            margin-bottom: 8px; 
+        }
         .add-btn { 
-            width: 100%; padding: 10px; background: var(--primary); color: white; 
-            border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.85rem;
-            margin-top: auto; transition: 0.3s;
+            width: 100%; 
+            padding: 10px; 
+            background: var(--primary); 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            font-size: 0.9rem;
+            margin-top: auto; 
+            transition: 0.3s;
         }
         .add-btn:active { transform: scale(0.97); }
         .add-btn:disabled { background: #95a5a6; cursor: not-allowed; }
         
         /* Cart */
-        .cart-items { max-height: 350px; overflow-y: auto; margin-bottom: 15px; -webkit-overflow-scrolling: touch; }
+        .cart-items { 
+            max-height: 400px; 
+            overflow-y: auto; 
+            margin-bottom: 15px; 
+            -webkit-overflow-scrolling: touch; 
+        }
         .cart-item { 
-            display: flex; gap: 10px; padding: 12px 0; border-bottom: 1px solid #ecf0f1; align-items: center;
+            display: flex; 
+            gap: 10px; 
+            padding: 12px 0; 
+            border-bottom: 1px solid var(--light); 
+            align-items: center;
         }
         .cart-item:last-child { border-bottom: none; }
-        .cart-item img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; }
+        .cart-item img { 
+            width: 60px; 
+            height: 60px; 
+            border-radius: 8px; 
+            object-fit: cover; 
+        }
         .cart-item-info { flex: 1; min-width: 0; }
-        .cart-item-name { font-weight: 600; font-size: 0.9rem; color: var(--dark); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .cart-item-price { color: var(--primary); font-size: 0.85rem; font-weight: 600; }
-        .cart-controls { display: flex; gap: 6px; align-items: center; margin-top: 6px; }
+        .cart-item-name { 
+            font-weight: 600; 
+            font-size: 0.95rem; 
+            color: var(--dark); 
+            margin-bottom: 2px; 
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+        }
+        .cart-item-price { 
+            color: var(--primary); 
+            font-size: 0.9rem; 
+            font-weight: 600; 
+        }
+        .cart-controls { 
+            display: flex; 
+            gap: 6px; 
+            align-items: center; 
+            margin-top: 6px; 
+        }
         .qty-btn { 
-            width: 32px; height: 32px; border: none; border-radius: 6px; 
-            cursor: pointer; font-weight: bold; font-size: 1rem;
-            display: inline-flex; align-items: center; justify-content: center;
+            width: 32px; 
+            height: 32px; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            font-size: 1rem;
+            display: inline-flex; 
+            align-items: center; 
+            justify-content: center;
             transition: 0.2s;
         }
         .qty-btn:active { transform: scale(0.9); }
@@ -150,24 +278,56 @@
         .qty-btn.plus { background: var(--primary); color: white; }
         .qty-btn.delete { background: #95a5a6; color: white; margin-left: auto; }
         .qty-value { 
-            font-weight: 600; min-width: 35px; text-align: center; 
-            padding: 4px; background: #f8f9fa; border-radius: 6px;
+            font-weight: 600; 
+            min-width: 35px; 
+            text-align: center; 
+            padding: 4px; 
+            background: var(--light); 
+            border-radius: 6px;
         }
         
         /* Summary */
-        .summary-row { display: flex; justify-content: space-between; padding: 10px 0; font-size: 0.95rem; }
-        .summary-row input { 
-            width: 100px; padding: 8px; border: 1px solid #ddd; border-radius: 6px; 
-            text-align: right; font-weight: 600; font-size: 0.9rem;
+        .summary-row { 
+            display: flex; 
+            justify-content: space-between; 
+            padding: 10px 0; 
+            font-size: 1rem; 
         }
-        .total { font-size: 1.5rem; font-weight: 700; color: var(--primary); margin: 10px 0; padding-top: 10px; border-top: 2px solid #ecf0f1; }
+        .summary-row input { 
+            width: 100px; 
+            padding: 8px; 
+            border: 1px solid #ddd; 
+            border-radius: 6px; 
+            text-align: right; 
+            font-weight: 600; 
+            font-size: 1rem;
+        }
+        .total { 
+            font-size: 1.6rem; 
+            font-weight: 700; 
+            color: var(--primary); 
+            margin: 10px 0; 
+            padding-top: 10px; 
+            border-top: 2px solid var(--light); 
+        }
         
         /* Payment */
-        .payment-method { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 15px 0; }
+        .payment-method { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 8px; 
+            margin: 15px 0; 
+        }
         .pay-btn { 
-            padding: 12px 10px; border: 2px solid #ecf0f1; background: white; 
-            border-radius: 10px; cursor: pointer; text-align: center; transition: 0.3s;
-            font-size: 0.85rem; font-weight: 600;
+            padding: 12px 10px; 
+            border: 2px solid var(--light); 
+            background: white; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            text-align: center; 
+            transition: 0.3s;
+            font-size: 0.9rem; 
+            font-weight: 600;
         }
         .pay-btn:active { transform: scale(0.97); }
         .pay-btn.active { border-color: var(--primary); background: #fff5eb; color: var(--primary); }
@@ -175,37 +335,102 @@
         
         /* Action Buttons */
         .checkout-btn { 
-            width: 100%; padding: 16px; background: var(--success); color: white; 
-            border: none; border-radius: 10px; font-size: 1.1rem; font-weight: 700; 
-            cursor: pointer; margin-top: 15px; transition: 0.3s;
+            width: 100%; 
+            padding: 16px; 
+            background: var(--success); 
+            color: white; 
+            border: none; 
+            border-radius: 10px; 
+            font-size: 1.1rem; 
+            font-weight: 700; 
+            cursor: pointer; 
+            margin-top: 15px; 
+            transition: 0.3s;
         }
         .checkout-btn:active { transform: scale(0.98); }
         .checkout-btn:disabled { background: #95a5a6; cursor: not-allowed; }
         
-        .action-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
-        .action-buttons .btn { margin: 0; padding: 12px; font-size: 0.9rem; }
+        .action-buttons { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 10px; 
+            margin-top: 12px; 
+        }
+        .action-buttons .btn { margin: 0; padding: 12px; font-size: 0.95rem; }
         
         /* Modal */
         .modal {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center;
-            padding: 20px; backdrop-filter: blur(4px);
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%;
+            background: rgba(0,0,0,0.6); 
+            z-index: 2000; 
+            align-items: center; 
+            justify-content: center;
+            padding: 20px; 
+            backdrop-filter: blur(4px);
         }
         .modal.active { display: flex; }
         .modal-content {
-            background: white; padding: 25px; border-radius: 16px; width: 100%; max-width: 700px;
-            max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            background: white; 
+            padding: 25px; 
+            border-radius: 16px; 
+            width: 100%; 
+            max-width: 700px;
+            max-height: 85vh; 
+            overflow-y: auto; 
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
-        .modal-header h2 { font-size: 1.3rem; color: var(--dark); display: flex; align-items: center; gap: 10px; }
-        .close-modal { background: none; border: none; font-size: 2rem; cursor: pointer; color: #7f8c8d; line-height: 1; padding: 0 5px; }
+        .modal-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 20px;
+        }
+        .modal-header h2 { 
+            font-size: 1.3rem; 
+            color: var(--dark); 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+        }
+        .close-modal { 
+            background: none; 
+            border: none; 
+            font-size: 2rem; 
+            cursor: pointer; 
+            color: #7f8c8d; 
+            line-height: 1; 
+            padding: 0 5px; 
+        }
         .close-modal:active { color: var(--dark); }
         
         /* Table */
-        .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 15px; }
-        table { width: 100%; border-collapse: collapse; min-width: 500px; }
-        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ecf0f1; font-size: 0.9rem; }
-        th { background: #f8f9fa; font-weight: 600; color: #666; white-space: nowrap; }
+        .table-wrapper { 
+            overflow-x: auto; 
+            -webkit-overflow-scrolling: touch; 
+            margin-top: 15px; 
+        }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            min-width: 500px; 
+        }
+        th, td { 
+            padding: 10px; 
+            text-align: left; 
+            border-bottom: 1px solid var(--light); 
+            font-size: 0.9rem; 
+        }
+        th { 
+            background: var(--light); 
+            font-weight: 600; 
+            color: #666; 
+            white-space: nowrap; 
+        }
         tr:last-child td { border-bottom: none; }
         
         /* Print Styles */
@@ -226,82 +451,161 @@
             }
         }
         
-        /* Mobile Responsive */
+        /* ============================================ */
+        /* MOBILE RESPONSIVE - LAYAR KECIL (< 768px) */
+        /* ============================================ */
         @media (max-width: 768px) {
             html { font-size: 14px; }
             body { padding-bottom: 15px; }
             
             .app { 
-                grid-template-columns: 1fr; 
+                /* UBAH KE 1 KOLOM (VERTIKAL) */
+                grid-template-columns: 1fr;
                 padding: 10px;
                 gap: 12px;
             }
             
+            /* Cart pindah ke bawah (order: 2) */
             .cart-section { 
                 position: static; 
                 order: 2;
+                width: 100%;
             }
             
+            /* Menu di atas (order: 1) */
             .menu-section {
                 order: 1;
+                width: 100%;
             }
             
             header { 
                 flex-direction: column; 
                 align-items: stretch;
                 padding: 12px 15px;
+                gap: 12px;
             }
             
             .logo { 
                 justify-content: center;
-                margin-bottom: 10px;
             }
             
-            .logo h1 { font-size: 1.2rem; }
+            .logo h1 { font-size: 1.2rem; text-align: center; }
             .logo i { font-size: 1.8rem; }
             
             .user-info { 
                 justify-content: center;
                 width: 100%;
+                flex-wrap: wrap;
             }
             
+            /* Produk grid 2 kolom di HP */
             .products { 
                 grid-template-columns: repeat(2, 1fr); 
                 gap: 10px;
             }
             
-            .product img { height: 110px; }
-            .product-info { padding: 10px; }
-            .product h4 { font-size: 0.85rem; }
+            .product img { 
+                height: 120px; 
+            }
+            .product-info { 
+                padding: 10px; 
+            }
+            .product h4 { 
+                font-size: 0.85rem; 
+            }
+            .product p {
+                font-size: 0.75rem;
+            }
             
-            .cart-item img { width: 45px; height: 45px; }
-            .cart-item-name { font-size: 0.85rem; }
+            /* Cart item lebih compact */
+            .cart-item img { 
+                width: 50px; 
+                height: 50px; 
+            }
+            .cart-item-name { 
+                font-size: 0.9rem; 
+            }
+            .cart-controls .qty-btn { 
+                width: 30px; 
+                height: 30px; 
+                font-size: 0.9rem; 
+            }
             
+            /* Payment 2 kolom */
             .payment-method { 
                 grid-template-columns: repeat(2, 1fr);
                 gap: 6px;
             }
             
-            .pay-btn { padding: 10px 8px; font-size: 0.8rem; }
-            .pay-btn i { font-size: 1.3rem; }
+            .pay-btn { 
+                padding: 10px 8px; 
+                font-size: 0.85rem; 
+            }
+            .pay-btn i { 
+                font-size: 1.3rem; 
+            }
             
-            .modal-content { padding: 20px 15px; }
-            .modal-header h2 { font-size: 1.1rem; }
+            /* Modal lebih kecil */
+            .modal-content { 
+                padding: 20px 15px; 
+            }
+            .modal-header h2 { 
+                font-size: 1.1rem; 
+            }
             
-            table { font-size: 0.85rem; }
-            th, td { padding: 8px 6px; }
+            /* Table scrollable */
+            table { 
+                font-size: 0.85rem; 
+            }
+            th, td { 
+                padding: 8px 6px; 
+            }
             
-            .btn { padding: 12px 18px; font-size: 0.95rem; }
-            .section-header h2 { font-size: 1.1rem; }
+            /* Button lebih besar untuk touch */
+            .btn { 
+                padding: 12px 18px; 
+                font-size: 0.95rem; 
+            }
+            .section-header h2 { 
+                font-size: 1.1rem; 
+            }
+            .category {
+                gap: 6px;
+            }
+            .cat-btn { 
+                padding: 8px 14px; 
+                font-size: 0.85rem; 
+            }
+            
+            .total { 
+                font-size: 1.4rem; 
+            }
+            .checkout-btn { 
+                padding: 14px; 
+                font-size: 1rem; 
+            }
+            
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
         }
         
+        /* Extra small devices */
         @media (max-width: 480px) {
-            .products { grid-template-columns: repeat(2, 1fr); }
-            .category { gap: 6px; }
-            .cat-btn { padding: 8px 14px; font-size: 0.85rem; }
-            .cart-controls .qty-btn { width: 28px; height: 28px; font-size: 0.9rem; }
-            .total { font-size: 1.3rem; }
-            .checkout-btn { padding: 14px; font-size: 1rem; }
+            .products { 
+                grid-template-columns: repeat(2, 1fr); 
+            }
+            .cart-item img {
+                width: 45px;
+                height: 45px;
+            }
+            .summary-row {
+                font-size: 0.95rem;
+            }
+            .summary-row input {
+                width: 80px;
+                font-size: 0.9rem;
+            }
         }
         
         /* Loading Spinner */
@@ -356,7 +660,7 @@
             <div class="user-info">
                 <span id="userName">User</span>
                 <button class="btn btn-info" style="width: auto; padding: 8px 12px; margin: 0; font-size: 0.85rem;" onclick="openReportModal()">
-                    <i class="fas fa-chart-bar"></i> <span style="display:none;" class="desktop-only">Laporan</span>
+                    <i class="fas fa-chart-bar"></i> Laporan
                 </button>
                 <button class="logout" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
             </div>
@@ -366,7 +670,7 @@
             <div class="section-header">
                 <h2><i class="fas fa-list"></i> Menu</h2>
                 <button class="btn btn-info" style="width: auto; padding: 8px 14px; font-size: 0.85rem;" onclick="exportTransaksiExcel()">
-                    <i class="fas fa-file-excel"></i> <span class="desktop-only">Export</span>
+                    <i class="fas fa-file-excel"></i> Export
                 </button>
             </div>
             <div class="category">
@@ -751,7 +1055,7 @@
                 document.getElementById('actionButtons').style.display = 'grid';
                 
                 // Auto print
-                printReceipt();
+                setTimeout(() => printReceipt(), 500);
                 
             } catch (e) {
                 console.error(e);
@@ -762,7 +1066,9 @@
             }
         }
 
-        // PRINT FUNCTION - RawBT dengan Intent URL yang BENAR
+        // ============================================
+        // PRINT FUNCTION - RAWBT DENGAN FORMAT YANG BENAR
+        // ============================================
         function printReceipt() {
             if (!lastTransaction) {
                 alert('Tidak ada transaksi untuk dicetak');
@@ -773,7 +1079,7 @@
             const date = new Date().toLocaleString('id-ID');
             const branch = branchNames[currentBranch] || currentBranch;
             
-            // Generate receipt text
+            // Format struk teks yang rapi
             let receiptText = `THAI TEA CST\n`;
             receiptText += `${branch}\n`;
             receiptText += `${date}\n`;
@@ -798,23 +1104,21 @@
             receiptText += `PT CAHAYA SEJATI TEKNOLOGI\n`;
             
             if (isAndroid) {
-                // MOBILE: RawBT dengan Intent URL yang BENAR
+                // RAWBT PRINT - FORMAT INTENT YANG BENAR
                 try {
-                    // Encode ke base64
+                    // Encode teks ke base64 dengan benar
                     const b64data = btoa(unescape(encodeURIComponent(receiptText)));
                     
-                    // Format intent yang benar untuk RawBT
+                    // Format intent URL yang benar untuk RawBT
                     const intentUrl = `intent://base64,${b64data}#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;end;`;
                     
-                    // Coba buka RawBT
+                    // Buka RawBT
                     window.location.href = intentUrl;
                     
                     // Fallback setelah 2 detik
                     setTimeout(() => {
                         if (!document.hidden) {
-                            // Jika masih di halaman yang sama, kemungkinan RawBT tidak terinstall
-                            if (confirm('Aplikasi RawBT tidak terbuka. Apakah Anda ingin menginstal RawBT Printer?')) {
-                                // Redirect ke Play Store
+                            if (confirm('Aplikasi RawBT tidak terbuka. Install RawBT Printer dari Play Store?')) {
                                 window.open('https://play.google.com/store/apps/details?id=ru.a402d.rawbtprinter', '_blank');
                             }
                         }
@@ -825,7 +1129,7 @@
                     alert('Gagal membuka RawBT. Pastikan aplikasi RawBT Printer sudah terinstall.\n\nError: ' + e.message);
                 }
             } else {
-                // DESKTOP: Browser Print
+                // DESKTOP PRINT
                 const printWindow = window.open('', '_blank', 'width=400,height=600');
                 printWindow.document.write(`
                     <!DOCTYPE html>
@@ -901,7 +1205,6 @@
         window.openReportModal = async function() {
             document.getElementById('reportModal').classList.add('active');
             
-            // Set default dates (today)
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('reportDari').value = today;
             document.getElementById('reportSampai').value = today;
@@ -950,7 +1253,6 @@
                             hour: '2-digit', minute: '2-digit'
                         });
                         
-                        // Hide action buttons for cashier (view only)
                         const actionCell = currentUserRole === 'cashier' ? 
                             '<td style="text-align:center;"><small style="color:#7f8c8d;">View Only</small></td>' :
                             `<td style="text-align:center;">
@@ -976,7 +1278,6 @@
                     tbody.innerHTML = html;
                 }
                 
-                // Hide/show action header based on role
                 const aksiHeader = document.getElementById('aksiHeader');
                 if (currentUserRole === 'cashier') {
                     aksiHeader.textContent = 'Status';
