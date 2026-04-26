@@ -66,13 +66,13 @@
             margin-bottom: 15px; display: none; font-size: 0.9rem; text-align: center;
         }
         
-        /* Main App - DESKTOP DEFAULT (2 kolom) */
+        /* Main App - MOBILE FIRST (1 kolom) */
         .app { 
             display: none; 
             max-width: 1200px; 
             margin: 0 auto; 
             padding: 15px;
-            grid-template-columns: 1fr 380px;
+            grid-template-columns: 1fr;
             gap: 15px;
         }
         .app.active { display: grid; }
@@ -100,17 +100,12 @@
             border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600;
         }
         
-        /* Sections */
+        /* Sections - VERTICAL STACK */
         .menu-section, .cart-section { 
             background: white; 
             border-radius: 12px; 
             padding: 15px; 
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-        .cart-section { 
-            position: sticky; 
-            top: 15px; 
-            height: fit-content;
         }
         
         .section-header { 
@@ -151,7 +146,7 @@
         /* Products Grid */
         .products { 
             display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); 
+            grid-template-columns: repeat(2, 1fr); 
             gap: 12px; 
         }
         .product { 
@@ -285,16 +280,20 @@
             border-radius: 6px;
         }
         
-        /* Customer Name Input */
+        /* Customer Name Input - PROMINENT POSITION */
         .customer-input {
             margin-bottom: 15px;
+            background: #fff5eb;
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid var(--primary);
         }
         .customer-input label {
             display: block;
-            margin-bottom: 6px;
-            font-weight: 600;
-            color: var(--dark);
-            font-size: 0.9rem;
+            margin-bottom: 8px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            font-size: 1rem;
         }
         .customer-input input {
             width: 100%;
@@ -303,10 +302,12 @@
             border-radius: 8px;
             font-size: 1rem;
             transition: 0.3s;
+            font-weight: 600;
         }
         .customer-input input:focus {
             border-color: var(--primary);
             outline: none;
+            background: white;
         }
         
         /* Summary */
@@ -456,181 +457,6 @@
         }
         tr:last-child td { border-bottom: none; }
         
-        /* Print Styles */
-        @media print {
-            @page { margin: 0; size: 58mm auto; }
-            body { background: white; }
-            .app, header, .cart-section, .login-box, .modal, .action-buttons { display: none !important; }
-            #thermalReceipt { 
-                display: block !important; 
-                position: absolute; 
-                left: 0; 
-                top: 0; 
-                width: 58mm;
-                font-family: 'Courier New', Courier, monospace;
-                font-size: 10px;
-                padding: 3px;
-                line-height: 1.3;
-            }
-        }
-        
-        /* ============================================ */
-        /* MOBILE RESPONSIVE - LAYAR KECIL (< 768px) */
-        /* ============================================ */
-        @media (max-width: 768px) {
-            html { font-size: 14px; }
-            body { padding-bottom: 15px; }
-            
-            .app { 
-                /* UBAH KE 1 KOLOM (VERTIKAL) */
-                grid-template-columns: 1fr;
-                padding: 10px;
-                gap: 12px;
-            }
-            
-            /* Cart pindah ke bawah (order: 2) */
-            .cart-section { 
-                position: static; 
-                order: 2;
-                width: 100%;
-            }
-            
-            /* Menu di atas (order: 1) */
-            .menu-section {
-                order: 1;
-                width: 100%;
-            }
-            
-            header { 
-                flex-direction: column; 
-                align-items: stretch;
-                padding: 12px 15px;
-                gap: 12px;
-            }
-            
-            .logo { 
-                justify-content: center;
-            }
-            
-            .logo h1 { font-size: 1.2rem; text-align: center; }
-            .logo i { font-size: 1.8rem; }
-            
-            .user-info { 
-                justify-content: center;
-                width: 100%;
-                flex-wrap: wrap;
-            }
-            
-            /* Produk grid 2 kolom di HP */
-            .products { 
-                grid-template-columns: repeat(2, 1fr); 
-                gap: 10px;
-            }
-            
-            .product img { 
-                height: 120px; 
-            }
-            .product-info { 
-                padding: 10px; 
-            }
-            .product h4 { 
-                font-size: 0.85rem; 
-            }
-            .product p {
-                font-size: 0.75rem;
-            }
-            
-            /* Cart item lebih compact */
-            .cart-item img { 
-                width: 50px; 
-                height: 50px; 
-            }
-            .cart-item-name { 
-                font-size: 0.9rem; 
-            }
-            .cart-controls .qty-btn { 
-                width: 30px; 
-                height: 30px; 
-                font-size: 0.9rem; 
-            }
-            
-            /* Payment 2 kolom */
-            .payment-method { 
-                grid-template-columns: repeat(2, 1fr);
-                gap: 6px;
-            }
-            
-            .pay-btn { 
-                padding: 10px 8px; 
-                font-size: 0.85rem; 
-            }
-            .pay-btn i { 
-                font-size: 1.3rem; 
-            }
-            
-            /* Modal lebih kecil */
-            .modal-content { 
-                padding: 20px 15px; 
-            }
-            .modal-header h2 { 
-                font-size: 1.1rem; 
-            }
-            
-            /* Table scrollable */
-            table { 
-                font-size: 0.85rem; 
-            }
-            th, td { 
-                padding: 8px 6px; 
-            }
-            
-            /* Button lebih besar untuk touch */
-            .btn { 
-                padding: 12px 18px; 
-                font-size: 0.95rem; 
-            }
-            .section-header h2 { 
-                font-size: 1.1rem; 
-            }
-            .category {
-                gap: 6px;
-            }
-            .cat-btn { 
-                padding: 8px 14px; 
-                font-size: 0.85rem; 
-            }
-            
-            .total { 
-                font-size: 1.4rem; 
-            }
-            .checkout-btn { 
-                padding: 14px; 
-                font-size: 1rem; 
-            }
-            
-            .action-buttons {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        /* Extra small devices */
-        @media (max-width: 480px) {
-            .products { 
-                grid-template-columns: repeat(2, 1fr); 
-            }
-            .cart-item img {
-                width: 45px;
-                height: 45px;
-            }
-            .summary-row {
-                font-size: 0.95rem;
-            }
-            .summary-row input {
-                width: 80px;
-                font-size: 0.9rem;
-            }
-        }
-        
         /* Loading Spinner */
         .spinner {
             border: 3px solid rgba(255,255,255,0.3);
@@ -644,6 +470,18 @@
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+        
+        /* DESKTOP - 2 KOLOM */
+        @media (min-width: 769px) {
+            .app {
+                grid-template-columns: 1fr 380px;
+            }
+            .cart-section {
+                position: sticky;
+                top: 15px;
+                height: fit-content;
+            }
         }
     </style>
 </head>
@@ -689,6 +527,7 @@
             </div>
         </header>
 
+        <!-- MENU SECTION (Order 1 - Atas) -->
         <div class="menu-section">
             <div class="section-header">
                 <h2><i class="fas fa-list"></i> Menu</h2>
@@ -705,15 +544,16 @@
             <div class="products" id="products"></div>
         </div>
 
+        <!-- CART SECTION (Order 2 - Bawah) -->
         <div class="cart-section">
             <div class="section-header">
                 <h2><i class="fas fa-shopping-cart"></i> Keranjang</h2>
             </div>
             
-            <!-- Customer Name Input -->
+            <!-- Customer Name Input - PROMINENT -->
             <div class="customer-input">
                 <label for="customerName"><i class="fas fa-user"></i> Nama Pembeli</label>
-                <input type="text" id="customerName" placeholder="Masukkan nama pembeli (opsional)">
+                <input type="text" id="customerName" placeholder="Masukkan nama pembeli (wajib)">
             </div>
             
             <div class="cart-items" id="cartItems">
@@ -756,7 +596,7 @@
                 <button class="btn btn-warning" onclick="resetCart()">
                     <i class="fas fa-redo"></i> Pesanan Baru
                 </button>
-                <button class="btn btn-success" onclick="printReceipt()">
+                <button class="btn btn-success" onclick="printStruk()">
                     <i class="fas fa-print"></i> Cetak Struk
                 </button>
             </div>
@@ -802,9 +642,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Hidden Receipt for Print -->
-    <div id="thermalReceipt" style="display:none;"></div>
 
     <script>
         // Global variables
@@ -1035,6 +872,13 @@
         async function checkout() {
             if (cart.length === 0) return;
             
+            const customerName = document.getElementById('customerName').value.trim();
+            if (!customerName) {
+                alert('Mohon masukkan nama pembeli!');
+                document.getElementById('customerName').focus();
+                return;
+            }
+            
             const btn = document.getElementById('checkoutBtn');
             const originalText = btn.innerHTML;
             btn.disabled = true;
@@ -1044,7 +888,6 @@
                 const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
                 const discount = parseInt(document.getElementById('discount').value) || 0;
                 const total = Math.max(0, subtotal - discount);
-                const customerName = document.getElementById('customerName').value.trim() || '-';
                 
                 // Update stok
                 for (const item of cart) {
@@ -1087,8 +930,8 @@
                 // Show action buttons
                 document.getElementById('actionButtons').style.display = 'grid';
                 
-                // Auto print
-                setTimeout(() => printReceipt(), 500);
+                // Auto print dengan fungsi printStruk
+                setTimeout(() => printStruk(), 500);
                 
             } catch (e) {
                 console.error(e);
@@ -1100,99 +943,66 @@
         }
 
         // ============================================
-        // PRINT FUNCTION - RAWBT DENGAN FORMAT YANG BENAR (ANTI KODE ACAK)
+        // PRINT STRUK - FORMAT RAWBT:BASE64 (FINAL)
         // ============================================
-        function printReceipt() {
+        function printStruk() {
             if (!lastTransaction) {
                 alert('Tidak ada transaksi untuk dicetak');
                 return;
             }
             
-            const isAndroid = /Android/i.test(navigator.userAgent);
+            const customerName = lastTransaction.customerName || 'Pelanggan';
             const date = new Date().toLocaleString('id-ID');
             const branch = branchNames[currentBranch] || currentBranch;
-            const customerName = lastTransaction.customerName || '-';
             
-            // Format struk teks yang rapi dengan \n untuk baris baru
-            let isiStruk = `THAI TEA CST\n`;
-            isiStruk += `Pelanggan: ${customerName}\n`;
-            isiStruk += `${branch}\n`;
-            isiStruk += `${date}\n`;
-            isiStruk += `--------------------------------\n\n`;
-            
+            // Build item list
+            let itemDaftar = '';
             lastTransaction.items.forEach(item => {
-                isiStruk += `${item.name}\n`;
-                isiStruk += `${item.qty} x ${formatRp(item.price)}\n`;
-                isiStruk += `${formatRp(item.price * item.qty)}\n\n`;
+                itemDaftar += `${item.name}\n`;
+                itemDaftar += `${item.qty} x ${formatRp(item.price)}\n`;
+                itemDaftar += `${formatRp(item.price * item.qty)}\n\n`;
             });
             
-            isiStruk += `--------------------------------\n`;
-            isiStruk += `Subtotal: ${formatRp(lastTransaction.subtotal)}\n`;
-            if (lastTransaction.discount > 0) {
-                isiStruk += `Diskon: -${formatRp(lastTransaction.discount)}\n`;
-            }
-            isiStruk += `TOTAL: ${formatRp(lastTransaction.total)}\n`;
-            isiStruk += `Pembayaran: ${selectedPayment.toUpperCase()}\n`;
-            isiStruk += `--------------------------------\n\n`;
-            isiStruk += `Pesanan Kembali: +62 822-9999-7227\n`;
-            isiStruk += `Terima Kasih!\n`;
-            isiStruk += `Selamat Menikmati\n`;
+            const totalHarga = formatRp(lastTransaction.total);
             
-            if (isAndroid) {
-                // RAWBT PRINT - FORMAT INTENT YANG BENAR (ANTI KODE ACAK)
-                try {
-                    // Encode teks ke base64 TANPA prefix apapun
-                    const encodedData = btoa(isiStruk);
-                    
-                    // Format intent URL yang benar untuk RawBT
-                    // Format: intent://base64,ENCODED_DATA#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;end;
-                    const intentUrl = "intent://base64," + encodedData + "#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;end;";
-                    
-                    // Buka RawBT
-                    window.location.href = intentUrl;
-                    
-                    // Fallback setelah 2 detik
-                    setTimeout(() => {
-                        if (!document.hidden) {
-                            if (confirm('Aplikasi RawBT tidak terbuka. Install RawBT Printer dari Play Store?')) {
-                                window.open('https://play.google.com/store/apps/details?id=ru.a402d.rawbtprinter', '_blank');
-                            }
+            // Format struk dengan \n untuk baris baru
+            const isiStruk = `THAI TEA CST\n` +
+                           `Pelanggan: ${customerName}\n` +
+                           `${branch}\n` +
+                           `${date}\n` +
+                           `--------------------------------\n\n` +
+                           `${itemDaftar}` +
+                           `--------------------------------\n` +
+                           `Subtotal: ${formatRp(lastTransaction.subtotal)}\n`;
+            
+            let finalStruk = isiStruk;
+            if (lastTransaction.discount > 0) {
+                finalStruk += `Diskon: -${formatRp(lastTransaction.discount)}\n`;
+            }
+            finalStruk += `TOTAL: ${totalHarga}\n`;
+            finalStruk += `Pembayaran: ${selectedPayment.toUpperCase()}\n`;
+            finalStruk += `--------------------------------\n\n`;
+            finalStruk += `Pesanan Kembali: +62 822-9999-7227\n`;
+            finalStruk += `Terima Kasih!\n`;
+            finalStruk += `Selamat Menikmati\n`;
+            
+            // Gunakan format rawbt:base64 (BUKAN intent://)
+            try {
+                const encodedData = btoa(finalStruk);
+                window.location.href = "rawbt:base64," + encodedData;
+                
+                // Fallback setelah 2 detik
+                setTimeout(() => {
+                    if (!document.hidden) {
+                        if (confirm('RawBT tidak terbuka. Install aplikasi RawBT Printer?')) {
+                            window.open('https://play.google.com/store/apps/details?id=ru.a402d.rawbtprinter', '_blank');
                         }
-                    }, 2000);
-                    
-                } catch (e) {
-                    console.error('RawBT error:', e);
-                    alert('Gagal membuka RawBT. Pastikan aplikasi RawBT Printer sudah terinstall.\n\nError: ' + e.message);
-                }
-            } else {
-                // DESKTOP PRINT
-                const printWindow = window.open('', '_blank', 'width=400,height=600');
-                printWindow.document.write(`
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <title>Struk Pembayaran</title>
-                        <style>
-                            @media print {
-                                @page { margin: 0; size: 58mm auto; }
-                                body { margin: 0; padding: 3px; font-family: 'Courier New', Courier, monospace; font-size: 10px; }
-                            }
-                            body { 
-                                font-family: 'Courier New', Courier, monospace; 
-                                font-size: 10px;
-                                max-width: 58mm;
-                                margin: 0 auto;
-                                padding: 5px;
-                                white-space: pre-wrap;
-                                word-wrap: break-word;
-                                line-height: 1.3;
-                            }
-                        </style>
-                    </head>
-                    <body>${isiStruk}<script>window.onload=function(){window.print();setTimeout(()=>window.close(),1000);};<\/script></body>
-                    </html>
-                `);
-                printWindow.document.close();
+                    }
+                }, 2000);
+                
+            } catch (e) {
+                console.error('Print error:', e);
+                alert('Gagal mencetak. Pastikan aplikasi RawBT Printer sudah terinstall.');
             }
         }
 
@@ -1290,7 +1100,7 @@
                             hour: '2-digit', minute: '2-digit'
                         });
                         
-                        // Hide action buttons for cashier (view only)
+                        // View-only untuk kasir (tanpa tombol hapus)
                         const actionCell = currentUserRole === 'cashier' ? 
                             '<td style="text-align:center;"><small style="color:#7f8c8d;">View Only</small></td>' :
                             `<td style="text-align:center;">
@@ -1316,7 +1126,6 @@
                     tbody.innerHTML = html;
                 }
                 
-                // Hide/show action header based on role
                 const aksiHeader = document.getElementById('aksiHeader');
                 if (currentUserRole === 'cashier') {
                     aksiHeader.textContent = 'Status';
