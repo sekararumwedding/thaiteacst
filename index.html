@@ -2,7 +2,8 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#E67E22">
     <title>Kasir Thai Tea CST</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -18,136 +19,304 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     
     <style>
-        :root { --primary: #E67E22; --dark: #2C3E50; --success: #27AE60; --danger: #E74C3C; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background: #f5f6fa; }
+        :root { 
+            --primary: #E67E22; 
+            --primary-dark: #D35400; 
+            --dark: #2C3E50; 
+            --success: #27AE60; 
+            --danger: #E74C3C;
+            --warning: #F39C12;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
+        html { font-size: 16px; }
+        body { background: #f5f6fa; min-height: 100vh; padding-bottom: 20px; }
         
+        /* Login Screen */
         .login-box { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(44,62,80,0.95); display: flex; align-items: center; justify-content: center; z-index: 1000;
+            background: rgba(44,62,80,0.95); display: flex; align-items: center; justify-content: center; 
+            z-index: 1000; padding: 20px;
         }
         .login-content { 
-            background: white; padding: 40px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; 
+            background: white; padding: 30px 25px; border-radius: 16px; width: 100%; max-width: 400px; text-align: center; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
         }
-        .login-content h2 { color: var(--primary); margin-bottom: 20px; }
+        .login-content h2 { color: var(--primary); margin-bottom: 10px; font-size: 1.8rem; }
         .form-group { margin-bottom: 15px; text-align: left; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
-        .form-group input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; }
-        .btn { 
-            padding: 12px 24px; background: var(--primary); color: white; border: none; 
-            border-radius: 8px; cursor: pointer; width: 100%; font-weight: 600; margin-top: 10px;
+        .form-group label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.9rem; color: var(--dark); }
+        .form-group input { 
+            width: 100%; padding: 14px; border: 2px solid #e0e0e0; border-radius: 10px; 
+            font-size: 1rem; transition: 0.3s; -webkit-appearance: none;
         }
-        .btn:hover { background: #D35400; }
-        .btn-success { background: var(--success); }
-        .btn-info { background: #3498DB; }
-        .btn-warning { background: #F39C12; }
-        .error { background: #fadbd8; color: var(--danger); padding: 10px; border-radius: 6px; margin-bottom: 15px; display: none; }
+        .form-group input:focus { border-color: var(--primary); outline: none; }
+        .btn { 
+            padding: 14px 24px; border: none; border-radius: 10px; cursor: pointer; 
+            font-weight: 600; font-size: 1rem; margin-top: 10px; width: 100%;
+            transition: all 0.3s; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn:active { transform: scale(0.98); }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-success { background: var(--success); color: white; }
+        .btn-info { background: #3498DB; color: white; }
+        .btn-warning { background: var(--warning); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .error { 
+            background: #fadbd8; color: var(--danger); padding: 12px; border-radius: 8px; 
+            margin-bottom: 15px; display: none; font-size: 0.9rem; text-align: center;
+        }
         
-        .app { display: none; max-width: 1400px; margin: 0 auto; padding: 20px; }
-        .app.active { display: grid; grid-template-columns: 1fr 350px; gap: 20px; }
+        /* Main App */
+        .app { display: none; max-width: 1200px; margin: 0 auto; padding: 15px; }
+        .app.active { display: grid; grid-template-columns: 1fr 350px; gap: 15px; }
         
+        /* Header */
         header { 
-            grid-column: 1/-1; background: white; padding: 15px 25px; border-radius: 12px; 
-            display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;
+            grid-column: 1/-1; background: white; padding: 15px 20px; border-radius: 12px; 
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); flex-wrap: wrap; gap: 10px;
         }
         .logo { display: flex; align-items: center; gap: 12px; }
         .logo i { font-size: 2rem; color: var(--primary); }
-        .user-info { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
-        .logout { background: var(--danger); color: white; padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; }
-        
-        .menu-section, .cart-section { background: white; border-radius: 12px; padding: 20px; }
-        .cart-section { position: sticky; top: 20px; height: fit-content; }
-        
-        .category { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-        .cat-btn { 
-            padding: 8px 20px; background: #ecf0f1; border: none; border-radius: 20px; 
-            cursor: pointer; font-weight: 600; 
+        .logo h1 { font-size: 1.4rem; color: var(--primary); line-height: 1.2; }
+        .logo small { display: block; color: #7f8c8d; font-size: 0.75rem; }
+        .user-info { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .user-info span { font-weight: 600; color: var(--dark); font-size: 0.9rem; }
+        .logout { 
+            background: var(--danger); color: white; padding: 8px 14px; border: none; 
+            border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600;
         }
+        
+        /* Sections */
+        .menu-section, .cart-section { background: white; border-radius: 12px; padding: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .cart-section { position: sticky; top: 15px; height: fit-content; }
+        
+        .section-header { 
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;
+        }
+        .section-header h2 { font-size: 1.2rem; color: var(--dark); display: flex; align-items: center; gap: 8px; }
+        
+        /* Category Buttons */
+        .category { display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
+        .cat-btn { 
+            padding: 10px 18px; background: #ecf0f1; border: none; border-radius: 25px; 
+            cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: 0.3s;
+            white-space: nowrap;
+        }
+        .cat-btn:active { transform: scale(0.95); }
         .cat-btn.active { background: var(--primary); color: white; }
         
-        .products { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
+        /* Products Grid */
+        .products { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
         .product { 
             background: white; border: 2px solid #ecf0f1; border-radius: 12px; overflow: hidden; 
-            transition: 0.3s; 
+            transition: 0.3s; display: flex; flex-direction: column;
         }
-        .product:hover { border-color: var(--primary); transform: translateY(-3px); }
-        .product img { width: 100%; height: 120px; object-fit: cover; }
-        .product-info { padding: 12px; }
-        .product h4 { font-size: 0.95rem; margin-bottom: 5px; }
-        .product p { color: #7f8c8d; font-size: 0.8rem; margin-bottom: 8px; }
-        .price { color: var(--primary); font-weight: 700; font-size: 1.1rem; margin-bottom: 10px; }
-        .stock { font-size: 0.8rem; color: #7f8c8d; margin-bottom: 8px; }
+        .product:active { transform: scale(0.97); border-color: var(--primary); }
+        .product img { width: 100%; height: 120px; object-fit: cover; background: #f8f9fa; }
+        .product-info { padding: 12px; flex: 1; display: flex; flex-direction: column; }
+        .product h4 { font-size: 0.9rem; margin-bottom: 4px; color: var(--dark); line-height: 1.3; }
+        .product p { color: #7f8c8d; font-size: 0.75rem; margin-bottom: 6px; line-height: 1.3; }
+        .stock { font-size: 0.75rem; color: #7f8c8d; margin-bottom: 6px; }
+        .stock.low { color: var(--danger); font-weight: 600; }
+        .price { color: var(--primary); font-weight: 700; font-size: 1rem; margin-bottom: 8px; }
         .add-btn { 
             width: 100%; padding: 10px; background: var(--primary); color: white; 
-            border: none; border-radius: 6px; cursor: pointer; 
+            border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.85rem;
+            margin-top: auto; transition: 0.3s;
         }
+        .add-btn:active { transform: scale(0.97); }
         .add-btn:disabled { background: #95a5a6; cursor: not-allowed; }
         
-        .cart-items { max-height: 300px; overflow-y: auto; margin-bottom: 15px; }
+        /* Cart */
+        .cart-items { max-height: 350px; overflow-y: auto; margin-bottom: 15px; -webkit-overflow-scrolling: touch; }
         .cart-item { 
-            display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid #ecf0f1; align-items: center;
+            display: flex; gap: 10px; padding: 12px 0; border-bottom: 1px solid #ecf0f1; align-items: center;
         }
-        .cart-item img { width: 50px; height: 50px; border-radius: 6px; object-fit: cover; }
-        .cart-item-info { flex: 1; }
-        .cart-controls { display: flex; gap: 8px; align-items: center; margin-top: 5px; }
+        .cart-item:last-child { border-bottom: none; }
+        .cart-item img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; }
+        .cart-item-info { flex: 1; min-width: 0; }
+        .cart-item-name { font-weight: 600; font-size: 0.9rem; color: var(--dark); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .cart-item-price { color: var(--primary); font-size: 0.85rem; font-weight: 600; }
+        .cart-controls { display: flex; gap: 6px; align-items: center; margin-top: 6px; }
         .qty-btn { 
-            width: 28px; height: 28px; border: none; background: var(--primary); 
-            color: white; border-radius: 4px; cursor: pointer; font-weight: bold;
+            width: 32px; height: 32px; border: none; border-radius: 6px; 
+            cursor: pointer; font-weight: bold; font-size: 1rem;
+            display: inline-flex; align-items: center; justify-content: center;
+            transition: 0.2s;
         }
-        .qty-btn.minus { background: var(--danger); }
+        .qty-btn:active { transform: scale(0.9); }
+        .qty-btn.minus { background: var(--danger); color: white; }
+        .qty-btn.plus { background: var(--primary); color: white; }
+        .qty-btn.delete { background: #95a5a6; color: white; margin-left: auto; }
+        .qty-value { 
+            font-weight: 600; min-width: 35px; text-align: center; 
+            padding: 4px; background: #f8f9fa; border-radius: 6px;
+        }
         
-        .summary-row { display: flex; justify-content: space-between; padding: 8px 0; }
-        .total { font-size: 1.5rem; font-weight: 700; color: var(--primary); margin: 10px 0; }
+        /* Summary */
+        .summary-row { display: flex; justify-content: space-between; padding: 10px 0; font-size: 0.95rem; }
+        .summary-row input { 
+            width: 100px; padding: 8px; border: 1px solid #ddd; border-radius: 6px; 
+            text-align: right; font-weight: 600; font-size: 0.9rem;
+        }
+        .total { font-size: 1.5rem; font-weight: 700; color: var(--primary); margin: 10px 0; padding-top: 10px; border-top: 2px solid #ecf0f1; }
         
-        .payment-method { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; }
+        /* Payment */
+        .payment-method { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 15px 0; }
         .pay-btn { 
-            padding: 12px; border: 2px solid #ecf0f1; background: white; 
-            border-radius: 8px; cursor: pointer; text-align: center; 
+            padding: 12px 10px; border: 2px solid #ecf0f1; background: white; 
+            border-radius: 10px; cursor: pointer; text-align: center; transition: 0.3s;
+            font-size: 0.85rem; font-weight: 600;
         }
-        .pay-btn.active { border-color: var(--primary); background: #fff5eb; }
+        .pay-btn:active { transform: scale(0.97); }
+        .pay-btn.active { border-color: var(--primary); background: #fff5eb; color: var(--primary); }
+        .pay-btn i { display: block; font-size: 1.5rem; margin-bottom: 4px; }
         
+        /* Action Buttons */
         .checkout-btn { 
-            width: 100%; padding: 15px; background: var(--success); color: white; 
-            border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; margin-top: 15px; 
+            width: 100%; padding: 16px; background: var(--success); color: white; 
+            border: none; border-radius: 10px; font-size: 1.1rem; font-weight: 700; 
+            cursor: pointer; margin-top: 15px; transition: 0.3s;
         }
+        .checkout-btn:active { transform: scale(0.98); }
         .checkout-btn:disabled { background: #95a5a6; cursor: not-allowed; }
         
-        .action-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .action-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+        .action-buttons .btn { margin: 0; padding: 12px; font-size: 0.9rem; }
         
-        /* Modal Styles */
+        /* Modal */
         .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center;
+            padding: 20px; backdrop-filter: blur(4px);
         }
         .modal.active { display: flex; }
         .modal-content {
-            background: white; padding: 30px; border-radius: 12px; width: 90%; max-width: 800px;
-            max-height: 80vh; overflow-y: auto;
+            background: white; padding: 25px; border-radius: 16px; width: 100%; max-width: 700px;
+            max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .close-modal { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #7f8c8d; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        .modal-header h2 { font-size: 1.3rem; color: var(--dark); display: flex; align-items: center; gap: 10px; }
+        .close-modal { background: none; border: none; font-size: 2rem; cursor: pointer; color: #7f8c8d; line-height: 1; padding: 0 5px; }
+        .close-modal:active { color: var(--dark); }
         
-        /* Print Styles - Thermal 58mm */
+        /* Table */
+        .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 15px; }
+        table { width: 100%; border-collapse: collapse; min-width: 500px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ecf0f1; font-size: 0.9rem; }
+        th { background: #f8f9fa; font-weight: 600; color: #666; white-space: nowrap; }
+        tr:last-child td { border-bottom: none; }
+        
+        /* Print Styles */
         @media print {
             @page { margin: 0; size: 58mm auto; }
             body { background: white; }
-            .app, header, .cart-section, .login-box, .modal { display: none !important; }
+            .app, header, .cart-section, .login-box, .modal, .action-buttons { display: none !important; }
             #thermalReceipt { 
                 display: block !important; 
                 position: absolute; 
                 left: 0; 
                 top: 0; 
                 width: 58mm;
-                font-family: 'Courier New', monospace;
-                font-size: 11px;
-                padding: 5px;
+                font-family: 'Courier New', Courier, monospace;
+                font-size: 10px;
+                padding: 3px;
+                line-height: 1.3;
             }
         }
         
+        /* Mobile Responsive */
         @media (max-width: 768px) {
-            .app { grid-template-columns: 1fr; padding: 10px; }
-            .cart-section { position: static; }
+            html { font-size: 14px; }
+            body { padding-bottom: 15px; }
+            
+            .app { 
+                grid-template-columns: 1fr; 
+                padding: 10px;
+                gap: 12px;
+            }
+            
+            .cart-section { 
+                position: static; 
+                order: 2;
+            }
+            
+            .menu-section {
+                order: 1;
+            }
+            
+            header { 
+                flex-direction: column; 
+                align-items: stretch;
+                padding: 12px 15px;
+            }
+            
+            .logo { 
+                justify-content: center;
+                margin-bottom: 10px;
+            }
+            
+            .logo h1 { font-size: 1.2rem; }
+            .logo i { font-size: 1.8rem; }
+            
+            .user-info { 
+                justify-content: center;
+                width: 100%;
+            }
+            
+            .products { 
+                grid-template-columns: repeat(2, 1fr); 
+                gap: 10px;
+            }
+            
+            .product img { height: 110px; }
+            .product-info { padding: 10px; }
+            .product h4 { font-size: 0.85rem; }
+            
+            .cart-item img { width: 45px; height: 45px; }
+            .cart-item-name { font-size: 0.85rem; }
+            
+            .payment-method { 
+                grid-template-columns: repeat(2, 1fr);
+                gap: 6px;
+            }
+            
+            .pay-btn { padding: 10px 8px; font-size: 0.8rem; }
+            .pay-btn i { font-size: 1.3rem; }
+            
+            .modal-content { padding: 20px 15px; }
+            .modal-header h2 { font-size: 1.1rem; }
+            
+            table { font-size: 0.85rem; }
+            th, td { padding: 8px 6px; }
+            
+            .btn { padding: 12px 18px; font-size: 0.95rem; }
+            .section-header h2 { font-size: 1.1rem; }
+        }
+        
+        @media (max-width: 480px) {
             .products { grid-template-columns: repeat(2, 1fr); }
+            .category { gap: 6px; }
+            .cat-btn { padding: 8px 14px; font-size: 0.85rem; }
+            .cart-controls .qty-btn { width: 28px; height: 28px; font-size: 0.9rem; }
+            .total { font-size: 1.3rem; }
+            .checkout-btn { padding: 14px; font-size: 1rem; }
+        }
+        
+        /* Loading Spinner */
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top: 3px solid white;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -156,19 +325,21 @@
     <!-- LOGIN -->
     <div id="loginBox" class="login-box">
         <div class="login-content">
-            <i class="fas fa-coffee" style="font-size: 3rem; color: var(--primary); margin-bottom: 15px;"></i>
+            <i class="fas fa-coffee" style="font-size: 3.5rem; color: var(--primary); margin-bottom: 15px;"></i>
             <h2>THAI TEA CST</h2>
-            <p style="margin-bottom: 20px; color: #7f8c8d;">Sistem Kasir Digital</p>
+            <p style="margin-bottom: 20px; color: #7f8c8d; font-size: 0.95rem;">Sistem Kasir Digital</p>
             <div id="loginError" class="error"></div>
             <div class="form-group">
-                <label>Email</label>
-                <input type="email" id="loginEmail" placeholder="kasir@thaiteacst.com">
+                <label for="loginEmail"><i class="fas fa-envelope"></i> Email</label>
+                <input type="email" id="loginEmail" placeholder="kasir@thaiteacst.com" autocomplete="email">
             </div>
             <div class="form-group">
-                <label>Password</label>
-                <input type="password" id="loginPass" placeholder="••••••••">
+                <label for="loginPass"><i class="fas fa-lock"></i> Password</label>
+                <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password">
             </div>
-            <button class="btn" onclick="doLogin()">Masuk Sistem</button>
+            <button class="btn btn-primary" onclick="doLogin()">
+                <i class="fas fa-sign-in-alt"></i> Masuk Sistem
+            </button>
         </div>
     </div>
 
@@ -178,24 +349,24 @@
             <div class="logo">
                 <i class="fas fa-mug-hot"></i>
                 <div>
-                    <h1 style="color: var(--primary);">THAI TEA CST</h1>
-                    <small style="color: #7f8c8d;">Point of Sale</small>
+                    <h1>THAI TEA CST</h1>
+                    <small>Point of Sale</small>
                 </div>
             </div>
             <div class="user-info">
                 <span id="userName">User</span>
-                <button class="btn btn-info" style="width: auto; padding: 8px 16px; margin: 0;" onclick="openReportModal()">
-                    <i class="fas fa-chart-bar"></i> Laporan
+                <button class="btn btn-info" style="width: auto; padding: 8px 12px; margin: 0; font-size: 0.85rem;" onclick="openReportModal()">
+                    <i class="fas fa-chart-bar"></i> <span style="display:none;" class="desktop-only">Laporan</span>
                 </button>
                 <button class="logout" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
             </div>
         </header>
 
         <div class="menu-section">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <div class="section-header">
                 <h2><i class="fas fa-list"></i> Menu</h2>
-                <button class="btn btn-info" style="width: auto; padding: 8px 16px;" onclick="exportTransaksiExcel()">
-                    <i class="fas fa-file-excel"></i> Export Excel
+                <button class="btn btn-info" style="width: auto; padding: 8px 14px; font-size: 0.85rem;" onclick="exportTransaksiExcel()">
+                    <i class="fas fa-file-excel"></i> <span class="desktop-only">Export</span>
                 </button>
             </div>
             <div class="category">
@@ -208,31 +379,50 @@
         </div>
 
         <div class="cart-section">
-            <h2 style="margin-bottom: 15px;"><i class="fas fa-shopping-cart"></i> Keranjang</h2>
+            <div class="section-header">
+                <h2><i class="fas fa-shopping-cart"></i> Keranjang</h2>
+            </div>
             <div class="cart-items" id="cartItems">
-                <p style="text-align: center; color: #7f8c8d; padding: 30px;">Keranjang kosong</p>
+                <p style="text-align: center; color: #7f8c8d; padding: 40px 20px;">
+                    <i class="fas fa-shopping-basket" style="font-size: 3rem; opacity: 0.3; display: block; margin-bottom: 10px;"></i>
+                    Keranjang kosong
+                </p>
             </div>
             <div class="summary-row"><span>Subtotal</span><span id="subtotal">Rp 0</span></div>
-            <div class="summary-row"><span>Diskon</span><input type="number" id="discount" value="0" style="width: 100px; padding: 5px; border: 1px solid #ddd; border-radius: 4px;" oninput="calcTotal()"></div>
+            <div class="summary-row"><span>Diskon</span><input type="number" id="discount" value="0" oninput="calcTotal()" placeholder="0"></div>
             <div class="summary-row total"><span>Total</span><span id="total">Rp 0</span></div>
             
-            <h3 style="margin: 15px 0 10px;">Pembayaran</h3>
-            <div class="payment-method">
-                <div class="pay-btn active" onclick="selectPay('cash', this)">💵 Tunai</div>
-                <div class="pay-btn" onclick="selectPay('qris', this)">📱 QRIS</div>
-                <div class="pay-btn" onclick="selectPay('transfer', this)">🏦 Transfer</div>
-                <div class="pay-btn" onclick="selectPay('ewallet', this)">💳 E-Wallet</div>
+            <div style="margin: 15px 0 10px;">
+                <strong style="display: block; margin-bottom: 10px; color: var(--dark);">Pembayaran</strong>
+                <div class="payment-method">
+                    <div class="pay-btn active" onclick="selectPay('cash', this)">
+                        <i class="fas fa-money-bill-wave" style="color: var(--success);"></i>
+                        Tunai
+                    </div>
+                    <div class="pay-btn" onclick="selectPay('qris', this)">
+                        <i class="fas fa-qrcode" style="color: #3498DB;"></i>
+                        QRIS
+                    </div>
+                    <div class="pay-btn" onclick="selectPay('transfer', this)">
+                        <i class="fas fa-university" style="color: #9B59B6;"></i>
+                        Transfer
+                    </div>
+                    <div class="pay-btn" onclick="selectPay('ewallet', this)">
+                        <i class="fas fa-wallet" style="color: var(--warning);"></i>
+                        E-Wallet
+                    </div>
+                </div>
             </div>
             
-            <button class="checkout-btn" id="checkoutBtn" onclick="checkout()" disabled>
+            <button class="checkout-btn" id="checkoutBtn" onclick="checkout()">
                 <i class="fas fa-check-circle"></i> Bayar Sekarang
             </button>
             
-            <div class="action-buttons">
-                <button class="btn btn-warning" onclick="resetCart()" id="btnReset" style="display:none;">
+            <div class="action-buttons" id="actionButtons" style="display:none;">
+                <button class="btn btn-warning" onclick="resetCart()">
                     <i class="fas fa-redo"></i> Pesanan Baru
                 </button>
-                <button class="btn btn-success" onclick="printReceipt()" id="btnPrint" style="display:none;">
+                <button class="btn btn-success" onclick="printReceipt()">
                     <i class="fas fa-print"></i> Cetak Struk
                 </button>
             </div>
@@ -248,13 +438,15 @@
             </div>
             <div class="form-group">
                 <label>Filter Tanggal</label>
-                <div style="display: flex; gap: 10px;">
-                    <input type="date" id="reportDari" style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
-                    <input type="date" id="reportSampai" style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
-                    <button class="btn btn-primary" onclick="loadReport()" style="width: auto; margin: 0;">Filter</button>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <input type="date" id="reportDari" style="flex: 1; min-width: 120px; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px;">
+                    <input type="date" id="reportSampai" style="flex: 1; min-width: 120px; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px;">
+                    <button class="btn btn-primary" onclick="loadReport()" style="width: auto; margin: 0; padding: 10px 20px;">
+                        <i class="fas fa-filter"></i> Filter
+                    </button>
                 </div>
             </div>
-            <div style="overflow-x: auto;">
+            <div class="table-wrapper">
                 <table id="reportTable">
                     <thead>
                         <tr>
@@ -267,7 +459,10 @@
                         </tr>
                     </thead>
                     <tbody id="reportBody">
-                        <tr><td colspan="6" style="text-align:center;">Memuat...</td></tr>
+                        <tr><td colspan="6" style="text-align:center; padding: 30px;">
+                            <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: var(--primary);"></i>
+                            <p style="margin-top: 10px; color: #7f8c8d;">Memuat data...</p>
+                        </td></tr>
                     </tbody>
                 </table>
             </div>
@@ -382,11 +577,11 @@
                 const div = document.createElement('div');
                 div.className = 'product';
                 div.innerHTML = `
-                    <img src="${p.img}" alt="${p.name}" onerror="this.src='image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>🧋</text></svg>'">
+                    <img src="${p.img}" alt="${p.name}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23f8f9fa%22 width=%22100%22 height=%22100%22/><text y=%22.9em%22 font-size=%2280%22 x=%2250%22 text-anchor=%22middle%22>🧋</text></svg>'">
                     <div class="product-info">
                         <h4>${p.name}</h4>
                         <p>${p.desc}</p>
-                        <div class="stock">Stok: ${stock}</div>
+                        <div class="stock ${stock < 10 ? 'low' : ''}">Stok: ${stock}</div>
                         <div class="price">${formatRp(p.price)}</div>
                         <button class="add-btn" onclick="addToCart('${p.id}')" ${stock <= 0 ? 'disabled' : ''}>
                             ${stock > 0 ? '<i class="fas fa-cart-plus"></i> Tambah' : 'Stok Habis'}
@@ -420,24 +615,23 @@
         function renderCart() {
             const container = document.getElementById('cartItems');
             if (cart.length === 0) {
-                container.innerHTML = '<p style="text-align: center; color: #7f8c8d; padding: 30px;">Keranjang kosong</p>';
+                container.innerHTML = '<p style="text-align: center; color: #7f8c8d; padding: 40px 20px;"><i class="fas fa-shopping-basket" style="font-size: 3rem; opacity: 0.3; display: block; margin-bottom: 10px;"></i>Keranjang kosong</p>';
                 document.getElementById('checkoutBtn').disabled = true;
-                document.getElementById('btnReset').style.display = 'none';
-                document.getElementById('btnPrint').style.display = 'none';
+                document.getElementById('actionButtons').style.display = 'none';
                 return;
             }
             
             container.innerHTML = cart.map(item => `
                 <div class="cart-item">
-                    <img src="${item.img}" alt="${item.name}">
+                    <img src="${item.img}" alt="${item.name}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23f8f9fa%22 width=%22100%22 height=%22100%22/><text y=%22.9em%22 font-size=%2280%22 x=%2250%22 text-anchor=%22middle%22>🧋</text></svg>'">
                     <div class="cart-item-info">
-                        <div style="font-weight: 600;">${item.name}</div>
-                        <div style="color: var(--primary);">${formatRp(item.price)}</div>
+                        <div class="cart-item-name">${item.name}</div>
+                        <div class="cart-item-price">${formatRp(item.price)}</div>
                         <div class="cart-controls">
                             <button class="qty-btn minus" onclick="decreaseQty('${item.id}')"><i class="fas fa-minus"></i></button>
-                            <span style="font-weight: 600; min-width: 30px; text-align: center;">${item.qty}</span>
-                            <button class="qty-btn" onclick="increaseQty('${item.id}')"><i class="fas fa-plus"></i></button>
-                            <button class="qty-btn" style="background: var(--danger); margin-left: 10px;" onclick="removeFromCart('${item.id}')"><i class="fas fa-trash"></i></button>
+                            <span class="qty-value">${item.qty}</span>
+                            <button class="qty-btn plus" onclick="increaseQty('${item.id}')"><i class="fas fa-plus"></i></button>
+                            <button class="qty-btn delete" onclick="removeFromCart('${item.id}')"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>
                 </div>
@@ -484,8 +678,7 @@
                 cart = [];
                 document.getElementById('discount').value = '0';
                 renderCart();
-                document.getElementById('btnReset').style.display = 'none';
-                document.getElementById('btnPrint').style.display = 'none';
+                document.getElementById('actionButtons').style.display = 'none';
             }
         }
 
@@ -508,8 +701,9 @@
             if (cart.length === 0) return;
             
             const btn = document.getElementById('checkoutBtn');
+            const originalText = btn.innerHTML;
             btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+            btn.innerHTML = '<span class="spinner"></span> Memproses...';
             
             try {
                 const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
@@ -553,9 +747,8 @@
                 
                 alert('✅ Transaksi berhasil!');
                 
-                // Show buttons
-                document.getElementById('btnReset').style.display = 'block';
-                document.getElementById('btnPrint').style.display = 'block';
+                // Show action buttons
+                document.getElementById('actionButtons').style.display = 'grid';
                 
                 // Auto print
                 printReceipt();
@@ -565,23 +758,26 @@
                 alert('❌ Gagal: ' + e.message);
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-check-circle"></i> Bayar Sekarang';
+                btn.innerHTML = originalText;
             }
         }
 
-        // PRINT FUNCTION - Dual System (RawBT for Android, window.print for PC)
+        // PRINT FUNCTION - RawBT dengan Intent URL yang BENAR
         function printReceipt() {
-            if (!lastTransaction) return;
+            if (!lastTransaction) {
+                alert('Tidak ada transaksi untuk dicetak');
+                return;
+            }
             
             const isAndroid = /Android/i.test(navigator.userAgent);
             const date = new Date().toLocaleString('id-ID');
-            const branch = branchNames[currentBranch];
+            const branch = branchNames[currentBranch] || currentBranch;
             
             // Generate receipt text
             let receiptText = `THAI TEA CST\n`;
-            receiptText += `${branch.replace('📍 ', '')}\n`;
+            receiptText += `${branch}\n`;
             receiptText += `${date}\n`;
-            receiptText += `================================\n\n`;
+            receiptText += `--------------------------------\n\n`;
             
             lastTransaction.items.forEach(item => {
                 receiptText += `${item.name}\n`;
@@ -589,35 +785,44 @@
                 receiptText += `${formatRp(item.price * item.qty)}\n\n`;
             });
             
-            receiptText += `================================\n`;
+            receiptText += `--------------------------------\n`;
             receiptText += `Subtotal: ${formatRp(lastTransaction.subtotal)}\n`;
             if (lastTransaction.discount > 0) {
                 receiptText += `Diskon: -${formatRp(lastTransaction.discount)}\n`;
             }
             receiptText += `TOTAL: ${formatRp(lastTransaction.total)}\n`;
-            receiptText += `Bayar: ${selectedPayment.toUpperCase()}\n`;
-            receiptText += `================================\n\n`;
+            receiptText += `Pembayaran: ${selectedPayment.toUpperCase()}\n`;
+            receiptText += `--------------------------------\n\n`;
             receiptText += `Terima Kasih!\n`;
-            receiptText += `Selamat Menikmati!\n\n`;
+            receiptText += `Selamat Menikmati\n\n`;
             receiptText += `PT CAHAYA SEJATI TEKNOLOGI\n`;
             
             if (isAndroid) {
-                // MOBILE: RawBT Intent
+                // MOBILE: RawBT dengan Intent URL yang BENAR
                 try {
-                    const encodedText = encodeURIComponent(receiptText);
-                    const intentUrl = `intent://print/rawbt?${btoa(unescape(encodeURIComponent(receiptText)))}#Intent;scheme=rawbt;package=ru.a402d.rawbt;S.text=${encodedText};end`;
+                    // Encode ke base64
+                    const b64data = btoa(unescape(encodeURIComponent(receiptText)));
                     
+                    // Format intent yang benar untuk RawBT
+                    const intentUrl = `intent://base64,${b64data}#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;end;`;
+                    
+                    // Coba buka RawBT
                     window.location.href = intentUrl;
                     
+                    // Fallback setelah 2 detik
                     setTimeout(() => {
-                        if (confirm('RawBT tidak terbuka. Pastikan aplikasi RawBT sudah terinstall. Coba lagi?')) {
-                            window.location.href = intentUrl;
+                        if (!document.hidden) {
+                            // Jika masih di halaman yang sama, kemungkinan RawBT tidak terinstall
+                            if (confirm('Aplikasi RawBT tidak terbuka. Apakah Anda ingin menginstal RawBT Printer?')) {
+                                // Redirect ke Play Store
+                                window.open('https://play.google.com/store/apps/details?id=ru.a402d.rawbtprinter', '_blank');
+                            }
                         }
                     }, 2000);
                     
                 } catch (e) {
                     console.error('RawBT error:', e);
-                    alert('Gagal membuka RawBT: ' + e.message);
+                    alert('Gagal membuka RawBT. Pastikan aplikasi RawBT Printer sudah terinstall.\n\nError: ' + e.message);
                 }
             } else {
                 // DESKTOP: Browser Print
@@ -630,17 +835,17 @@
                         <style>
                             @media print {
                                 @page { margin: 0; size: 58mm auto; }
-                                body { margin: 0; padding: 5px; font-family: 'Courier New', monospace; font-size: 11px; }
+                                body { margin: 0; padding: 3px; font-family: 'Courier New', Courier, monospace; font-size: 10px; }
                             }
                             body { 
-                                font-family: 'Courier New', monospace; 
-                                font-size: 11px;
+                                font-family: 'Courier New', Courier, monospace; 
+                                font-size: 10px;
                                 max-width: 58mm;
                                 margin: 0 auto;
                                 padding: 5px;
                                 white-space: pre-wrap;
                                 word-wrap: break-word;
-                                line-height: 1.4;
+                                line-height: 1.3;
                             }
                         </style>
                     </head>
@@ -729,7 +934,7 @@
                 const tbody = document.getElementById('reportBody');
                 
                 if (snap.empty) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Tidak ada data</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 30px;">Tidak ada data</td></tr>';
                     return;
                 }
                 
@@ -749,7 +954,7 @@
                         const actionCell = currentUserRole === 'cashier' ? 
                             '<td style="text-align:center;"><small style="color:#7f8c8d;">View Only</small></td>' :
                             `<td style="text-align:center;">
-                                <button class="qty-btn" style="background:var(--danger); padding:4px 8px;" onclick="deleteTransaction('${doc.id}')">
+                                <button class="qty-btn delete" style="padding:6px 10px;" onclick="deleteTransaction('${doc.id}')">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </td>`;
@@ -759,14 +964,14 @@
                             <td>${d.cashierName || '-'}</td>
                             <td>${Array.isArray(d.items) ? d.items.map(i => i.name).join(', ') : '-'}</td>
                             <td><b>${formatRp(d.total)}</b></td>
-                            <td><span class="badge badge-info">${d.paymentMethod}</span></td>
+                            <td><span style="padding:4px 10px; background:#e3f2fd; color:#1565c0; border-radius:12px; font-size:0.75rem; font-weight:600;">${d.paymentMethod}</span></td>
                             ${actionCell}
                         </tr>`;
                     }
                 });
                 
                 if (html === '') {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Tidak ada data</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 30px;">Tidak ada data</td></tr>';
                 } else {
                     tbody.innerHTML = html;
                 }
@@ -779,7 +984,7 @@
                 
             } catch (e) {
                 console.error(e);
-                document.getElementById('reportBody').innerHTML = '<tr><td colspan="6" style="text-align:center;color:red;">Gagal memuat data</td></tr>';
+                document.getElementById('reportBody').innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 30px; color: var(--danger);">Gagal memuat data</td></tr>';
             }
         };
 
