@@ -61,13 +61,12 @@
         .btn-success { background: var(--success); color: white; }
         .btn-info { background: #3498DB; color: white; }
         .btn-warning { background: var(--warning); color: white; }
-        .btn-danger { background: var(--danger); color: white; }
         .error { 
             background: #fadbd8; color: var(--danger); padding: 12px; border-radius: 8px; 
             margin-bottom: 15px; display: none; font-size: 0.9rem; text-align: center;
         }
         
-        /* Main App */
+        /* Main App - DESKTOP DEFAULT (2 kolom) */
         .app { 
             display: none; 
             max-width: 1200px; 
@@ -475,23 +474,28 @@
             }
         }
         
-        /* MOBILE RESPONSIVE */
+        /* ============================================ */
+        /* MOBILE RESPONSIVE - LAYAR KECIL (< 768px) */
+        /* ============================================ */
         @media (max-width: 768px) {
             html { font-size: 14px; }
             body { padding-bottom: 15px; }
             
             .app { 
+                /* UBAH KE 1 KOLOM (VERTIKAL) */
                 grid-template-columns: 1fr;
                 padding: 10px;
                 gap: 12px;
             }
             
+            /* Cart pindah ke bawah (order: 2) */
             .cart-section { 
                 position: static; 
                 order: 2;
                 width: 100%;
             }
             
+            /* Menu di atas (order: 1) */
             .menu-section {
                 order: 1;
                 width: 100%;
@@ -517,6 +521,7 @@
                 flex-wrap: wrap;
             }
             
+            /* Produk grid 2 kolom di HP */
             .products { 
                 grid-template-columns: repeat(2, 1fr); 
                 gap: 10px;
@@ -535,6 +540,7 @@
                 font-size: 0.75rem;
             }
             
+            /* Cart item lebih compact */
             .cart-item img { 
                 width: 50px; 
                 height: 50px; 
@@ -548,6 +554,7 @@
                 font-size: 0.9rem; 
             }
             
+            /* Payment 2 kolom */
             .payment-method { 
                 grid-template-columns: repeat(2, 1fr);
                 gap: 6px;
@@ -561,6 +568,7 @@
                 font-size: 1.3rem; 
             }
             
+            /* Modal lebih kecil */
             .modal-content { 
                 padding: 20px 15px; 
             }
@@ -568,6 +576,7 @@
                 font-size: 1.1rem; 
             }
             
+            /* Table scrollable */
             table { 
                 font-size: 0.85rem; 
             }
@@ -575,6 +584,7 @@
                 padding: 8px 6px; 
             }
             
+            /* Button lebih besar untuk touch */
             .btn { 
                 padding: 12px 18px; 
                 font-size: 0.95rem; 
@@ -603,6 +613,7 @@
             }
         }
         
+        /* Extra small devices */
         @media (max-width: 480px) {
             .products { 
                 grid-template-columns: repeat(2, 1fr); 
@@ -810,9 +821,9 @@
             { id: 'prem_matcha', name: 'Premium Matcha', cat: 'premium', price: 25000, img: 'https://i.ibb.co.com/XZ2k5y1T/Premium-Matcha-with-Cream-Cheese-Shredded-Cheese.jpg', desc: 'with Cream Cheese & Shredded Cheese' },
             { id: 'prem_choco', name: 'Premium Chocolate', cat: 'premium', price: 20000, img: 'https://i.ibb.co.com/ZzSGpkQB/Premium-Chocolate-with-Cream-Cheese-Shredded-Cheese.jpg', desc: 'with Cream Cheese & Shredded Cheese' },
             { id: 'orig_thai', name: 'Thai Tea', cat: 'original', price: 10000, img: 'https://i.ibb.co.com/N6jCd6sw/Thai-Tea-original.jpg', desc: 'Original choice' },
-            { id: 'orig_matcha', name: 'Matcha', cat: 'original', price: 10000, img: 'https://i.ibb.co.com/99Tb8ZjY/Matcha-original.jpg', desc: 'Original choice' },
+            { id: 'orig_matcha', name: 'Matcha', cat: 'original', price: 15000, img: 'https://i.ibb.co.com/99Tb8ZjY/Matcha-original.jpg', desc: 'Original choice' },
             { id: 'orig_choco', name: 'Chocolate', cat: 'original', price: 10000, img: 'https://i.ibb.co.com/bjzr6NNm/Chocolate-original.jpg', desc: 'Original choice' },
-            { id: 'top_cream', name: 'Cream Cheese', cat: 'topping', price: 3000, img: 'https://i.ibb.co.com/SXyM8m2L/Extra-Topping-Cream-Cheese.jpg', desc: 'Extra topping' },
+            { id: 'top_cream', name: 'Cream Cheese', cat: 'topping', price: 5000, img: 'https://i.ibb.co.com/SXyM8m2L/Extra-Topping-Cream-Cheese.jpg', desc: 'Extra topping' },
             { id: 'top_cheese', name: 'Cheese Parut', cat: 'topping', price: 3000, img: 'https://i.ibb.co.com/gZv3pDvz/Extra-Topping-Cheese-Keju-Parut.jpg', desc: 'Extra topping' },
             { id: 'top_bubble', name: 'Bubble', cat: 'topping', price: 3000, img: 'https://i.ibb.co.com/d0DwHSr4/Extra-Topping-Bubble-Tapioca-Pearl.jpg', desc: 'Extra topping' }
         ];
@@ -1088,7 +1099,9 @@
             }
         }
 
+        // ============================================
         // PRINT FUNCTION - RAWBT DENGAN FORMAT YANG BENAR (ANTI KODE ACAK)
+        // ============================================
         function printReceipt() {
             if (!lastTransaction) {
                 alert('Tidak ada transaksi untuk dicetak');
@@ -1100,48 +1113,40 @@
             const branch = branchNames[currentBranch] || currentBranch;
             const customerName = lastTransaction.customerName || '-';
             
-            // Format struk teks yang rapi (max 32 karakter per baris untuk kertas 58mm)
-            let receiptText = `THAI TEA CST\n`;
-            receiptText += `Pelanggan: ${customerName}\n`;
-            receiptText += `${branch}\n`;
-            receiptText += `${date}\n`;
-            receiptText += `--------------------------------\n\n`;
+            // Format struk teks yang rapi dengan \n untuk baris baru
+            let isiStruk = `THAI TEA CST\n`;
+            isiStruk += `Pelanggan: ${customerName}\n`;
+            isiStruk += `${branch}\n`;
+            isiStruk += `${date}\n`;
+            isiStruk += `--------------------------------\n\n`;
             
             lastTransaction.items.forEach(item => {
-                // Wrap text untuk nama produk yang panjang
-                const nameLines = wrapText(item.name, 28);
-                nameLines.forEach((line, idx) => {
-                    if (idx === 0) {
-                        receiptText += `${line}\n`;
-                    } else {
-                        receiptText += `  ${line}\n`;
-                    }
-                });
-                receiptText += `${item.qty} x ${formatRp(item.price)}\n`;
-                receiptText += `${formatRp(item.price * item.qty)}\n\n`;
+                isiStruk += `${item.name}\n`;
+                isiStruk += `${item.qty} x ${formatRp(item.price)}\n`;
+                isiStruk += `${formatRp(item.price * item.qty)}\n\n`;
             });
             
-            receiptText += `--------------------------------\n`;
-            receiptText += `Subtotal: ${formatRp(lastTransaction.subtotal)}\n`;
+            isiStruk += `--------------------------------\n`;
+            isiStruk += `Subtotal: ${formatRp(lastTransaction.subtotal)}\n`;
             if (lastTransaction.discount > 0) {
-                receiptText += `Diskon: -${formatRp(lastTransaction.discount)}\n`;
+                isiStruk += `Diskon: -${formatRp(lastTransaction.discount)}\n`;
             }
-            receiptText += `TOTAL: ${formatRp(lastTransaction.total)}\n`;
-            receiptText += `Pembayaran: ${selectedPayment.toUpperCase()}\n`;
-            receiptText += `--------------------------------\n\n`;
-            receiptText += `Pesanan Kembali: +62 822-9999-7227\n`;
-            receiptText += `Terima Kasih!\n`;
-            receiptText += `Selamat Menikmati\n`;
+            isiStruk += `TOTAL: ${formatRp(lastTransaction.total)}\n`;
+            isiStruk += `Pembayaran: ${selectedPayment.toUpperCase()}\n`;
+            isiStruk += `--------------------------------\n\n`;
+            isiStruk += `Pesanan Kembali: +62 822-9999-7227\n`;
+            isiStruk += `Terima Kasih!\n`;
+            isiStruk += `Selamat Menikmati\n`;
             
             if (isAndroid) {
                 // RAWBT PRINT - FORMAT INTENT YANG BENAR (ANTI KODE ACAK)
                 try {
-                    // Encode teks ke base64 dengan benar
-                    const b64data = btoa(unescape(encodeURIComponent(receiptText)));
+                    // Encode teks ke base64 TANPA prefix apapun
+                    const encodedData = btoa(isiStruk);
                     
                     // Format intent URL yang benar untuk RawBT
                     // Format: intent://base64,ENCODED_DATA#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;end;
-                    const intentUrl = `intent://base64,${b64data}#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;end;`;
+                    const intentUrl = "intent://base64," + encodedData + "#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;end;";
                     
                     // Buka RawBT
                     window.location.href = intentUrl;
@@ -1184,30 +1189,11 @@
                             }
                         </style>
                     </head>
-                    <body>${receiptText}<script>window.onload=function(){window.print();setTimeout(()=>window.close(),1000);};<\/script></body>
+                    <body>${isiStruk}<script>window.onload=function(){window.print();setTimeout(()=>window.close(),1000);};<\/script></body>
                     </html>
                 `);
                 printWindow.document.close();
             }
-        }
-
-        // Helper function untuk wrap text
-        function wrapText(text, maxWidth) {
-            const words = text.split(' ');
-            const lines = [];
-            let currentLine = '';
-            
-            words.forEach(word => {
-                if ((currentLine + word).length <= maxWidth) {
-                    currentLine += (currentLine ? ' ' : '') + word;
-                } else {
-                    if (currentLine) lines.push(currentLine);
-                    currentLine = word;
-                }
-            });
-            
-            if (currentLine) lines.push(currentLine);
-            return lines;
         }
 
         // EXPORT EXCEL
@@ -1304,6 +1290,7 @@
                             hour: '2-digit', minute: '2-digit'
                         });
                         
+                        // Hide action buttons for cashier (view only)
                         const actionCell = currentUserRole === 'cashier' ? 
                             '<td style="text-align:center;"><small style="color:#7f8c8d;">View Only</small></td>' :
                             `<td style="text-align:center;">
@@ -1329,6 +1316,7 @@
                     tbody.innerHTML = html;
                 }
                 
+                // Hide/show action header based on role
                 const aksiHeader = document.getElementById('aksiHeader');
                 if (currentUserRole === 'cashier') {
                     aksiHeader.textContent = 'Status';
