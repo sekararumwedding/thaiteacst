@@ -77,7 +77,7 @@
         }
         .app.active { display: grid; }
         
-        /* Header */
+        /* Header with NEW LOGO */
         header { 
             grid-column: 1/-1; 
             background: white; 
@@ -89,10 +89,27 @@
             margin-bottom: 15px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
-        .logo { display: flex; align-items: center; gap: 12px; }
-        .logo i { font-size: 2rem; color: var(--primary); }
-        .logo h1 { font-size: 1.4rem; color: var(--primary); line-height: 1.2; }
-        .logo small { display: block; color: #7f8c8d; font-size: 0.75rem; }
+        .logo { 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+        }
+        .logo-img {
+            width: 90px;
+            height: auto;
+            object-fit: contain;
+        }
+        .logo-text h1 { 
+            font-size: 1.3rem; 
+            color: var(--primary); 
+            line-height: 1.2;
+            font-weight: 700;
+        }
+        .logo-text small { 
+            display: block; 
+            color: #7f8c8d; 
+            font-size: 0.75rem; 
+        }
         .user-info { display: flex; align-items: center; gap: 10px; }
         .user-info span { font-weight: 600; color: var(--dark); font-size: 0.9rem; }
         .logout { 
@@ -482,6 +499,19 @@
                 top: 15px;
                 height: fit-content;
             }
+            .logo-img {
+                width: 100px;
+            }
+        }
+        
+        /* MOBILE - Logo lebih kecil */
+        @media (max-width: 768px) {
+            .logo-img {
+                width: 80px;
+            }
+            .logo-text h1 {
+                font-size: 1.1rem;
+            }
         }
     </style>
 </head>
@@ -490,7 +520,9 @@
     <!-- LOGIN -->
     <div id="loginBox" class="login-box">
         <div class="login-content">
-            <i class="fas fa-coffee" style="font-size: 3.5rem; color: var(--primary); margin-bottom: 15px;"></i>
+            <img src="https://i.ibb.co.com/mC3npXRW/Gemini-Generated-Image-8aemtl8aemtl8aem-removebg-preview.png" 
+                 alt="Thai Tea CST Logo" 
+                 style="width: 120px; height: auto; object-fit: contain; margin-bottom: 15px;">
             <h2>THAI TEA CST</h2>
             <p style="margin-bottom: 20px; color: #7f8c8d; font-size: 0.95rem;">Sistem Kasir Digital</p>
             <div id="loginError" class="error"></div>
@@ -512,8 +544,10 @@
     <div id="app" class="app">
         <header>
             <div class="logo">
-                <i class="fas fa-mug-hot"></i>
-                <div>
+                <img src="https://i.ibb.co.com/mC3npXRW/Gemini-Generated-Image-8aemtl8aemtl8aem-removebg-preview.png" 
+                     alt="Thai Tea CST" 
+                     class="logo-img">
+                <div class="logo-text">
                     <h1>THAI TEA CST</h1>
                     <small>Point of Sale</small>
                 </div>
@@ -658,9 +692,9 @@
             { id: 'prem_matcha', name: 'Premium Matcha', cat: 'premium', price: 25000, img: 'https://i.ibb.co.com/XZ2k5y1T/Premium-Matcha-with-Cream-Cheese-Shredded-Cheese.jpg', desc: 'with Cream Cheese & Shredded Cheese' },
             { id: 'prem_choco', name: 'Premium Chocolate', cat: 'premium', price: 20000, img: 'https://i.ibb.co.com/ZzSGpkQB/Premium-Chocolate-with-Cream-Cheese-Shredded-Cheese.jpg', desc: 'with Cream Cheese & Shredded Cheese' },
             { id: 'orig_thai', name: 'Thai Tea', cat: 'original', price: 10000, img: 'https://i.ibb.co.com/N6jCd6sw/Thai-Tea-original.jpg', desc: 'Original choice' },
-            { id: 'orig_matcha', name: 'Matcha', cat: 'original', price: 15000, img: 'https://i.ibb.co.com/99Tb8ZjY/Matcha-original.jpg', desc: 'Original choice' },
+            { id: 'orig_matcha', name: 'Matcha', cat: 'original', price: 10000, img: 'https://i.ibb.co.com/99Tb8ZjY/Matcha-original.jpg', desc: 'Original choice' },
             { id: 'orig_choco', name: 'Chocolate', cat: 'original', price: 10000, img: 'https://i.ibb.co.com/bjzr6NNm/Chocolate-original.jpg', desc: 'Original choice' },
-            { id: 'top_cream', name: 'Cream Cheese', cat: 'topping', price: 5000, img: 'https://i.ibb.co.com/SXyM8m2L/Extra-Topping-Cream-Cheese.jpg', desc: 'Extra topping' },
+            { id: 'top_cream', name: 'Cream Cheese', cat: 'topping', price: 3000, img: 'https://i.ibb.co.com/SXyM8m2L/Extra-Topping-Cream-Cheese.jpg', desc: 'Extra topping' },
             { id: 'top_cheese', name: 'Cheese Parut', cat: 'topping', price: 3000, img: 'https://i.ibb.co.com/gZv3pDvz/Extra-Topping-Cheese-Keju-Parut.jpg', desc: 'Extra topping' },
             { id: 'top_bubble', name: 'Bubble', cat: 'topping', price: 3000, img: 'https://i.ibb.co.com/d0DwHSr4/Extra-Topping-Bubble-Tapioca-Pearl.jpg', desc: 'Extra topping' }
         ];
