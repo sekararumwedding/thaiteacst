@@ -5,10 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kasir Thai Tea CST</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Load Config (dari GitHub Secrets) -->
     <script src="config.js"></script>
+    
+    <!-- SheetJS untuk Export Excel -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    
     <style>
         :root { --primary: #E67E22; --dark: #2C3E50; --success: #27AE60; --danger: #E74C3C; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
@@ -27,9 +35,11 @@
         .form-group input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; }
         .btn { 
             padding: 12px 24px; background: var(--primary); color: white; border: none; 
-            border-radius: 8px; cursor: pointer; width: 100%; font-weight: 600; 
+            border-radius: 8px; cursor: pointer; width: 100%; font-weight: 600; margin-top: 10px;
         }
         .btn:hover { background: #D35400; }
+        .btn-success { background: var(--success); }
+        .btn-info { background: #3498DB; }
         .error { background: #fadbd8; color: var(--danger); padding: 10px; border-radius: 6px; margin-bottom: 15px; display: none; }
         
         .app { display: none; max-width: 1400px; margin: 0 auto; padding: 20px; }
@@ -37,11 +47,11 @@
         
         header { 
             grid-column: 1/-1; background: white; padding: 15px 25px; border-radius: 12px; 
-            display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; 
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;
         }
         .logo { display: flex; align-items: center; gap: 12px; }
         .logo i { font-size: 2rem; color: var(--primary); }
-        .user-info { display: flex; align-items: center; gap: 15px; }
+        .user-info { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
         .logout { background: var(--danger); color: white; padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; }
         
         .menu-section, .cart-section { background: white; border-radius: 12px; padding: 20px; }
@@ -100,9 +110,20 @@
         }
         .checkout-btn:disabled { background: #95a5a6; cursor: not-allowed; }
         
+        .action-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        
+        /* Print Styles */
+        @media print {
+            @page { margin: 0; size: 58mm auto; }
+            body { background: white; }
+            .app, header, .cart-section, .login-box { display: none !important; }
+            #thermalReceipt { display: block !important; position: absolute; left: 0; top: 0; width: 100%; }
+        }
+        
         @media (max-width: 768px) {
-            .app { grid-template-columns: 1fr; }
+            .app { grid-template-columns: 1fr; padding: 10px; }
             .cart-section { position: static; }
+            .products { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
 </head>
@@ -144,7 +165,12 @@
         </header>
 
         <div class="menu-section">
-            <h2 style="margin-bottom: 15px;"><i class="fas fa-list"></i> Menu</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h2><i class="fas fa-list"></i> Menu</h2>
+                <button class="btn btn-info" style="width: auto; padding: 8px 16px;" onclick="exportTransaksiExcel()">
+                    <i class="fas fa-file-excel"></i> Export Excel
+                </button>
+            </div>
             <div class="category">
                 <button class="cat-btn active" onclick="filterCat('all')">Semua</button>
                 <button class="cat-btn" onclick="filterCat('premium')">Premium</button>
@@ -174,8 +200,17 @@
             <button class="checkout-btn" id="checkoutBtn" onclick="checkout()" disabled>
                 <i class="fas fa-check-circle"></i> Bayar Sekarang
             </button>
+            
+            <div class="action-buttons">
+                <button class="btn btn-success" onclick="printReceipt()" id="btnPrint" style="display:none;">
+                    <i class="fas fa-print"></i> Cetak Struk
+                </button>
+            </div>
         </div>
     </div>
+
+    <!-- Hidden Receipt for Print -->
+    <div id="thermalReceipt" style="display:none;"></div>
 
     <script>
         // Global variables
@@ -184,6 +219,7 @@
         let inventory = {};
         let selectedPayment = 'cash';
         let currentUser = null;
+        let lastTransaction = null;
         
         const products = [
             { id: 'prem_thai', name: 'Premium Thai Tea', cat: 'premium', price: 20000, img: 'https://i.ibb.co.com/S44X01hn/Premium-Thai-Tea-with-Cream-Cheese-Shredded-Cheese.jpg', desc: 'with Cream Cheese & Shredded Cheese' },
@@ -213,13 +249,11 @@
                     
                     if (!data) { await auth.signOut(); return; }
                     
-                    // Admin redirect ke admin.html
                     if (data.role === 'admin' || data.role === 'super_admin') {
                         window.location.href = 'admin.html';
                         return;
                     }
                     
-                    // Kasir tampil POS
                     currentUser = user;
                     currentBranch = data.branchId;
                     document.getElementById('loginBox').style.display = 'none';
@@ -261,9 +295,7 @@
                     const d = doc.data();
                     inventory[d.productId] = d.stock || 0;
                 });
-            } catch(e) { 
-                console.error('Gagal load stok:', e); 
-            }
+            } catch(e) { console.error('Gagal load stok:', e); }
         }
 
         function filterCat(cat) {
@@ -283,7 +315,7 @@
                 const div = document.createElement('div');
                 div.className = 'product';
                 div.innerHTML = `
-                    <img src="${p.img}" alt="${p.name}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>🧋</text></svg>'">
+                    <img src="${p.img}" alt="${p.name}" onerror="this.src='image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>🧋</text></svg>'">
                     <div class="product-info">
                         <h4>${p.name}</h4>
                         <p>${p.desc}</p>
@@ -399,19 +431,15 @@
                 const discount = parseInt(document.getElementById('discount').value) || 0;
                 const total = Math.max(0, subtotal - discount);
                 
-                // Update stok untuk setiap item
+                // Update stok
                 for (const item of cart) {
                     const docId = `${currentBranch}_${item.id}`;
                     const invRef = db.collection('inventory').doc(docId);
                     const invDoc = await invRef.get();
                     
                     if (invDoc.exists) {
-                        // Dokumen ada, update
-                        await invRef.update({
-                            stock: firebase.firestore.FieldValue.increment(-item.qty)
-                        });
+                        await invRef.update({ stock: firebase.firestore.FieldValue.increment(-item.qty) });
                     } else {
-                        // Dokumen tidak ada, buat baru dengan stok awal 100
                         await invRef.set({
                             productId: item.id,
                             productName: item.name,
@@ -423,7 +451,7 @@
                 }
                 
                 // Simpan transaksi
-                await db.collection('transactions').add({
+                const transactionData = {
                     items: cart,
                     subtotal: subtotal,
                     discount: discount,
@@ -433,9 +461,18 @@
                     cashierName: document.getElementById('userName').textContent,
                     branchId: currentBranch,
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                });
+                };
+                
+                const transactionRef = await db.collection('transactions').add(transactionData);
+                lastTransaction = { id: transactionRef.id, ...transactionData };
                 
                 alert('✅ Transaksi berhasil!');
+                
+                // Show print button
+                document.getElementById('btnPrint').style.display = 'block';
+                
+                // Auto print
+                printReceipt();
                 
                 // Reset
                 cart = [];
@@ -450,6 +487,127 @@
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-check-circle"></i> Bayar Sekarang';
+            }
+        }
+
+        // PRINT FUNCTION - Desktop & Mobile (RawBT)
+        function printReceipt() {
+            if (!lastTransaction) return;
+            
+            const isAndroid = /Android/i.test(navigator.userAgent);
+            const date = new Date().toLocaleString('id-ID');
+            const branch = branchNames[currentBranch];
+            
+            // Generate receipt text
+            let receiptText = `THAI TEA CST\n`;
+            receiptText += `${branch.replace('📍 ', '')}\n`;
+            receiptText += `${date}\n`;
+            receiptText += `================================\n`;
+            
+            lastTransaction.items.forEach(item => {
+                receiptText += `${item.name} x${item.qty}\n`;
+                receiptText += `${formatRp(item.price * item.qty)}\n`;
+            });
+            
+            receiptText += `================================\n`;
+            receiptText += `Subtotal: ${formatRp(lastTransaction.subtotal)}\n`;
+            if (lastTransaction.discount > 0) {
+                receiptText += `Diskon: -${formatRp(lastTransaction.discount)}\n`;
+            }
+            receiptText += `TOTAL: ${formatRp(lastTransaction.total)}\n`;
+            receiptText += `Bayar: ${selectedPayment.toUpperCase()}\n`;
+            receiptText += `================================\n`;
+            receiptText += `Terima Kasih!\n`;
+            receiptText += `Selamat Menikmati!\n\n`;
+            receiptText += `PT CAHAYA SEJATI TEKNOLOGI\n`;
+            
+            if (isAndroid) {
+                // MOBILE: RawBT Intent
+                try {
+                    const encodedText = encodeURIComponent(receiptText);
+                    const intentUrl = `intent://print/rawbt?${btoa(unescape(encodeURIComponent(receiptText)))}#Intent;scheme=rawbt;package=ru.a402d.rawbt;S.text=${encodedText};end`;
+                    
+                    window.location.href = intentUrl;
+                    
+                    setTimeout(() => {
+                        if (confirm('RawBT tidak terbuka. Pastikan aplikasi RawBT sudah terinstall. Coba lagi?')) {
+                            window.location.href = intentUrl;
+                        }
+                    }, 2000);
+                    
+                } catch (e) {
+                    console.error('RawBT error:', e);
+                    alert('Gagal membuka RawBT: ' + e.message);
+                }
+            } else {
+                // DESKTOP: Browser Print
+                const printWindow = window.open('', '_blank', 'width=400,height=600');
+                printWindow.document.write(`
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>Struk Pembayaran</title>
+                        <style>
+                            @media print {
+                                @page { margin: 0; size: 58mm auto; }
+                                body { margin: 0; padding: 5px; font-family: 'Courier New', monospace; font-size: 12px; }
+                            }
+                            body { 
+                                font-family: 'Courier New', monospace; 
+                                font-size: 12px;
+                                max-width: 384px;
+                                margin: 0 auto;
+                                padding: 10px;
+                                white-space: pre-wrap;
+                                word-wrap: break-word;
+                            }
+                        </style>
+                    </head>
+                    <body>${receiptText}<script>window.onload=function(){window.print();setTimeout(()=>window.close(),1000);};<\/script></body>
+                    </html>
+                `);
+                printWindow.document.close();
+            }
+        }
+
+        // EXPORT EXCEL
+        async function exportTransaksiExcel() {
+            try {
+                const snap = await db.collection('transactions')
+                    .where('branchId', '==', currentBranch)
+                    .orderBy('timestamp', 'desc')
+                    .limit(100)
+                    .get();
+                
+                if (snap.empty) {
+                    alert('Belum ada transaksi untuk diexport');
+                    return;
+                }
+                
+                const data = [];
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    data.push({
+                        'Tanggal': d.timestamp ? new Date(d.timestamp.seconds * 1000).toLocaleString('id-ID') : '-',
+                        'ID Transaksi': doc.id,
+                        'Kasir': d.cashierName || '-',
+                        'Items': Array.isArray(d.items) ? d.items.map(i => `${i.name} (x${i.qty})`).join(', ') : '-',
+                        'Subtotal': d.subtotal || 0,
+                        'Diskon': d.discount || 0,
+                        'Total': d.total || 0,
+                        'Metode Pembayaran': d.paymentMethod || '-',
+                        'Cabang': branchNames[d.branchId] || d.branchId
+                    });
+                });
+                
+                const ws = XLSX.utils.json_to_sheet(data);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Transaksi");
+                XLSX.writeFile(wb, `Transaksi_${currentBranch}_${new Date().toISOString().split('T')[0]}.xlsx`);
+                
+            } catch (e) {
+                console.error(e);
+                alert('Gagal export: ' + e.message);
             }
         }
 
