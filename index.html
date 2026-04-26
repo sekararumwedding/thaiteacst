@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kasir Thai Tea CST</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="config.js"></script>
+    <style>
+        :root { --primary: #E67E22; --dark: #2C3E50; --success: #27AE60; --danger: #E74C3C; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: #f5f6fa; }
+        
+        .login-box { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(44,62,80,0.95); display: flex; align-items: center; justify-content: center; z-index: 1000;
+        }
+        .login-content { 
+            background: white; padding: 40px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; 
+        }
+        .login-content h2 { color: var(--primary); margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; text-align: left; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
+        .form-group input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; }
+        .btn { 
+            padding: 12px 24px; background: var(--primary); color: white; border: none; 
+            border-radius: 8px; cursor: pointer; width: 100%; font-weight: 600; 
+        }
+        .btn:hover { background: #D35400; }
+        .error { background: #fadbd8; color: var(--danger); padding: 10px; border-radius: 6px; margin-bottom: 15px; display: none; }
+        
+        .app { display: none; max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .app.active { display: grid; grid-template-columns: 1fr 350px; gap: 20px; }
+        
+        header { 
+            grid-column: 1/-1; background: white; padding: 15px 25px; border-radius: 12px; 
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; 
+        }
+        .logo { display: flex; align-items: center; gap: 12px; }
+        .logo i { font-size: 2rem; color: var(--primary); }
+        .user-info { display: flex; align-items: center; gap: 15px; }
+        .logout { background: var(--danger); color: white; padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; }
+        
+        .menu-section, .cart-section { background: white; border-radius: 12px; padding: 20px; }
+        .cart-section { position: sticky; top: 20px; height: fit-content; }
+        
+        .category { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .cat-btn { 
+            padding: 8px 20px; background: #ecf0f1; border: none; border-radius: 20px; 
+            cursor: pointer; font-weight: 600; 
+        }
+        .cat-btn.active { background: var(--primary); color: white; }
+        
+        .products { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
+        .product { 
+            background: white; border: 2px solid #ecf0f1; border-radius: 12px; overflow: hidden; 
+            transition: 0.3s; 
+        }
+        .product:hover { border-color: var(--primary); transform: translateY(-3px); }
+        .product img { width: 100%; height: 120px; object-fit: cover; }
+        .product-info { padding: 12px; }
+        .product h4 { font-size: 0.95rem; margin-bottom: 5px; }
+        .product p { color: #7f8c8d; font-size: 0.8rem; margin-bottom: 8px; }
+        .price { color: var(--primary); font-weight: 700; font-size: 1.1rem; margin-bottom: 10px; }
+        .stock { font-size: 0.8rem; color: #7f8c8d; margin-bottom: 8px; }
+        .add-btn { 
+            width: 100%; padding: 10px; background: var(--primary); color: white; 
+            border: none; border-radius: 6px; cursor: pointer; 
+        }
+        .add-btn:disabled { background: #95a5a6; cursor: not-allowed; }
+        
+        .cart-items { max-height: 300px; overflow-y: auto; margin-bottom: 15px; }
+        .cart-item { 
+            display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid #ecf0f1; 
+        }
+        .cart-item img { width: 50px; height: 50px; border-radius: 6px; object-fit: cover; }
+        .cart-item-info { flex: 1; }
+        .cart-controls { display: flex; gap: 8px; align-items: center; margin-top: 5px; }
+        .qty-btn { 
+            width: 28px; height: 28px; border: none; background: var(--primary); 
+            color: white; border-radius: 4px; cursor: pointer; 
+        }
+        
+        .summary-row { display: flex; justify-content: space-between; padding: 8px 0; }
+        .total { font-size: 1.5rem; font-weight: 700; color: var(--primary); margin: 10px 0; }
+        
+        .payment-method { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; }
+        .pay-btn { 
+            padding: 12px; border: 2px solid #ecf0f1; background: white; 
+            border-radius: 8px; cursor: pointer; text-align: center; 
+        }
+        .pay-btn.active { border-color: var(--primary); background: #fff5eb; }
+        
+        .checkout-btn { 
+            width: 100%; padding: 15px; background: var(--success); color: white; 
+            border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; margin-top: 15px; 
+        }
+        .checkout-btn:disabled { background: #95a5a6; cursor: not-allowed; }
+        
+        @media (max-width: 768px) {
+            .app { grid-template-columns: 1fr; }
+            .cart-section { position: static; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- LOGIN -->
+    <div id="loginBox" class="login-box">
+        <div class="login-content">
+            <i class="fas fa-coffee" style="font-size: 3rem; color: var(--primary); margin-bottom: 15px;"></i>
+            <h2>THAI TEA CST</h2>
+            <p style="margin-bottom: 20px; color: #7f8c8d;">Sistem Kasir Digital</p>
+            <div id="loginError" class="error"></div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="loginEmail" placeholder="kasir@thaiteacst.com">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="loginPass" placeholder="••••••••">
+            </div>
+            <button class="btn" onclick="doLogin()">Masuk Sistem</button>
+        </div>
+    </div>
+
+    <!-- APP -->
+    <div id="app" class="app">
+        <header>
+            <div class="logo">
+                <i class="fas fa-mug-hot"></i>
+                <div>
+                    <h1 style="color: var(--primary);">THAI TEA CST</h1>
+                    <small style="color: #7f8c8d;">Point of Sale</small>
+                </div>
+            </div>
+            <div class="user-info">
+                <span id="userName">User</span>
+                <button class="logout" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
+        </header>
+
+        <div class="menu-section">
+            <h2 style="margin-bottom: 15px;"><i class="fas fa-list"></i> Menu</h2>
+            <div class="category">
+                <button class="cat-btn active" onclick="filterCat('all')">Semua</button>
+                <button class="cat-btn" onclick="filterCat('premium')">Premium</button>
+                <button class="cat-btn" onclick="filterCat('original')">Original</button>
+                <button class="cat-btn" onclick="filterCat('topping')">Topping</button>
+            </div>
+            <div class="products" id="products"></div>
+        </div>
+
+        <div class="cart-section">
+            <h2 style="margin-bottom: 15px;"><i class="fas fa-shopping-cart"></i> Keranjang</h2>
+            <div class="cart-items" id="cartItems">
+                <p style="text-align: center; color: #7f8c8d; padding: 30px;">Keranjang kosong</p>
+            </div>
+            <div class="summary-row"><span>Subtotal</span><span id="subtotal">Rp 0</span></div>
+            <div class="summary-row"><span>Diskon</span><input type="number" id="discount" value="0" style="width: 100px; padding: 5px; border: 1px solid #ddd; border-radius: 4px;" oninput="calcTotal()"></div>
+            <div class="summary-row total"><span>Total</span><span id="total">Rp 0</span></div>
+            
+            <h3 style="margin: 15px 0 10px;">Pembayaran</h3>
+            <div class="payment-method">
+                <div class="pay-btn active" onclick="selectPay('cash', this)">💵 Tunai</div>
+                <div class="pay-btn" onclick="selectPay('qris', this)">📱 QRIS</div>
+                <div class="pay-btn" onclick="selectPay('transfer', this)">🏦 Transfer</div>
+                <div class="pay-btn" onclick="selectPay('ewallet', this)">💳 E-Wallet</div>
+            </div>
+            
+            <button class="checkout-btn" id="checkoutBtn" onclick="checkout()" disabled>
+                <i class="fas fa-check-circle"></i> Bayar Sekarang
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let cart = [];
+        let currentBranch = null;
+        let inventory = {};
+        let selectedPayment = 'cash';
+        let currentUser = null;
+        
+        const products = [
+            { id: 'prem_thai', name: 'Premium Thai Tea', cat: 'premium', price: 20000, img: 'https://i.ibb.co.com/S44X01hn/Premium-Thai-Tea-with-Cream-Cheese-Shredded-Cheese.jpg', desc: 'with Cream Cheese & Shredded Cheese' },
+            { id: 'prem_matcha', name: 'Premium Matcha', cat: 'premium', price: 25000, img: 'https://i.ibb.co.com/XZ2k5y1T/Premium-Matcha-with-Cream-Cheese-Shredded-Cheese.jpg', desc: 'with Cream Cheese & Shredded Cheese' },
+            { id: 'prem_choco', name: 'Premium Chocolate', cat: 'premium', price: 20000, img: 'https://i.ibb.co.com/ZzSGpkQB/Premium-Chocolate-with-Cream-Cheese-Shredded-Cheese.jpg', desc: 'with Cream Cheese & Shredded Cheese' },
+            { id: 'orig_thai', name: 'Thai Tea', cat: 'original', price: 10000, img: 'https://i.ibb.co.com/N6jCd6sw/Thai-Tea-original.jpg', desc: 'Original choice' },
+            { id: 'orig_matcha', name: 'Matcha', cat: 'original', price: 10000, img: 'https://i.ibb.co.com/99Tb8ZjY/Matcha-original.jpg', desc: 'Original choice' },
+            { id: 'orig_choco', name: 'Chocolate', cat: 'original', price: 10000, img: 'https://i.ibb.co.com/bjzr6NNm/Chocolate-original.jpg', desc: 'Original choice' },
+            { id: 'top_cream', name: 'Cream Cheese', cat: 'topping', price: 3000, img: 'https://i.ibb.co.com/SXyM8m2L/Extra-Topping-Cream-Cheese.jpg', desc: 'Extra topping' },
+            { id: 'top_cheese', name: 'Cheese Parut', cat: 'topping', price: 3000, img: 'https://i.ibb.co.com/gZv3pDvz/Extra-Topping-Cheese-Keju-Parut.jpg', desc: 'Extra topping' },
+            { id: 'top_bubble', name: 'Bubble', cat: 'topping', price: 3000, img: 'https://i.ibb.co.com/d0DwHSr4/Extra-Topping-Bubble-Tapioca-Pearl.jpg', desc: 'Extra topping' }
+        ];
+        
+        const branchNames = { cabang_01: 'Sport Center Bandara Soetta', cabang_02: 'TOD M1, Benda' };
+        const formatRp = n => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n || 0);
+
+        // Initialize
+        window.onload = async function() {
+            await new Promise(r => setTimeout(r, 1000));
+            
+            auth.onAuthStateChanged(async user => {
+                if (!user) return;
+                
+                try {
+                    const doc = await db.collection('users').doc(user.uid).get();
+                    const data = doc.data();
+                    
+                    if (!data) { await auth.signOut(); return; }
+                    
+                    // Admin redirect ke admin.html
+                    if (data.role === 'admin' || data.role === 'super_admin') {
+                        window.location.href = 'admin.html';
+                        return;
+                    }
+                    
+                    // Kasir tampil POS
+                    currentUser = user;
+                    currentBranch = data.branchId;
+                    document.getElementById('loginBox').style.display = 'none';
+                    document.getElementById('app').classList.add('active');
+                    document.getElementById('userName').textContent = data.name || 'Kasir';
+                    await loadInventory();
+                    renderProducts('all');
+                } catch(e) {
+                    console.error(e);
+                    document.getElementById('loginError').textContent = 'Gagal login: ' + e.message;
+                    document.getElementById('loginError').style.display = 'block';
+                }
+            });
+        };
+
+        async function doLogin() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const pass = document.getElementById('loginPass').value;
+            
+            if (!email || !pass) {
+                document.getElementById('loginError').textContent = 'Email dan password wajib diisi!';
+                document.getElementById('loginError').style.display = 'block';
+                return;
+            }
+            
+            try {
+                await auth.signInWithEmailAndPassword(email, pass);
+            } catch(e) {
+                document.getElementById('loginError').textContent = 'Login gagal: ' + e.message;
+                document.getElementById('loginError').style.display = 'block';
+            }
+        }
+
+        async function loadInventory() {
+            try {
+                const snap = await db.collection('inventory').where('branchId', '==', currentBranch).get();
+                inventory = {};
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    inventory[d.productId] = d.stock || 0;
+                });
+            } catch(e) { 
+                console.error('Gagal load stok:', e); 
+            }
+        }
+
+        function filterCat(cat) {
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            renderProducts(cat);
+        }
+
+        function renderProducts(category) {
+            const container = document.getElementById('products');
+            container.innerHTML = '';
+            
+            const filtered = category === 'all' ? products : products.filter(p => p.cat === category);
+            
+            filtered.forEach(p => {
+                const stock = inventory[p.id] || 0;
+                const div = document.createElement('div');
+                div.className = 'product';
+                div.innerHTML = `
+                    <img src="${p.img}" alt="${p.name}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>🧋</text></svg>'">
+                    <div class="product-info">
+                        <h4>${p.name}</h4>
+                        <p>${p.desc}</p>
+                        <div class="stock">Stok: ${stock}</div>
+                        <div class="price">${formatRp(p.price)}</div>
+                        <button class="add-btn" onclick="addToCart('${p.id}')" ${stock <= 0 ? 'disabled' : ''}>
+                            ${stock > 0 ? '<i class="fas fa-cart-plus"></i> Tambah' : 'Stok Habis'}
+                        </button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function addToCart(id) {
+            const product = products.find(p => p.id === id);
+            const stock = inventory[id] || 0;
+            const existing = cart.find(item => item.id === id);
+            const currentQty = existing ? existing.qty : 0;
+            
+            if (currentQty >= stock) {
+                alert('Stok tidak mencukupi!');
+                return;
+            }
+            
+            if (existing) {
+                existing.qty++;
+            } else {
+                cart.push({ ...product, qty: 1 });
+            }
+            
+            renderCart();
+        }
+
+        function renderCart() {
+            const container = document.getElementById('cartItems');
+            if (cart.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #7f8c8d; padding: 30px;">Keranjang kosong</p>';
+                document.getElementById('checkoutBtn').disabled = true;
+                return;
+            }
+            
+            container.innerHTML = cart.map(item => `
+                <div class="cart-item">
+                    <img src="${item.img}" alt="${item.name}">
+                    <div class="cart-item-info">
+                        <div style="font-weight: 600;">${item.name}</div>
+                        <div style="color: var(--primary);">${formatRp(item.price)}</div>
+                        <div class="cart-controls">
+                            <button class="qty-btn" onclick="updateQty('${item.id}', -1)">-</button>
+                            <span style="font-weight: 600; min-width: 30px; text-align: center;">${item.qty}</span>
+                            <button class="qty-btn" onclick="updateQty('${item.id}', 1)">+</button>
+                            <button class="qty-btn" style="background: var(--danger); margin-left: 10px;" onclick="removeFromCart('${item.id}')"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            calcTotal();
+            document.getElementById('checkoutBtn').disabled = false;
+        }
+
+        function updateQty(id, change) {
+            const item = cart.find(i => i.id === id);
+            if (!item) return;
+            
+            const stock = inventory[id] || 0;
+            const newQty = item.qty + change;
+            
+            if (newQty <= 0) {
+                removeFromCart(id);
+                return;
+            }
+            
+            if (newQty > stock) {
+                alert('Stok tidak mencukupi!');
+                return;
+            }
+            
+            item.qty = newQty;
+            renderCart();
+        }
+
+        function removeFromCart(id) {
+            cart = cart.filter(i => i.id !== id);
+            renderCart();
+        }
+
+        function calcTotal() {
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            const discount = parseInt(document.getElementById('discount').value) || 0;
+            const total = Math.max(0, subtotal - discount);
+            
+            document.getElementById('subtotal').textContent = formatRp(subtotal);
+            document.getElementById('total').textContent = formatRp(total);
+        }
+
+        function selectPay(method, btn) {
+            selectedPayment = method;
+            document.querySelectorAll('.pay-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        async function checkout() {
+            if (cart.length === 0) return;
+            
+            const btn = document.getElementById('checkoutBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+            
+            try {
+                const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+                const discount = parseInt(document.getElementById('discount').value) || 0;
+                const total = Math.max(0, subtotal - discount);
+                
+                // Update stok untuk setiap item
+                for (const item of cart) {
+                    const docId = `${currentBranch}_${item.id}`;
+                    const invRef = db.collection('inventory').doc(docId);
+                    const invDoc = await invRef.get();
+                    
+                    if (invDoc.exists) {
+                        // Dokumen ada, update
+                        await invRef.update({
+                            stock: firebase.firestore.FieldValue.increment(-item.qty)
+                        });
+                    } else {
+                        // Dokumen tidak ada, buat baru dengan stok awal 100
+                        await invRef.set({
+                            productId: item.id,
+                            productName: item.name,
+                            branchId: currentBranch,
+                            stock: 100 - item.qty,
+                            minStock: 10
+                        });
+                    }
+                }
+                
+                // Simpan transaksi
+                await db.collection('transactions').add({
+                    items: cart,
+                    subtotal: subtotal,
+                    discount: discount,
+                    total: total,
+                    paymentMethod: selectedPayment,
+                    cashierId: currentUser.uid,
+                    cashierName: document.getElementById('userName').textContent,
+                    branchId: currentBranch,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                alert('✅ Transaksi berhasil!');
+                
+                // Reset
+                cart = [];
+                document.getElementById('discount').value = '0';
+                renderCart();
+                await loadInventory();
+                renderProducts(document.querySelector('.cat-btn.active').textContent.toLowerCase() === 'semua' ? 'all' : document.querySelector('.cat-btn.active').textContent.toLowerCase());
+                
+            } catch (e) {
+                console.error(e);
+                alert('❌ Gagal: ' + e.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-check-circle"></i> Bayar Sekarang';
+            }
+        }
+
+        async function doLogout() {
+            if (confirm('Yakin ingin logout?')) {
+                await auth.signOut();
+                location.reload();
+            }
+        }
+    </script>
+</body>
+</html>
