@@ -11,9 +11,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     
-    <!-- Load Config -->
-    <script src="config.js"></script>
-    
     <style>
         :root {
             --primary: #E67E22;
@@ -782,16 +779,40 @@
     </div>
 
     <script>
+        // ============================================
+        // FIREBASE CONFIGURATION - SAME AS CASHIER APP
+        // ============================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyDt5tMCf480mDGGeDd71ik...",  // <-- GANTI DENGAN API KEY ANDA
+            authDomain: "thai-tea-cst-ac9db.firebaseapp.com",
+            projectId: "thai-tea-cst-ac9db",
+            storageBucket: "thai-tea-cst-ac9db.firebasestorage.app",
+            messagingSenderId: "907107728020",
+            appId: "1:907107728020:web:7340be99b3ab4c07cdd281",
+            measurementId: "G-DJFC6NYVD1"
+        };
+
+        // Initialize Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(AIzaSyAWuzMWsOycxq0gjNm5rP3hDVOKuYuKLvA);
+        }
+        
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+        
+        console.log('✅ Firebase initialized');
+        console.log('📊 Firestore available:', !!db);
+
         // Global Variables
         let cart = [];
         let currentUser = null;
         let products = [];
-        let lastFailedAction = null; // For retry functionality
-        const ADMIN_PHONE = '6282299997227'; // Admin WhatsApp number
+        let lastFailedAction = null;
+        const ADMIN_PHONE = '6282299997227';
         
         const formatRp = n => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n || 0);
         
-        // Default Products
+        // Default Products (same as cashier app)
         const defaultProducts = [
             { id: 'prem_thai', name: 'Premium Thai Tea', price: 20000, img: 'https://i.ibb.co.com/S44X01hn/Premium-Thai-Tea-with-Cream-Cheese-Shredded-Cheese.jpg', desc: 'with Cream Cheese & Shredded Cheese' },
             { id: 'prem_matcha', name: 'Premium Matcha', price: 25000, img: 'https://i.ibb.co.com/XZ2k5y1T/Premium-Matcha-with-Cream-Cheese-Shredded-Cheese.jpg', desc: 'with Cream Cheese & Shredded Cheese' },
@@ -807,25 +828,17 @@
         // Initialize
         window.onload = async function() {
             console.log('🚀 Application starting...');
-            await new Promise(r => setTimeout(r, 1000));
-            
-            // Check Firebase initialization
-            if (typeof firebase === 'undefined') {
-                console.error('❌ Firebase not loaded!');
-                showError('Firebase tidak terinisialisasi. Silakan refresh halaman.');
-                return;
-            }
-            
             console.log('✅ Firebase loaded:', firebase.apps.length > 0);
+            console.log('✅ Database initialized:', !!db);
+            
+            await new Promise(r => setTimeout(r, 1000));
             
             // Check if user already registered
             const savedCustomer = localStorage.getItem('cst_customer');
             if (savedCustomer) {
-                console.log('✅ Found saved customer:', savedCustomer);
+                console.log('✅ Found saved customer');
                 currentUser = JSON.parse(savedCustomer);
                 showMenu();
-            } else {
-                console.log('ℹ️ No saved customer found');
             }
             
             // Load products
@@ -834,21 +847,16 @@
 
         // Load Products from Firestore or use defaults
         async function loadProducts() {
-            console.log('📦 Loading products...');
+            console.log('📦 Loading products from database...');
             try {
-                if (typeof db === 'undefined') {
-                    console.error('❌ Firestore database not initialized!');
-                    throw new Error('Database tidak terinisialisasi');
-                }
-                
                 const snap = await db.collection('products').get();
-                console.log('📊 Products snapshot:', snap.size, 'documents');
+                console.log('📊 Products found:', snap.size);
                 
                 if (!snap.empty) {
                     products = [];
                     snap.forEach(doc => {
                         const data = { id: doc.id, ...doc.data() };
-                        console.log('✅ Loaded product:', data.name);
+                        console.log('✅ Loaded:', data.name);
                         products.push(data);
                     });
                 } else {
@@ -858,15 +866,12 @@
                 renderProducts();
             } catch (e) {
                 console.error('❌ Error loading products:', e);
-                console.error('Error details:', e.message, e.code);
                 products = defaultProducts;
                 renderProducts();
-                // Don't show error to user, just use defaults
             }
         }
 
         function renderProducts() {
-            console.log('🎨 Rendering', products.length, 'products');
             const grid = document.getElementById('productsGrid');
             grid.innerHTML = products.map(p => `
                 <div class="product-card">
@@ -888,28 +893,20 @@
             const name = document.getElementById('customerName').value.trim();
             const phone = document.getElementById('customerPhone').value.trim();
             
-            console.log('Input values - Name:', name, 'Phone:', phone);
+            console.log('Input - Name:', name, 'Phone:', phone);
             
             if (!name || !phone) {
-                console.warn('⚠️ Missing fields');
                 showError('Mohon lengkapi nama dan nomor WhatsApp!');
                 return;
             }
             
-            // Validate phone number
             if (!phone.match(/^08[0-9]{8,11}$/)) {
-                console.warn('⚠️ Invalid phone format');
                 showError('Nomor WhatsApp tidak valid. Gunakan format 08xx-xxxx-xxxx');
                 return;
             }
             
             try {
                 console.log('💾 Saving customer to Firestore...');
-                
-                if (typeof db === 'undefined') {
-                    throw new Error('Database tidak tersedia');
-                }
-                
                 const customerRef = db.collection('customers').doc(phone);
                 const customerData = {
                     name: name,
@@ -919,26 +916,21 @@
                 };
                 
                 console.log('📋 Customer data:', customerData);
-                
                 await customerRef.set(customerData, { merge: true });
                 console.log('✅ Customer saved successfully');
                 
-                // Save to localStorage
                 currentUser = { name, phone };
                 localStorage.setItem('cst_customer', JSON.stringify(currentUser));
-                console.log('✅ Customer saved to localStorage');
                 
                 showMenu();
                 
             } catch (e) {
                 console.error('❌ Registration error:', e);
-                console.error('Error details:', e.message, e.code);
-                showError('Gagal menyimpan data. Periksa koneksi internet dan coba lagi.\n\nDetail: ' + e.message);
+                showError('Gagal menyimpan data. Periksa koneksi internet.\n\nDetail: ' + e.message);
             }
         }
 
         function showMenu() {
-            console.log(' Showing menu...');
             document.getElementById('authSection').style.display = 'none';
             document.getElementById('menuSection').classList.add('active');
             document.getElementById('cartFab').style.display = 'flex';
@@ -960,16 +952,12 @@
         function addToCart(productId) {
             console.log('🛒 Adding to cart:', productId);
             const product = products.find(p => p.id === productId);
-            if (!product) {
-                console.error('❌ Product not found:', productId);
-                return;
-            }
+            if (!product) return;
             
             const existingItem = cart.find(item => item.id === productId);
             
             if (existingItem) {
                 existingItem.qty++;
-                console.log('📈 Updated qty for', product.name, 'to', existingItem.qty);
             } else {
                 cart.push({
                     id: product.id,
@@ -979,27 +967,19 @@
                     qty: 1,
                     notes: ''
                 });
-                console.log('➕ Added new item:', product.name);
             }
             
             updateCartUI();
-            console.log('🛒 Cart now has', cart.length, 'items');
         }
 
         function updateCartUI() {
             const badge = document.getElementById('cartBadge');
             const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
             badge.textContent = totalItems;
-            
-            if (totalItems > 0) {
-                badge.style.display = 'flex';
-            } else {
-                badge.style.display = 'none';
-            }
+            badge.style.display = totalItems > 0 ? 'flex' : 'none';
         }
 
         function openCartModal() {
-            console.log('🛒 Opening cart modal');
             const modal = document.getElementById('cartModal');
             const cartItems = document.getElementById('cartItems');
             const cartSummary = document.getElementById('cartSummary');
@@ -1055,11 +1035,12 @@
         function decreaseQty(index) {
             if (cart[index].qty > 1) {
                 cart[index].qty--;
-                openCartModal();
-                updateCartUI();
             } else {
                 removeFromCart(index);
+                return;
             }
+            openCartModal();
+            updateCartUI();
         }
 
         function removeFromCart(index) {
@@ -1073,16 +1054,14 @@
 
         function updateNotes(index, notes) {
             cart[index].notes = notes;
-            console.log('📝 Updated notes for item', index, ':', notes);
         }
 
-        // Checkout with WhatsApp Integration
+        // Checkout with Database Save & WhatsApp
         async function checkout() {
-            console.log('💳 Starting checkout process...');
+            console.log('💳 Starting checkout...');
             closeCartModal();
             
             if (cart.length === 0) {
-                console.warn('⚠️ Cart is empty');
                 showError('Keranjang masih kosong!');
                 return;
             }
@@ -1102,23 +1081,17 @@
                 status: 'pending',
                 orderType: 'online',
                 createdAt: new Date().toISOString(),
-                branchId: 'cabang_01' // Default branch
+                branchId: 'cabang_01'
             };
             
-            console.log('📋 Order data to save:', orderData);
+            console.log('📋 Order data:', orderData);
             
             try {
-                console.log('💾 Saving order to Firestore...');
-                
-                if (typeof db === 'undefined') {
-                    throw new Error('Database tidak tersedia');
-                }
-                
-                // 1. Save to Firestore - orders collection
+                console.log('💾 Saving to orders collection...');
                 const ordersRef = await db.collection('orders').add(orderData);
-                console.log('✅ Order saved to orders collection:', ordersRef.id);
+                console.log('✅ Saved to orders:', ordersRef.id);
                 
-                // 2. Save to transactions collection (for cashier compatibility)
+                console.log('💾 Saving to transactions collection...');
                 const transactionData = {
                     ...orderData,
                     paymentMethod: 'pending',
@@ -1128,26 +1101,26 @@
                 };
                 
                 const transRef = await db.collection('transactions').add(transactionData);
-                console.log('✅ Order saved to transactions collection:', transRef.id);
+                console.log('✅ Saved to transactions:', transRef.id);
                 
                 console.log('✅ All data saved successfully!');
                 
-                // 3. Show success modal
+                // Show success modal
                 document.getElementById('successModal').classList.add('active');
                 
-                // 4. After user clicks OK, open WhatsApp
+                // Set action for after user clicks OK
                 lastFailedAction = () => {
                     sendWhatsAppMessage(orderData);
                 };
                 
             } catch (e) {
                 console.error('❌ Checkout error:', e);
-                console.error('Error details:', e.message, e.code);
-                console.error('Error stack:', e.stack);
+                console.error('Error code:', e.code);
+                console.error('Error message:', e.message);
                 
                 let errorMsg = 'Gagal menyimpan pesanan. ';
                 if (e.code === 'permission-denied') {
-                    errorMsg += 'Anda tidak memiliki izin. Hubungi admin.';
+                    errorMsg += 'Anda tidak memiliki izin.';
                 } else if (e.code === 'unavailable') {
                     errorMsg += 'Database tidak tersedia. Periksa koneksi internet.';
                 } else {
@@ -1166,7 +1139,6 @@
         function sendWhatsAppMessage(orderData) {
             console.log('📱 Sending WhatsApp message...');
             
-            // Build WhatsApp message
             let message = `Halo Thai Tea CST, saya ${orderData.customerName}.\n\n`;
             message += `Saya ingin memesan:\n`;
             
@@ -1182,27 +1154,13 @@
             message += `\n\nNomor WA: ${orderData.customerPhone}`;
             message += `\n\nMohon segera diproses, terima kasih!`;
             
-            console.log('📝 WhatsApp message:', message);
+            console.log('📝 Message:', message);
             
-            // Encode message for URL
             const encodedMessage = encodeURIComponent(message);
-            
-            // WhatsApp API link
             const waUrl = `https://wa.me/${ADMIN_PHONE}?text=${encodedMessage}`;
-            console.log('🔗 WhatsApp URL:', waUrl);
             
-            // Open WhatsApp
-            const newWindow = window.open(waUrl, '_blank');
-            
-            if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
-                console.warn('⚠️ Popup blocked');
-                showError('Popup WhatsApp diblokir. Silakan izinkan popup untuk website ini.', true);
-                lastFailedAction = () => {
-                    window.open(waUrl, '_blank');
-                };
-            } else {
-                console.log('✅ WhatsApp opened successfully');
-            }
+            console.log('🔗 Opening WhatsApp...');
+            window.open(waUrl, '_blank');
         }
 
         function closeSuccessModal() {
@@ -1219,7 +1177,7 @@
         }
 
         function retryAction() {
-            console.log('🔄 Retrying last action...');
+            console.log('🔄 Retrying...');
             if (lastFailedAction) {
                 closeErrorModal();
                 lastFailedAction();
@@ -1227,11 +1185,10 @@
         }
 
         function showError(message, isConfirm = false) {
-            console.log('⚠️ Showing error:', message);
+            console.log('⚠️ Error:', message);
             const modal = document.getElementById('errorModal');
             const msgElement = document.getElementById('errorMessage');
             
-            // Replace \n with <br> for HTML display
             msgElement.innerHTML = message.replace(/\n/g, '<br>');
             
             const btnPrimary = modal.querySelector('.modal-btn-primary');
