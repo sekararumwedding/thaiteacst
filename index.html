@@ -178,6 +178,7 @@
     </div>
 
     <script>
+        // Global variables
         let cart = [];
         let currentBranch = null;
         let inventory = {};
@@ -199,6 +200,7 @@
         const branchNames = { cabang_01: 'Sport Center Bandara Soetta', cabang_02: 'TOD M1, Benda' };
         const formatRp = n => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n || 0);
 
+        // Initialize
         window.onload = async function() {
             await new Promise(r => setTimeout(r, 1000));
             
@@ -223,8 +225,8 @@
                     document.getElementById('loginBox').style.display = 'none';
                     document.getElementById('app').classList.add('active');
                     document.getElementById('userName').textContent = data.name || 'Kasir';
-                    loadProducts();
                     await loadInventory();
+                    renderProducts('all');
                 } catch(e) {
                     console.error(e);
                     document.getElementById('loginError').textContent = 'Gagal login: ' + e.message;
@@ -259,22 +261,22 @@
                     const d = doc.data();
                     inventory[d.productId] = d.stock || 0;
                 });
-                renderProducts('all');
-            } catch(e) { console.error('Gagal load stok:', e); }
+            } catch(e) { 
+                console.error('Gagal load stok:', e); 
+            }
         }
 
         function filterCat(cat) {
             document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
             event.target.classList.add('active');
-            loadProducts();
+            renderProducts(cat);
         }
 
-        function loadProducts() {
-            const activeCat = document.querySelector('.cat-btn.active').textContent.toLowerCase();
+        function renderProducts(category) {
             const container = document.getElementById('products');
             container.innerHTML = '';
             
-            const filtered = activeCat === 'semua' ? products : products.filter(p => p.cat === activeCat);
+            const filtered = category === 'all' ? products : products.filter(p => p.cat === category);
             
             filtered.forEach(p => {
                 const stock = inventory[p.id] || 0;
@@ -296,7 +298,7 @@
             });
         }
 
-        window.addToCart = function(id) {
+        function addToCart(id) {
             const product = products.find(p => p.id === id);
             const stock = inventory[id] || 0;
             const existing = cart.find(item => item.id === id);
@@ -314,7 +316,7 @@
             }
             
             renderCart();
-        };
+        }
 
         function renderCart() {
             const container = document.getElementById('cartItems');
@@ -344,7 +346,7 @@
             document.getElementById('checkoutBtn').disabled = false;
         }
 
-        window.updateQty = function(id, change) {
+        function updateQty(id, change) {
             const item = cart.find(i => i.id === id);
             if (!item) return;
             
@@ -363,29 +365,29 @@
             
             item.qty = newQty;
             renderCart();
-        };
+        }
 
-        window.removeFromCart = function(id) {
+        function removeFromCart(id) {
             cart = cart.filter(i => i.id !== id);
             renderCart();
-        };
+        }
 
-        window.calcTotal = function() {
+        function calcTotal() {
             const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
             const discount = parseInt(document.getElementById('discount').value) || 0;
             const total = Math.max(0, subtotal - discount);
             
             document.getElementById('subtotal').textContent = formatRp(subtotal);
             document.getElementById('total').textContent = formatRp(total);
-        };
+        }
 
-        window.selectPay = function(method, btn) {
+        function selectPay(method, btn) {
             selectedPayment = method;
             document.querySelectorAll('.pay-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-        };
+        }
 
-        window.checkout = async function() {
+        async function checkout() {
             if (cart.length === 0) return;
             
             const btn = document.getElementById('checkoutBtn');
@@ -397,12 +399,27 @@
                 const discount = parseInt(document.getElementById('discount').value) || 0;
                 const total = Math.max(0, subtotal - discount);
                 
-                // Kurangi stok
+                // Update stok untuk setiap item
                 for (const item of cart) {
-                    const invRef = db.collection('inventory').doc(`${currentBranch}_${item.id}`);
-                    await invRef.update({
-                        stock: firebase.firestore.FieldValue.increment(-item.qty)
-                    });
+                    const docId = `${currentBranch}_${item.id}`;
+                    const invRef = db.collection('inventory').doc(docId);
+                    const invDoc = await invRef.get();
+                    
+                    if (invDoc.exists) {
+                        // Dokumen ada, update
+                        await invRef.update({
+                            stock: firebase.firestore.FieldValue.increment(-item.qty)
+                        });
+                    } else {
+                        // Dokumen tidak ada, buat baru dengan stok awal 100
+                        await invRef.set({
+                            productId: item.id,
+                            productName: item.name,
+                            branchId: currentBranch,
+                            stock: 100 - item.qty,
+                            minStock: 10
+                        });
+                    }
                 }
                 
                 // Simpan transaksi
@@ -425,6 +442,7 @@
                 document.getElementById('discount').value = '0';
                 renderCart();
                 await loadInventory();
+                renderProducts(document.querySelector('.cat-btn.active').textContent.toLowerCase() === 'semua' ? 'all' : document.querySelector('.cat-btn.active').textContent.toLowerCase());
                 
             } catch (e) {
                 console.error(e);
@@ -433,7 +451,7 @@
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-check-circle"></i> Bayar Sekarang';
             }
-        };
+        }
 
         async function doLogout() {
             if (confirm('Yakin ingin logout?')) {
