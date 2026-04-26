@@ -666,7 +666,7 @@
         ];
         
         const branchNames = { cabang_01: 'Sport Center Bandara Soetta', cabang_02: 'TOD M1, Benda' };
-        const formatRp = n => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n || 0);
+        const formatRp = n => 'Rp ' + new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0 }).format(n || 0);
 
         // Initialize
         window.onload = async function() {
@@ -943,7 +943,7 @@
         }
 
         // ============================================
-        // PRINT STRUK - FORMAT RAWBT:BASE64 (FINAL)
+        // PRINT STRUK - PROFESSIONAL FORMAT
         // ============================================
         function printStruk() {
             if (!lastTransaction) {
@@ -952,46 +952,66 @@
             }
             
             const customerName = lastTransaction.customerName || 'Pelanggan';
-            const date = new Date().toLocaleString('id-ID');
+            const date = new Date();
+            const dateStr = date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+            const timeStr = date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
             const branch = branchNames[currentBranch] || currentBranch;
             
-            // Build item list
-            let itemDaftar = '';
+            // Clean text function - remove non-ASCII characters
+            function cleanText(text) {
+                return text.replace(/[^\x00-\x7F]/g, '').trim();
+            }
+            
+            // Build professional receipt
+            let receipt = '';
+            
+            // Header - Centered
+            receipt += '       THAI TEA CST\n';
+            receipt += '--------------------------------\n';
+            receipt += `Pelanggan: ${customerName}\n`;
+            receipt += `${branch}\n`;
+            receipt += `${dateStr}, ${timeStr}\n`;
+            receipt += '--------------------------------\n\n';
+            
+            // Items - Left and Right aligned
             lastTransaction.items.forEach(item => {
-                itemDaftar += `${item.name}\n`;
-                itemDaftar += `${item.qty} x ${formatRp(item.price)}\n`;
-                itemDaftar += `${formatRp(item.price * item.qty)}\n\n`;
+                const itemName = item.name.padEnd(20, ' ');
+                const itemQty = `${item.qty} x ${formatRp(item.price)}`.padEnd(18, ' ');
+                const itemTotal = formatRp(item.price * item.qty);
+                
+                receipt += `${itemName}\n`;
+                receipt += `${itemQty}\n`;
+                receipt += `${itemTotal}\n\n`;
             });
             
-            const totalHarga = formatRp(lastTransaction.total);
+            receipt += '--------------------------------\n';
+            receipt += `Subtotal:       ${formatRp(lastTransaction.subtotal)}\n`;
             
-            // Format struk dengan \n untuk baris baru
-            const isiStruk = `THAI TEA CST\n` +
-                           `Pelanggan: ${customerName}\n` +
-                           `${branch}\n` +
-                           `${date}\n` +
-                           `--------------------------------\n\n` +
-                           `${itemDaftar}` +
-                           `--------------------------------\n` +
-                           `Subtotal: ${formatRp(lastTransaction.subtotal)}\n`;
-            
-            let finalStruk = isiStruk;
             if (lastTransaction.discount > 0) {
-                finalStruk += `Diskon: -${formatRp(lastTransaction.discount)}\n`;
+                receipt += `Diskon:         -${formatRp(lastTransaction.discount)}\n`;
             }
-            finalStruk += `TOTAL: ${totalHarga}\n`;
-            finalStruk += `Pembayaran: ${selectedPayment.toUpperCase()}\n`;
-            finalStruk += `--------------------------------\n\n`;
-            finalStruk += `Pesanan Kembali: +62 822-9999-7227\n`;
-            finalStruk += `Terima Kasih!\n`;
-            finalStruk += `Selamat Menikmati\n`;
             
-            // Gunakan format rawbt:base64 (BUKAN intent://)
+            receipt += '--------------------------------\n';
+            receipt += `TOTAL:          ${formatRp(lastTransaction.total)}\n`;
+            receipt += `Pembayaran:     ${selectedPayment.toUpperCase()}\n`;
+            receipt += '--------------------------------\n\n';
+            
+            // Footer - Sweet message
+            receipt += 'Pesanan Kembali: +62 822-9999-7227\n\n';
+            receipt += '     Terima Kasih!\n';
+            receipt += '  Selamat Menikmati!\n\n';
+            receipt += ' Follow us on Instagram\n';
+            receipt += '    @thaiteacst\n';
+            
+            // Clean the receipt text before encoding
+            const cleanReceipt = cleanText(receipt);
+            
+            // Use rawbt:base64 format
             try {
-                const encodedData = btoa(finalStruk);
+                const encodedData = btoa(cleanReceipt);
                 window.location.href = "rawbt:base64," + encodedData;
                 
-                // Fallback setelah 2 detik
+                // Fallback after 2 seconds
                 setTimeout(() => {
                     if (!document.hidden) {
                         if (confirm('RawBT tidak terbuka. Install aplikasi RawBT Printer?')) {
