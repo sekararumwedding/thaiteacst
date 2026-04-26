@@ -417,21 +417,79 @@
         .modal.active { display: flex; }
         .modal-content {
             background: white; 
-            padding: 25px; 
+            padding: 30px; 
             border-radius: 16px; 
             width: 100%; 
-            max-width: 700px;
-            max-height: 85vh; 
-            overflow-y: auto; 
+            max-width: 400px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+            animation: modalSlide 0.3s ease;
         }
-        .modal-header { 
+        @keyframes modalSlide {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .modal-logo {
+            width: 100px;
+            height: auto;
+            object-fit: contain;
+            margin-bottom: 15px;
+        }
+        .modal-title {
+            font-size: 1.5rem;
+            color: var(--primary);
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+        .modal-message {
+            color: var(--dark);
+            font-size: 1rem;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .modal-btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: 0.3s;
+        }
+        .modal-btn-confirm {
+            background: var(--primary);
+            color: white;
+        }
+        .modal-btn-confirm:hover {
+            background: var(--primary-dark);
+        }
+        .modal-btn-cancel {
+            background: var(--light);
+            color: var(--dark);
+        }
+        .modal-btn-cancel:hover {
+            background: #d5dbdb;
+        }
+        
+        /* Report Modal */
+        .report-modal .modal-content {
+            max-width: 700px;
+            max-height: 85vh;
+            overflow-y: auto;
+            text-align: left;
+        }
+        .report-modal .modal-header { 
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
             margin-bottom: 20px;
         }
-        .modal-header h2 { 
+        .report-modal .modal-header h2 { 
             font-size: 1.3rem; 
             color: var(--dark); 
             display: flex; 
@@ -512,6 +570,12 @@
             .logo-text h1 {
                 font-size: 1.1rem;
             }
+            .modal-content {
+                padding: 25px 20px;
+            }
+            .modal-logo {
+                width: 80px;
+            }
         }
     </style>
 </head>
@@ -557,7 +621,7 @@
                 <button class="btn btn-info" style="width: auto; padding: 8px 12px; margin: 0; font-size: 0.85rem;" onclick="openReportModal()">
                     <i class="fas fa-chart-bar"></i> Laporan
                 </button>
-                <button class="logout" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                <button class="logout" onclick="showCustomConfirm('Yakin ingin logout?', handleLogout)"><i class="fas fa-sign-out-alt"></i> Logout</button>
             </div>
         </header>
 
@@ -637,8 +701,23 @@
         </div>
     </div>
 
-    <!-- MODAL LAPORAN -->
-    <div id="reportModal" class="modal">
+    <!-- CUSTOM CONFIRM MODAL -->
+    <div id="customModal" class="modal">
+        <div class="modal-content">
+            <img src="https://i.ibb.co.com/mC3npXRW/Gemini-Generated-Image-8aemtl8aemtl8aem-removebg-preview.png" 
+                 alt="CST SYSTEM" 
+                 class="modal-logo">
+            <h2 class="modal-title">CST SYSTEM</h2>
+            <p class="modal-message" id="modalMessage">Apakah Anda yakin?</p>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-cancel" onclick="closeCustomModal()">Batal</button>
+                <button class="modal-btn modal-btn-confirm" id="modalConfirmBtn">Ya</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- REPORT MODAL -->
+    <div id="reportModal" class="modal report-modal">
         <div class="modal-content">
             <div class="modal-header">
                 <h2><i class="fas fa-chart-bar"></i> Laporan Transaksi</h2>
@@ -686,6 +765,7 @@
         let selectedPayment = 'cash';
         let currentUser = null;
         let lastTransaction = null;
+        let modalCallback = null;
         
         const products = [
             { id: 'prem_thai', name: 'Premium Thai Tea', cat: 'premium', price: 20000, img: 'https://i.ibb.co.com/S44X01hn/Premium-Thai-Tea-with-Cream-Cheese-Shredded-Cheese.jpg', desc: 'with Cream Cheese & Shredded Cheese' },
@@ -701,6 +781,28 @@
         
         const branchNames = { cabang_01: 'Sport Center Bandara Soetta', cabang_02: 'TOD M1, Benda' };
         const formatRp = n => new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0 }).format(n || 0);
+
+        // Custom Modal Functions
+        function showCustomConfirm(message, callback) {
+            document.getElementById('modalMessage').textContent = message;
+            document.getElementById('customModal').classList.add('active');
+            modalCallback = callback;
+        }
+
+        function closeCustomModal() {
+            document.getElementById('customModal').classList.remove('active');
+            modalCallback = null;
+        }
+
+        function handleModalConfirm() {
+            if (modalCallback) {
+                modalCallback();
+            }
+            closeCustomModal();
+        }
+
+        // Attach confirm button event
+        document.getElementById('modalConfirmBtn').addEventListener('click', handleModalConfirm);
 
         // Initialize
         window.onload = async function() {
@@ -804,7 +906,8 @@
             const currentQty = existing ? existing.qty : 0;
             
             if (currentQty >= stock) {
-                alert('Stok tidak mencukupi!');
+                showCustomConfirm('Stok tidak mencukupi!', null);
+                setTimeout(closeCustomModal, 2000);
                 return;
             }
             
@@ -836,7 +939,7 @@
                             <button class="qty-btn minus" onclick="decreaseQty('${item.id}')"><i class="fas fa-minus"></i></button>
                             <span class="qty-value">${item.qty}</span>
                             <button class="qty-btn plus" onclick="increaseQty('${item.id}')"><i class="fas fa-plus"></i></button>
-                            <button class="qty-btn delete" onclick="removeFromCart('${item.id}')"><i class="fas fa-trash"></i></button>
+                            <button class="qty-btn delete" onclick="showCustomConfirm('Hapus item ini?', () => removeFromCart('${item.id}'))"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>
                 </div>
@@ -852,7 +955,8 @@
             
             const stock = inventory[id] || 0;
             if (item.qty >= stock) {
-                alert('Stok tidak mencukupi!');
+                showCustomConfirm('Stok tidak mencukupi!', null);
+                setTimeout(closeCustomModal, 2000);
                 return;
             }
             
@@ -865,7 +969,7 @@
             if (!item) return;
             
             if (item.qty <= 1) {
-                removeFromCart(id);
+                showCustomConfirm('Hapus item ini?', () => removeFromCart(id));
                 return;
             }
             
@@ -879,13 +983,13 @@
         }
 
         function resetCart() {
-            if (confirm('Reset keranjang untuk pesanan baru?')) {
+            showCustomConfirm('Reset keranjang untuk pesanan baru?', () => {
                 cart = [];
                 document.getElementById('discount').value = '0';
                 document.getElementById('customerName').value = '';
                 renderCart();
                 document.getElementById('actionButtons').style.display = 'none';
-            }
+            });
         }
 
         function calcTotal() {
@@ -908,7 +1012,8 @@
             
             const customerName = document.getElementById('customerName').value.trim();
             if (!customerName) {
-                alert('Mohon masukkan nama pembeli!');
+                showCustomConfirm('Mohon masukkan nama pembeli!', null);
+                setTimeout(closeCustomModal, 2000);
                 document.getElementById('customerName').focus();
                 return;
             }
@@ -959,7 +1064,8 @@
                 const transactionRef = await db.collection('transactions').add(transactionData);
                 lastTransaction = { id: transactionRef.id, ...transactionData };
                 
-                alert('✅ Transaksi berhasil!');
+                showCustomConfirm('✅ Transaksi berhasil!', null);
+                setTimeout(closeCustomModal, 2000);
                 
                 // Show action buttons
                 document.getElementById('actionButtons').style.display = 'grid';
@@ -969,7 +1075,8 @@
                 
             } catch (e) {
                 console.error(e);
-                alert('❌ Gagal: ' + e.message);
+                showCustomConfirm('❌ Gagal: ' + e.message, null);
+                setTimeout(closeCustomModal, 3000);
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = originalText;
@@ -981,7 +1088,8 @@
         // ============================================
         function printStruk() {
             if (!lastTransaction) {
-                alert('Tidak ada transaksi untuk dicetak');
+                showCustomConfirm('Tidak ada transaksi untuk dicetak', null);
+                setTimeout(closeCustomModal, 2000);
                 return;
             }
             
@@ -1048,15 +1156,16 @@
                 // Fallback
                 setTimeout(() => {
                     if (!document.hidden) {
-                        if (confirm('RawBT tidak terbuka. Install aplikasi RawBT Printer?')) {
+                        showCustomConfirm('RawBT tidak terbuka. Install aplikasi RawBT Printer?', () => {
                             window.open('https://play.google.com/store/apps/details?id=ru.a402d.rawbtprinter', '_blank');
-                        }
+                        });
                     }
                 }, 2000);
                 
             } catch (e) {
                 console.error('Print error:', e);
-                alert('Gagal mencetak. Pastikan aplikasi RawBT Printer sudah terinstall.');
+                showCustomConfirm('Gagal mencetak. Pastikan aplikasi RawBT Printer sudah terinstall.', null);
+                setTimeout(closeCustomModal, 3000);
             }
         }
 
@@ -1070,7 +1179,8 @@
                     .get();
                 
                 if (snap.empty) {
-                    alert('Belum ada transaksi untuk diexport');
+                    showCustomConfirm('Belum ada transaksi untuk diexport', null);
+                    setTimeout(closeCustomModal, 2000);
                     return;
                 }
                 
@@ -1096,9 +1206,13 @@
                 XLSX.utils.book_append_sheet(wb, ws, "Transaksi");
                 XLSX.writeFile(wb, `Transaksi_${currentBranch}_${new Date().toISOString().split('T')[0]}.xlsx`);
                 
+                showCustomConfirm('File Excel berhasil diunduh!', null);
+                setTimeout(closeCustomModal, 2000);
+                
             } catch (e) {
                 console.error(e);
-                alert('Gagal export: ' + e.message);
+                showCustomConfirm('Gagal export: ' + e.message, null);
+                setTimeout(closeCustomModal, 3000);
             }
         }
 
@@ -1122,7 +1236,8 @@
             const sampai = document.getElementById('reportSampai').value;
             
             if (!dari || !sampai) {
-                alert('Pilih tanggal dari dan sampai!');
+                showCustomConfirm('Pilih tanggal dari dan sampai!', null);
+                setTimeout(closeCustomModal, 2000);
                 return;
             }
             
@@ -1158,7 +1273,7 @@
                         const actionCell = currentUserRole === 'cashier' ? 
                             '<td style="text-align:center;"><small style="color:#7f8c8d;">View Only</small></td>' :
                             `<td style="text-align:center;">
-                                <button class="qty-btn delete" style="padding:6px 10px;" onclick="deleteTransaction('${doc.id}')">
+                                <button class="qty-btn delete" style="padding:6px 10px; background: var(--danger);" onclick="showCustomConfirm('Hapus transaksi ini?', () => deleteTransaction('${doc.id}'))">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </td>`;
@@ -1192,21 +1307,34 @@
         };
 
         async function deleteTransaction(id) {
-            if (!confirm('Hapus transaksi ini? Tindakan ini tidak dapat dibatalkan.')) return;
-            
             try {
                 await db.collection('transactions').doc(id).delete();
-                alert('Transaksi dihapus');
-                await loadReport();
+                showCustomConfirm('Transaksi dihapus', null);
+                setTimeout(() => {
+                    closeCustomModal();
+                    loadReport();
+                }, 1500);
             } catch (e) {
-                alert('Gagal menghapus: ' + e.message);
+                showCustomConfirm('Gagal menghapus: ' + e.message, null);
+                setTimeout(closeCustomModal, 3000);
             }
         }
 
-        async function doLogout() {
-            if (confirm('Yakin ingin logout?')) {
-                await auth.signOut();
+        function handleLogout() {
+            auth.signOut().then(() => {
                 location.reload();
+            }).catch(e => {
+                showCustomConfirm('Gagal logout: ' + e.message, null);
+                setTimeout(closeCustomModal, 3000);
+            });
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                if (event.target.id !== 'reportModal') {
+                    closeCustomModal();
+                }
             }
         }
     </script>
