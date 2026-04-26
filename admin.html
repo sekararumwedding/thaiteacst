@@ -3,13 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Thai Tea CST</title>
+    <title>Admin Panel - Thai Tea CST</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Load Config (dari GitHub Secrets) -->
     <script src="config.js"></script>
     
     <!-- Chart & Excel -->
@@ -76,6 +78,7 @@
         .badge-success { background: #e8f5e9; color: #2e7d32; }
         .badge-danger { background: #ffebee; color: #c62828; }
         .badge-info { background: #e3f2fd; color: #1565c0; }
+        .badge-warning { background: #fff3cd; color: #856404; }
         
         .action-btn { padding: 6px 10px; border: none; border-radius: 6px; cursor: pointer; color: white; font-size: 0.85rem; }
         .btn-sm-edit { background: var(--blue); }
@@ -88,15 +91,12 @@
         @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
         
         .chart-box { position: relative; height: 320px; width: 100%; }
-        .filter-bar { display: flex; gap: 10px; align-items: end; flex-wrap: wrap; margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 10px; }
-        .filter-bar .form-group { margin: 0; flex: 1; min-width: 150px; }
         
         @media (max-width: 768px) {
             .sidebar { width: 70px; }
             .sidebar-header h2, .sidebar-header p, .menu-item span, .user-info strong, .user-info small { display: none; }
             .main { margin-left: 70px; padding: 15px; }
             .form-grid { grid-template-columns: 1fr; }
-            .filter-bar { flex-direction: column; }
         }
     </style>
 </head>
@@ -110,7 +110,7 @@
         </div>
         <div class="menu" id="sidebarMenu">
             <a class="menu-item active" data-target="dashboard"><i class="fas fa-chart-line"></i> <span>Dashboard</span></a>
-            <a class="menu-item" data-target="kasir"><i class="fas fa-users"></i> <span>Kelola Kasir</span></a>
+            <a class="menu-item" data-target="users"><i class="fas fa-users-cog"></i> <span>Kelola User</span></a>
             <a class="menu-item" data-target="stok"><i class="fas fa-box"></i> <span>Manajemen Stok</span></a>
             <a class="menu-item" data-target="transaksi"><i class="fas fa-receipt"></i> <span>Transaksi</span></a>
             <a class="menu-item" data-target="laporan"><i class="fas fa-file-excel"></i> <span>Laporan Excel</span></a>
@@ -145,32 +145,44 @@
             </div>
         </div>
 
-        <!-- KELOLA KASIR -->
-        <div id="sec-kasir" class="section">
+        <!-- KELOLA USER -->
+        <div id="sec-users" class="section">
             <div class="card">
-                <div class="card-header"><h2><i class="fas fa-user-plus"></i> Tambah Kasir</h2></div>
-                <form id="formKasir">
+                <div class="card-header"><h2><i class="fas fa-user-plus"></i> Tambah User Baru</h2></div>
+                <form id="formUser">
                     <div class="form-grid">
-                        <div class="form-group"><label>Nama Lengkap</label><input type="text" id="kNama" required placeholder="Nama kasir"></div>
-                        <div class="form-group"><label>Email Login</label><input type="email" id="kEmail" required placeholder="email@contoh.com"></div>
-                        <div class="form-group"><label>Password</label><input type="password" id="kPass" minlength="6" required placeholder="Min 6 karakter"></div>
-                        <div class="form-group"><label>Cabang</label>
-                            <select id="kCabang" required>
+                        <div class="form-group"><label>Nama Lengkap</label><input type="text" id="uNama" required placeholder="Nama lengkap"></div>
+                        <div class="form-group"><label>Email Login</label><input type="email" id="uEmail" required placeholder="email@contoh.com"></div>
+                        <div class="form-group"><label>Password</label><input type="password" id="uPass" minlength="6" required placeholder="Min 6 karakter"></div>
+                        <div class="form-group">
+                            <label>Role / Jabatan</label>
+                            <select id="uRole" required onchange="toggleBranchSelect()">
+                                <option value="cashier">Kasir (Operator)</option>
+                                <option value="admin">Admin</option>
+                                <option value="super_admin">Super Admin</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="grpCabang">
+                            <label>Cabang</label>
+                            <select id="uCabang">
                                 <option value="cabang_01">Sport Center Bandara Soetta</option>
                                 <option value="cabang_02">TOD M1, Benda</option>
                             </select>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary btn-full" id="btnAddKasir"><i class="fas fa-save"></i> Simpan Kasir</button>
+                    <button type="submit" class="btn btn-primary btn-full" id="btnAddUser"><i class="fas fa-save"></i> Simpan User</button>
                 </form>
             </div>
+
             <div class="card">
                 <div class="card-header">
-                    <h2><i class="fas fa-list"></i> Daftar Kasir</h2>
-                    <button class="btn btn-success" id="btnExpKasir"><i class="fas fa-file-excel"></i> Excel</button>
+                    <h2><i class="fas fa-list"></i> Daftar User Sistem</h2>
+                    <button class="btn btn-success" id="btnExpUsers"><i class="fas fa-file-excel"></i> Excel</button>
                 </div>
-                <table id="tableKasir"><thead><tr><th>No</th><th>Nama</th><th>Email</th><th>Cabang</th><th>Status</th><th>Aksi</th></tr></thead>
-                <tbody id="tblKasir"><tr><td colspan="6" style="text-align:center;">Memuat...</td></tr></tbody></table>
+                <table id="tableUsers">
+                    <thead><tr><th>No</th><th>Nama</th><th>Email</th><th>Role</th><th>Cabang</th><th>Status</th><th>Aksi</th></tr></thead>
+                    <tbody id="tblUsers"><tr><td colspan="7" style="text-align:center;">Memuat...</td></tr></tbody>
+                </table>
             </div>
         </div>
 
@@ -201,12 +213,6 @@
                     <h2><i class="fas fa-file-invoice-dollar"></i> Riwayat Transaksi</h2>
                     <button class="btn btn-success" id="btnExpTrans"><i class="fas fa-file-excel"></i> Excel</button>
                 </div>
-                <div class="filter-bar">
-                    <div class="form-group"><label>Dari Tanggal</label><input type="date" id="filterDari"></div>
-                    <div class="form-group"><label>Sampai Tanggal</label><input type="date" id="filterSampai"></div>
-                    <button class="btn btn-primary" id="btnFilterTrans"><i class="fas fa-filter"></i> Filter</button>
-                    <button class="btn btn-info" id="btnResetTrans"><i class="fas fa-redo"></i> Reset</button>
-                </div>
                 <table id="tableTransaksi"><thead><tr><th>Waktu</th><th>ID</th><th>Kasir</th><th>Items</th><th>Total</th><th>Bayar</th></tr></thead>
                 <tbody id="tblTransaksi"><tr><td colspan="6" style="text-align:center;">Memuat...</td></tr></tbody></table>
             </div>
@@ -216,11 +222,11 @@
         <div id="sec-laporan" class="section">
             <div class="card">
                 <div class="card-header"><h2><i class="fas fa-file-excel"></i> Pusat Download Laporan</h2></div>
-                <p style="margin-bottom: 20px; color: #666;">Unduh data sistem dalam format Excel (.xlsx) untuk keperluan arsip atau laporan keuangan.</p>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px;">
-                    <button class="btn btn-success btn-full" id="btnDlTrans"><i class="fas fa-receipt"></i><br>Laporan Transaksi</button>
-                    <button class="btn btn-info btn-full" id="btnDlKasir"><i class="fas fa-users"></i><br>Data Kasir</button>
-                    <button class="btn btn-primary btn-full" id="btnDlStok"><i class="fas fa-box"></i><br>Laporan Stok</button>
+                <p style="margin-bottom: 20px; color: #666;">Unduh data sistem dalam format Excel (.xlsx) untuk keperluan arsip.</p>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                    <button class="btn btn-success btn-full" onclick="exportUsersExcel()"><i class="fas fa-users-cog"></i><br>Data User</button>
+                    <button class="btn btn-info btn-full" onclick="exportTransaksiExcel()"><i class="fas fa-receipt"></i><br>Transaksi</button>
+                    <button class="btn btn-primary btn-full" onclick="exportStokExcel()"><i class="fas fa-box"></i><br>Stok</button>
                 </div>
             </div>
         </div>
@@ -242,92 +248,140 @@
 
         // --- INISIALISASI APLIKASI ---
         document.addEventListener('DOMContentLoaded', async () => {
-            // Cek Firebase siap
             if (!window.auth || !window.db) {
-                showAlert('Gagal memuat konfigurasi Firebase. Refresh halaman.', 'error');
+                showAlert('Gagal memuat konfigurasi Firebase.', 'error');
                 return;
             }
 
-            // Setup Event Listeners
             setupNavigation();
             document.getElementById('btnLogout').addEventListener('click', doLogout);
-            document.getElementById('formKasir').addEventListener('submit', handleAddKasir);
-            document.getElementById('btnAddKasir').addEventListener('click', () => document.getElementById('formKasir').requestSubmit());
+            document.getElementById('formUser').addEventListener('submit', handleAddUser);
+            document.getElementById('btnAddUser').addEventListener('click', () => document.getElementById('formUser').requestSubmit());
             
-            // Tombol Export
-            document.getElementById('btnExpKasir').addEventListener('click', exportKasirExcel);
+            document.getElementById('btnExpUsers').addEventListener('click', exportUsersExcel);
             document.getElementById('btnExpStok').addEventListener('click', exportStokExcel);
             document.getElementById('btnExpTrans').addEventListener('click', exportTransaksiExcel);
-            document.getElementById('btnDlKasir').addEventListener('click', exportKasirExcel);
-            document.getElementById('btnDlStok').addEventListener('click', exportStokExcel);
-            document.getElementById('btnDlTrans').addEventListener('click', exportTransaksiExcel);
-            
-            // Filter Transaksi
-            document.getElementById('btnFilterTrans').addEventListener('click', applyTransaksiFilter);
-            document.getElementById('btnResetTrans').addEventListener('click', resetTransaksiFilter);
-
-            // Filter Stok
             document.getElementById('filterStokCabang').addEventListener('change', loadStok);
 
-            // Auth State Listener
             auth.onAuthStateChanged(async user => {
                 if (!user) { window.location.href = 'index.html'; return; }
                 currentUser = user;
                 try {
                     const doc = await db.collection('users').doc(user.uid).get();
                     const data = doc.data();
-                    if (!data || data.role !== 'admin') {
-                        alert('Akses Ditolak. Halaman ini hanya untuk Admin.');
+                    if (!data || !['admin', 'super_admin'].includes(data.role)) {
+                        alert('Akses Ditolak.');
                         window.location.href = 'index.html';
                         return;
                     }
                     document.getElementById('adminName').textContent = data.name || 'Admin';
-                    loadDashboard(); // Load data awal
+                    loadDashboard();
                 } catch (err) {
                     console.error(err);
-                    showAlert('Gagal memverifikasi akun admin.', 'error');
                 }
             });
         });
 
         // --- NAVIGASI ---
         function setupNavigation() {
-            const items = document.querySelectorAll('.menu-item[data-target]');
-            items.forEach(item => {
+            document.querySelectorAll('.menu-item[data-target]').forEach(item => {
                 item.addEventListener('click', (e) => {
                     e.preventDefault();
-                    const target = item.getAttribute('data-target');
-                    showSection(target);
+                    showSection(item.getAttribute('data-target'));
                 });
             });
         }
 
         function showSection(targetId) {
-            // Hide all sections
             document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
-            // Show target
-            const targetEl = document.getElementById('sec-' + targetId);
-            if (targetEl) targetEl.classList.add('active');
+            document.getElementById('sec-' + targetId).classList.add('active');
             
-            // Update menu active state
             document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
-            const activeMenu = document.querySelector(`.menu-item[data-target="${targetId}"]`);
-            if (activeMenu) activeMenu.classList.add('active');
+            document.querySelector(`.menu-item[data-target="${targetId}"]`).classList.add('active');
             
-            // Update header titles
-            const titles = {
-                dashboard: 'Dashboard Bisnis', kasir: 'Kelola Kasir', stok: 'Manajemen Stok', 
-                transaksi: 'Riwayat Transaksi', laporan: 'Pusat Laporan'
-            };
+            const titles = { dashboard: 'Dashboard Bisnis', users: 'Kelola User', stok: 'Manajemen Stok', transaksi: 'Transaksi', laporan: 'Laporan' };
             document.getElementById('pageTitle').textContent = titles[targetId];
             document.getElementById('breadcrumb').textContent = titles[targetId];
 
-            // Load data based on section
             if (targetId === 'dashboard') loadDashboard();
-            if (targetId === 'kasir') loadKasir();
+            if (targetId === 'users') loadUsers();
             if (targetId === 'stok') loadStok();
             if (targetId === 'transaksi') loadTransaksi();
         }
+
+        // --- LOGIC TAMBAH USER ---
+        function toggleBranchSelect() {
+            const role = document.getElementById('uRole').value;
+            const grp = document.getElementById('grpCabang');
+            grp.style.display = (role === 'cashier') ? 'block' : 'none';
+        }
+
+        async function handleAddUser(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnAddUser');
+            const nama = document.getElementById('uNama').value.trim();
+            const email = document.getElementById('uEmail').value.trim();
+            const pass = document.getElementById('uPass').value;
+            const role = document.getElementById('uRole').value;
+            const cabang = role === 'cashier' ? document.getElementById('uCabang').value : 'all';
+
+            if (!nama || !email || !pass) return;
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+
+            try {
+                const cred = await auth.createUserWithEmailAndPassword(email, pass);
+                await db.collection('users').doc(cred.user.uid).set({
+                    name: nama, email: email, branchId: cabang, role: role, active: true,
+                    createdAt: new Date().toISOString()
+                });
+                await cred.user.delete();
+                showAlert(`✅ ${role === 'cashier' ? 'Kasir' : 'Admin'} berhasil ditambahkan!`, 'success');
+                document.getElementById('formUser').reset();
+                toggleBranchSelect();
+                loadUsers();
+            } catch (err) {
+                showAlert(err.code === 'auth/email-already-in-use' ? 'Email sudah terdaftar!' : 'Gagal: ' + err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save"></i> Simpan User';
+            }
+        }
+
+        async function loadUsers() {
+            try {
+                const snap = await db.collection('users').get();
+                const tbody = document.getElementById('tblUsers');
+                if (snap.empty) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Belum ada user</td></tr>'; return; }
+                
+                let html = '', no = 1;
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    const isCurrentUser = doc.id === currentUser.uid;
+                    const roleBadge = d.role === 'cashier' ? 'badge-info' : (d.role === 'super_admin' ? 'badge-danger' : 'badge-warning');
+                    const roleName = d.role === 'cashier' ? 'Kasir' : (d.role === 'super_admin' ? 'Super Admin' : 'Admin');
+                    
+                    html += `<tr>
+                        <td>${no++}</td><td><b>${d.name}</b></td><td>${d.email}</td>
+                        <td><span class="badge ${roleBadge}">${roleName}</span></td>
+                        <td>${branchNames[d.branchId] || d.branchId || '-'}</td>
+                        <td><span class="badge ${d.active ? 'badge-success' : 'badge-danger'}">${d.active ? 'Aktif' : 'Nonaktif'}</span></td>
+                        <td>${!isCurrentUser ? `<button class="action-btn btn-sm-del" onclick="delUser('${doc.id}')"><i class="fas fa-trash"></i></button>` : '<small>Akun Saya</small>'}</td>
+                    </tr>`;
+                });
+                tbody.innerHTML = html;
+            } catch (e) { console.error(e); }
+        }
+
+        window.delUser = async function(id) {
+            if (!confirm('Hapus user ini? Tindakan ini tidak dapat dibatalkan.')) return;
+            try {
+                await db.collection('users').doc(id).delete();
+                showAlert('User dihapus', 'success');
+                loadUsers();
+            } catch (e) { showAlert('Gagal hapus: ' + e.message, 'error'); }
+        };
 
         // --- DASHBOARD ---
         async function loadDashboard() {
@@ -339,13 +393,11 @@
 
                 snap.forEach(doc => {
                     const d = doc.data();
-                    omset += (d.total || 0);
-                    count++;
+                    omset += (d.total || 0); count++;
                     if (Array.isArray(d.items)) d.items.forEach(i => itemsSold += (i.qty || 0));
                     
                     if (d.timestamp) {
-                        const dateObj = new Date(d.timestamp.seconds * 1000);
-                        const dateKey = dateObj.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
+                        const dateKey = new Date(d.timestamp.seconds * 1000).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
                         dailySales[dateKey] = (dailySales[dateKey] || 0) + (d.total || 0);
                     }
 
@@ -359,12 +411,8 @@
                 document.getElementById('dashTransaksi').textContent = count;
                 document.getElementById('dashItems').textContent = itemsSold;
                 document.getElementById('tblRecentTrans').innerHTML = recentHtml || '<tr><td colspan="5">Belum ada transaksi</td></tr>';
-
                 renderChart(dailySales);
-            } catch (e) {
-                console.error('Dashboard error:', e);
-                showAlert('Gagal memuat dashboard.', 'error');
-            }
+            } catch (e) { console.error('Dashboard error:', e); }
         }
 
         function renderChart(data) {
@@ -372,7 +420,7 @@
             if (!ctx) return;
             const labels = Object.keys(data).slice(-7);
             const values = Object.values(data).slice(-7);
-    
+            
             if (chartInstance) chartInstance.destroy();
             chartInstance = new Chart(ctx, {
                 type: 'bar',
@@ -389,14 +437,14 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                         y: {
+                        y: {
                             beginAtZero: true,
                             ticks: {
                                 callback: function(value) {
                                     return 'Rp ' + (value/1000) + 'k';
                                 }
                             }
-                         }
+                        }
                     },
                     plugins: {
                         legend: { display: false }
@@ -404,67 +452,6 @@
                 }
             });
         }
-
-        // --- KELOLA KASIR ---
-        async function handleAddKasir(e) {
-            e.preventDefault();
-            const btn = document.getElementById('btnAddKasir');
-            const nama = document.getElementById('kNama').value.trim();
-            const email = document.getElementById('kEmail').value.trim();
-            const pass = document.getElementById('kPass').value;
-            const cabang = document.getElementById('kCabang').value;
-
-            if (!nama || !email || !pass) return;
-
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
-
-            try {
-                const cred = await auth.createUserWithEmailAndPassword(email, pass);
-                await db.collection('users').doc(cred.user.uid).set({
-                    name: nama, email: email, branchId: cabang, role: 'cashier', active: true,
-                    createdAt: new Date().toISOString()
-                });
-                await cred.user.delete(); // Auto-logout user baru
-                showAlert('✅ Kasir berhasil ditambahkan!', 'success');
-                document.getElementById('formKasir').reset();
-                loadKasir();
-            } catch (err) {
-                showAlert(err.code === 'auth/email-already-in-use' ? 'Email sudah terdaftar!' : 'Gagal: ' + err.message, 'error');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-save"></i> Simpan Kasir';
-            }
-        }
-
-        async function loadKasir() {
-            try {
-                const snap = await db.collection('users').where('role', '==', 'cashier').get();
-                const tbody = document.getElementById('tblKasir');
-                if (snap.empty) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Belum ada data kasir</td></tr>'; return; }
-                
-                let html = '', no = 1;
-                snap.forEach(doc => {
-                    const d = doc.data();
-                    html += `<tr>
-                        <td>${no++}</td><td><b>${d.name}</b></td><td>${d.email}</td>
-                        <td>${branchNames[d.branchId] || d.branchId}</td>
-                        <td><span class="badge ${d.active ? 'badge-success' : 'badge-danger'}">${d.active ? 'Aktif' : 'Nonaktif'}</span></td>
-                        <td><button class="action-btn btn-sm-del" onclick="delKasir('${doc.id}')"><i class="fas fa-trash"></i></button></td>
-                    </tr>`;
-                });
-                tbody.innerHTML = html;
-            } catch (e) { console.error(e); }
-        }
-
-        window.delKasir = async function(id) {
-            if (!confirm('Yakin hapus kasir ini?')) return;
-            try {
-                await db.collection('users').doc(id).delete();
-                showAlert('Kasir dihapus', 'success');
-                loadKasir();
-            } catch (e) { showAlert('Gagal hapus: ' + e.message, 'error'); }
-        };
 
         // --- STOK ---
         async function loadStok() {
@@ -475,35 +462,23 @@
             try {
                 const snap = await query.get();
                 const tbody = document.getElementById('tblStok');
-                if (snap.empty) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Belum ada data stok</td></tr>'; return; }
-                
+                if (snap.empty) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Belum ada data</td></tr>'; return; }
                 let html = '', no = 1;
                 snap.forEach(doc => {
                     const d = doc.data();
                     const name = productNames[d.productId] || d.productId;
-                    const stockStyle = d.stock < 10 ? 'color:#c0392b; font-weight:bold;' : '';
-                    html += `<tr>
-                        <td>${no++}</td><td>${name}</td><td>${branchNames[d.branchId] || d.branchId}</td>
-                        <td style="${stockStyle}">${d.stock}</td>
-                        <td>
-                            <input type="number" class="stock-input" id="stock-${doc.id}" placeholder="Jml" style="width:70px; padding:6px; border:1px solid #ccc; border-radius:4px;">
-                            <button class="action-btn btn-sm-edit" onclick="updateStock('${doc.id}')"><i class="fas fa-save"></i></button>
-                        </td>
-                    </tr>`;
+                    html += `<tr><td>${no++}</td><td>${name}</td><td>${branchNames[d.branchId] || d.branchId}</td><td style="${d.stock < 10 ? 'color:red;font-weight:bold;' : ''}">${d.stock}</td><td><input type="number" class="stock-input" id="stock-${doc.id}" style="width:70px;padding:6px;border:1px solid #ccc;border-radius:4px;"><button class="action-btn btn-sm-edit" onclick="updateStock('${doc.id}')"><i class="fas fa-save"></i></button></td></tr>`;
                 });
                 tbody.innerHTML = html;
             } catch (e) { console.error(e); }
         }
 
         window.updateStock = async function(id) {
-            const input = document.getElementById('stock-' + id);
-            const val = parseInt(input.value);
-            if (isNaN(val) || val < 0) { alert('Masukkan jumlah valid!'); return; }
-            try {
-                await db.collection('inventory').doc(id).update({ stock: val });
-                showAlert('Stok berhasil diupdate', 'success');
-                loadStok();
-            } catch (e) { showAlert('Gagal update: ' + e.message, 'error'); }
+            const val = parseInt(document.getElementById('stock-' + id).value);
+            if (isNaN(val) || val < 0) { alert('Jumlah tidak valid'); return; }
+            await db.collection('inventory').doc(id).update({ stock: val });
+            showAlert('Stok diupdate', 'success');
+            loadStok();
         };
 
         // --- TRANSAKSI ---
@@ -519,70 +494,35 @@
         function renderTransaksi(data) {
             const tbody = document.getElementById('tblTransaksi');
             if (!data.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Tidak ada data</td></tr>'; return; }
-            
             let html = '';
             data.forEach(d => {
-                const timeStr = d.timestamp ? new Date(d.timestamp.seconds * 1000).toLocaleString('id-ID') : '-';
-                html += `<tr>
-                    <td><small>${timeStr}</small></td>
-                    <td><small style="color:#999;">${d.id.substring(0, 8)}...</small></td>
-                    <td>${d.cashierName || '-'}</td>
-                    <td>${Array.isArray(d.items) ? d.items.map(i => i.name).join(', ') : '-'}</td>
-                    <td><b>${formatRp(d.total)}</b></td>
-                    <td><span class="badge badge-info">${d.paymentMethod}</span></td>
-                </tr>`;
+                html += `<tr><td><small>${d.timestamp ? new Date(d.timestamp.seconds * 1000).toLocaleString('id-ID') : '-'}</small></td><td><small style="color:#999;">${d.id.substring(0, 8)}...</small></td><td>${d.cashierName || '-'}</td><td>${Array.isArray(d.items) ? d.items.map(i => i.name).join(', ') : '-'}</td><td><b>${formatRp(d.total)}</b></td><td><span class="badge badge-info">${d.paymentMethod}</span></td></tr>`;
             });
             tbody.innerHTML = html;
         }
 
-        function applyTransaksiFilter() {
-            const dari = document.getElementById('filterDari').value;
-            const sampai = document.getElementById('filterSampai').value;
-            if (!dari || !sampai) { alert('Pilih tanggal dari dan sampai!'); return; }
-            
-            const start = new Date(dari).getTime();
-            const end = new Date(sampai).getTime() + (24 * 60 * 60 * 1000);
-            
-            const filtered = allTransaksi.filter(t => {
-                if (!t.timestamp) return false;
-                const tTime = t.timestamp.seconds * 1000;
-                return tTime >= start && tTime <= end;
-            });
-            
-            renderTransaksi(filtered);
-            showAlert(`Ditemukan ${filtered.length} transaksi`, 'success');
-        }
-
-        function resetTransaksiFilter() {
-            document.getElementById('filterDari').value = '';
-            document.getElementById('filterSampai').value = '';
-            renderTransaksi(allTransaksi);
-        }
-
         // --- EXPORT EXCEL ---
-        function exportKasirExcel() {
-            const table = document.getElementById('tableKasir');
-            if (!table || table.rows.length < 2) { showAlert('Tidak ada data kasir untuk diexport', 'error'); return; }
-            const wb = XLSX.utils.table_to_book(table, { sheet: "Data Kasir" });
-            XLSX.writeFile(wb, `Laporan_Kasir_${new Date().toISOString().split('T')[0]}.xlsx`);
+        function exportUsersExcel() {
+            const table = document.getElementById('tableUsers');
+            if (!table || table.rows.length < 2) return;
+            const wb = XLSX.utils.table_to_book(table, { sheet: "Data User" });
+            XLSX.writeFile(wb, `Laporan_User_${new Date().toISOString().split('T')[0]}.xlsx`);
         }
 
         function exportStokExcel() {
             const table = document.getElementById('tableStok');
-            if (!table || table.rows.length < 2) { showAlert('Tidak ada data stok untuk diexport', 'error'); return; }
+            if (!table || table.rows.length < 2) return;
             const wb = XLSX.utils.table_to_book(table, { sheet: "Data Stok" });
             XLSX.writeFile(wb, `Laporan_Stok_${new Date().toISOString().split('T')[0]}.xlsx`);
         }
 
         function exportTransaksiExcel() {
-            if (!allTransaksi.length) { showAlert('Tidak ada data transaksi', 'error'); return; }
+            if (!allTransaksi.length) return;
             const data = allTransaksi.map(t => ({
                 'Tanggal': t.timestamp ? new Date(t.timestamp.seconds * 1000).toLocaleString('id-ID') : '-',
-                'ID': t.id,
-                'Kasir': t.cashierName || '-',
+                'ID': t.id, 'Kasir': t.cashierName || '-',
                 'Items': Array.isArray(t.items) ? t.items.map(i => `${i.name} (x${i.qty})`).join(', ') : '-',
-                'Total': t.total || 0,
-                'Metode': t.paymentMethod || '-'
+                'Total': t.total || 0, 'Metode': t.paymentMethod || '-'
             }));
             const ws = XLSX.utils.json_to_sheet(data);
             const wb = XLSX.utils.book_new();
@@ -599,11 +539,8 @@
         }
 
         async function doLogout() {
-            if (!confirm('Yakin ingin keluar dari sistem?')) return;
-            try {
-                await auth.signOut();
-                window.location.href = 'index.html';
-            } catch (e) { showAlert('Gagal logout', 'error'); }
+            if (!confirm('Yakin ingin keluar?')) return;
+            try { await auth.signOut(); window.location.href = 'index.html'; } catch (e) { showAlert('Gagal logout', 'error'); }
         }
     </script>
 </body>
