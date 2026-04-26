@@ -67,7 +67,7 @@
             margin-bottom: 15px; display: none; font-size: 0.9rem; text-align: center;
         }
         
-        /* Main App - DESKTOP DEFAULT (2 kolom) */
+        /* Main App */
         .app { 
             display: none; 
             max-width: 1200px; 
@@ -220,7 +220,7 @@
         
         /* Cart */
         .cart-items { 
-            max-height: 400px; 
+            max-height: 350px; 
             overflow-y: auto; 
             margin-bottom: 15px; 
             -webkit-overflow-scrolling: touch; 
@@ -284,6 +284,30 @@
             padding: 4px; 
             background: var(--light); 
             border-radius: 6px;
+        }
+        
+        /* Customer Name Input */
+        .customer-input {
+            margin-bottom: 15px;
+        }
+        .customer-input label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 0.9rem;
+        }
+        .customer-input input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--light);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: 0.3s;
+        }
+        .customer-input input:focus {
+            border-color: var(--primary);
+            outline: none;
         }
         
         /* Summary */
@@ -451,28 +475,23 @@
             }
         }
         
-        /* ============================================ */
-        /* MOBILE RESPONSIVE - LAYAR KECIL (< 768px) */
-        /* ============================================ */
+        /* MOBILE RESPONSIVE */
         @media (max-width: 768px) {
             html { font-size: 14px; }
             body { padding-bottom: 15px; }
             
             .app { 
-                /* UBAH KE 1 KOLOM (VERTIKAL) */
                 grid-template-columns: 1fr;
                 padding: 10px;
                 gap: 12px;
             }
             
-            /* Cart pindah ke bawah (order: 2) */
             .cart-section { 
                 position: static; 
                 order: 2;
                 width: 100%;
             }
             
-            /* Menu di atas (order: 1) */
             .menu-section {
                 order: 1;
                 width: 100%;
@@ -498,7 +517,6 @@
                 flex-wrap: wrap;
             }
             
-            /* Produk grid 2 kolom di HP */
             .products { 
                 grid-template-columns: repeat(2, 1fr); 
                 gap: 10px;
@@ -517,7 +535,6 @@
                 font-size: 0.75rem;
             }
             
-            /* Cart item lebih compact */
             .cart-item img { 
                 width: 50px; 
                 height: 50px; 
@@ -531,7 +548,6 @@
                 font-size: 0.9rem; 
             }
             
-            /* Payment 2 kolom */
             .payment-method { 
                 grid-template-columns: repeat(2, 1fr);
                 gap: 6px;
@@ -545,7 +561,6 @@
                 font-size: 1.3rem; 
             }
             
-            /* Modal lebih kecil */
             .modal-content { 
                 padding: 20px 15px; 
             }
@@ -553,7 +568,6 @@
                 font-size: 1.1rem; 
             }
             
-            /* Table scrollable */
             table { 
                 font-size: 0.85rem; 
             }
@@ -561,7 +575,6 @@
                 padding: 8px 6px; 
             }
             
-            /* Button lebih besar untuk touch */
             .btn { 
                 padding: 12px 18px; 
                 font-size: 0.95rem; 
@@ -590,7 +603,6 @@
             }
         }
         
-        /* Extra small devices */
         @media (max-width: 480px) {
             .products { 
                 grid-template-columns: repeat(2, 1fr); 
@@ -686,6 +698,13 @@
             <div class="section-header">
                 <h2><i class="fas fa-shopping-cart"></i> Keranjang</h2>
             </div>
+            
+            <!-- Customer Name Input -->
+            <div class="customer-input">
+                <label for="customerName"><i class="fas fa-user"></i> Nama Pembeli</label>
+                <input type="text" id="customerName" placeholder="Masukkan nama pembeli (opsional)">
+            </div>
+            
             <div class="cart-items" id="cartItems">
                 <p style="text-align: center; color: #7f8c8d; padding: 40px 20px;">
                     <i class="fas fa-shopping-basket" style="font-size: 3rem; opacity: 0.3; display: block; margin-bottom: 10px;"></i>
@@ -881,7 +900,7 @@
                 const div = document.createElement('div');
                 div.className = 'product';
                 div.innerHTML = `
-                    <img src="${p.img}" alt="${p.name}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23f8f9fa%22 width=%22100%22 height=%22100%22/><text y=%22.9em%22 font-size=%2280%22 x=%2250%22 text-anchor=%22middle%22>🧋</text></svg>'">
+                    <img src="${p.img}" alt="${p.name}" onerror="this.src='image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23f8f9fa%22 width=%22100%22 height=%22100%22/><text y=%22.9em%22 font-size=%2280%22 x=%2250%22 text-anchor=%22middle%22>🧋</text></svg>'">
                     <div class="product-info">
                         <h4>${p.name}</h4>
                         <p>${p.desc}</p>
@@ -927,7 +946,7 @@
             
             container.innerHTML = cart.map(item => `
                 <div class="cart-item">
-                    <img src="${item.img}" alt="${item.name}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23f8f9fa%22 width=%22100%22 height=%22100%22/><text y=%22.9em%22 font-size=%2280%22 x=%2250%22 text-anchor=%22middle%22>🧋</text></svg>'">
+                    <img src="${item.img}" alt="${item.name}" onerror="this.src='image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23f8f9fa%22 width=%22100%22 height=%22100%22/><text y=%22.9em%22 font-size=%2280%22 x=%2250%22 text-anchor=%22middle%22>🧋</text></svg>'">
                     <div class="cart-item-info">
                         <div class="cart-item-name">${item.name}</div>
                         <div class="cart-item-price">${formatRp(item.price)}</div>
@@ -981,6 +1000,7 @@
             if (confirm('Reset keranjang untuk pesanan baru?')) {
                 cart = [];
                 document.getElementById('discount').value = '0';
+                document.getElementById('customerName').value = '';
                 renderCart();
                 document.getElementById('actionButtons').style.display = 'none';
             }
@@ -1013,6 +1033,7 @@
                 const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
                 const discount = parseInt(document.getElementById('discount').value) || 0;
                 const total = Math.max(0, subtotal - discount);
+                const customerName = document.getElementById('customerName').value.trim() || '-';
                 
                 // Update stok
                 for (const item of cart) {
@@ -1042,6 +1063,7 @@
                     paymentMethod: selectedPayment,
                     cashierId: currentUser.uid,
                     cashierName: document.getElementById('userName').textContent,
+                    customerName: customerName,
                     branchId: currentBranch,
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 };
@@ -1066,9 +1088,7 @@
             }
         }
 
-        // ============================================
-        // PRINT FUNCTION - RAWBT DENGAN FORMAT YANG BENAR
-        // ============================================
+        // PRINT FUNCTION - RAWBT DENGAN FORMAT YANG BENAR (ANTI KODE ACAK)
         function printReceipt() {
             if (!lastTransaction) {
                 alert('Tidak ada transaksi untuk dicetak');
@@ -1078,15 +1098,25 @@
             const isAndroid = /Android/i.test(navigator.userAgent);
             const date = new Date().toLocaleString('id-ID');
             const branch = branchNames[currentBranch] || currentBranch;
+            const customerName = lastTransaction.customerName || '-';
             
-            // Format struk teks yang rapi
+            // Format struk teks yang rapi (max 32 karakter per baris untuk kertas 58mm)
             let receiptText = `THAI TEA CST\n`;
+            receiptText += `Pelanggan: ${customerName}\n`;
             receiptText += `${branch}\n`;
             receiptText += `${date}\n`;
             receiptText += `--------------------------------\n\n`;
             
             lastTransaction.items.forEach(item => {
-                receiptText += `${item.name}\n`;
+                // Wrap text untuk nama produk yang panjang
+                const nameLines = wrapText(item.name, 28);
+                nameLines.forEach((line, idx) => {
+                    if (idx === 0) {
+                        receiptText += `${line}\n`;
+                    } else {
+                        receiptText += `  ${line}\n`;
+                    }
+                });
                 receiptText += `${item.qty} x ${formatRp(item.price)}\n`;
                 receiptText += `${formatRp(item.price * item.qty)}\n\n`;
             });
@@ -1099,17 +1129,18 @@
             receiptText += `TOTAL: ${formatRp(lastTransaction.total)}\n`;
             receiptText += `Pembayaran: ${selectedPayment.toUpperCase()}\n`;
             receiptText += `--------------------------------\n\n`;
+            receiptText += `Pesanan Kembali: +62 822-9999-7227\n`;
             receiptText += `Terima Kasih!\n`;
-            receiptText += `Selamat Menikmati\n\n`;
-            receiptText += `PT CAHAYA SEJATI TEKNOLOGI\n`;
+            receiptText += `Selamat Menikmati\n`;
             
             if (isAndroid) {
-                // RAWBT PRINT - FORMAT INTENT YANG BENAR
+                // RAWBT PRINT - FORMAT INTENT YANG BENAR (ANTI KODE ACAK)
                 try {
                     // Encode teks ke base64 dengan benar
                     const b64data = btoa(unescape(encodeURIComponent(receiptText)));
                     
                     // Format intent URL yang benar untuk RawBT
+                    // Format: intent://base64,ENCODED_DATA#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;end;
                     const intentUrl = `intent://base64,${b64data}#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;end;`;
                     
                     // Buka RawBT
@@ -1160,6 +1191,25 @@
             }
         }
 
+        // Helper function untuk wrap text
+        function wrapText(text, maxWidth) {
+            const words = text.split(' ');
+            const lines = [];
+            let currentLine = '';
+            
+            words.forEach(word => {
+                if ((currentLine + word).length <= maxWidth) {
+                    currentLine += (currentLine ? ' ' : '') + word;
+                } else {
+                    if (currentLine) lines.push(currentLine);
+                    currentLine = word;
+                }
+            });
+            
+            if (currentLine) lines.push(currentLine);
+            return lines;
+        }
+
         // EXPORT EXCEL
         async function exportTransaksiExcel() {
             try {
@@ -1181,6 +1231,7 @@
                         'Tanggal': d.timestamp ? new Date(d.timestamp.seconds * 1000).toLocaleString('id-ID') : '-',
                         'ID Transaksi': doc.id,
                         'Kasir': d.cashierName || '-',
+                        'Pelanggan': d.customerName || '-',
                         'Items': Array.isArray(d.items) ? d.items.map(i => `${i.name} (x${i.qty})`).join(', ') : '-',
                         'Subtotal': d.subtotal || 0,
                         'Diskon': d.discount || 0,
