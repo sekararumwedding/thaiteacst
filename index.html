@@ -509,6 +509,32 @@
             margin-bottom: 3px;
         }
         
+        .payment-input-group {
+            margin: 15px 0;
+        }
+        
+        .payment-input-group label {
+            display: block;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+        }
+        
+        .payment-input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 700;
+        }
+        
+        .payment-input-group input[readonly] {
+            background: #f5f6fa;
+            color: var(--success);
+        }
+        
         .checkout-btn { 
             width: 100%; 
             padding: 14px; 
@@ -807,6 +833,10 @@
             .order-actions {
                 grid-template-columns: repeat(3, 1fr);
             }
+            
+            .payment-method {
+                grid-template-columns: repeat(3, 1fr);
+            }
         }
         
         /* Mobile Specific */
@@ -952,6 +982,18 @@
                         QRIS
                     </div>
                 </div>
+                
+                <!-- Payment Input Fields -->
+                <div class="payment-input-group" id="paymentInputGroup">
+                    <label for="uangDiterimaDesktop"><i class="fas fa-money-bill"></i> Uang Diterima</label>
+                    <input type="number" id="uangDiterimaDesktop" placeholder="Masukkan jumlah uang" oninput="calculateChange('desktop')">
+                </div>
+                
+                <div class="payment-input-group">
+                    <label for="kembalianDesktop"><i class="fas fa-coins"></i> Kembalian</label>
+                    <input type="text" id="kembalianDesktop" readonly placeholder="Rp 0" style="color: var(--success); font-weight: 800;">
+                </div>
+                
                 <button class="checkout-btn" onclick="checkout()">
                     <i class="fas fa-check-circle"></i> Bayar Sekarang
                 </button>
@@ -998,6 +1040,18 @@
                         QRIS
                     </div>
                 </div>
+                
+                <!-- Payment Input Fields (Mobile) -->
+                <div class="payment-input-group" id="paymentInputGroupMobile">
+                    <label for="uangDiterimaMobile"><i class="fas fa-money-bill"></i> Uang Diterima</label>
+                    <input type="number" id="uangDiterimaMobile" placeholder="Masukkan jumlah uang" oninput="calculateChange('mobile')">
+                </div>
+                
+                <div class="payment-input-group">
+                    <label for="kembalianMobile"><i class="fas fa-coins"></i> Kembalian</label>
+                    <input type="text" id="kembalianMobile" readonly placeholder="Rp 0" style="color: var(--success); font-weight: 800;">
+                </div>
+                
                 <button class="checkout-btn" onclick="checkout()">Bayar Sekarang</button>
             </div>
         </div>
@@ -1119,6 +1173,8 @@
         let lastTransaction = null;
         let transactionsData = [];
         let selectedPaymentMethod = 'cash';
+        let uangDiterima = 0;
+        let kembalian = 0;
         const isMobile = window.innerWidth <= 768;
 
         const branchNames = { cabang_01: 'Soetta', cabang_02: 'TOD M1' };
@@ -1129,9 +1185,9 @@
             { id: 'prem_matcha', name: 'Premium Matcha', cat: 'premium', price: 25000, img: 'https://i.ibb.co.com/XZ2k5y1T/Premium-Matcha-with-Cream-Cheese-Shredded-Cheese.jpg' },
             { id: 'prem_choco', name: 'Premium Chocolate', cat: 'premium', price: 20000, img: 'https://i.ibb.co.com/ZzSGpkQB/Premium-Chocolate-with-Cream-Cheese-Shredded-Cheese.jpg' },
             { id: 'orig_thai', name: 'Thai Tea', cat: 'original', price: 10000, img: 'https://i.ibb.co.com/N6jCd6sw/Thai-Tea-original.jpg' },
-            { id: 'orig_matcha', name: 'Matcha', cat: 'original', price: 10000, img: 'https://i.ibb.co.com/99Tb8ZjY/Matcha-original.jpg' },
+            { id: 'orig_matcha', name: 'Matcha', cat: 'original', price: 15000, img: 'https://i.ibb.co.com/99Tb8ZjY/Matcha-original.jpg' },
             { id: 'orig_choco', name: 'Chocolate', cat: 'original', price: 10000, img: 'https://i.ibb.co.com/bjzr6NNm/Chocolate-original.jpg' },
-            { id: 'top_cream', name: 'Cream Cheese', cat: 'topping', price: 3000, img: 'https://i.ibb.co.com/SXyM8m2L/Extra-Topping-Cream-Cheese.jpg' },
+            { id: 'top_cream', name: 'Cream Cheese', cat: 'topping', price: 5000, img: 'https://i.ibb.co.com/SXyM8m2L/Extra-Topping-Cream-Cheese.jpg' },
             { id: 'top_cheese', name: 'Cheese Parut', cat: 'topping', price: 3000, img: 'https://i.ibb.co.com/gZv3pDvz/Extra-Topping-Cheese-Keju-Parut.jpg' },
             { id: 'top_bubble', name: 'Bubble', cat: 'topping', price: 3000, img: 'https://i.ibb.co.com/d0DwHSr4/Extra-Topping-Bubble-Tapioca-Pearl.jpg' }
         ];
@@ -1306,12 +1362,64 @@
             document.getElementById('totalMobile').textContent = formatRp(total);
             document.getElementById('subtotalDesktop').textContent = formatRp(sub);
             document.getElementById('totalDesktop').textContent = formatRp(total);
+            
+            // Recalculate change if uang diterima already entered
+            calculateChange(isMobile ? 'mobile' : 'desktop');
         }
 
         function selectPayment(method, btn) {
             selectedPaymentMethod = method;
             document.querySelectorAll('.pay-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
+            
+            // Show/hide uang diterima input based on payment method
+            const uangInputGroup = document.getElementById('paymentInputGroup');
+            const uangInputGroupMobile = document.getElementById('paymentInputGroupMobile');
+            const uangInputDesktop = document.getElementById('uangDiterimaDesktop');
+            const uangInputMobile = document.getElementById('uangDiterimaMobile');
+            
+            if (method === 'cash') {
+                if (uangInputGroup) uangInputGroup.style.display = 'block';
+                if (uangInputGroupMobile) uangInputGroupMobile.style.display = 'block';
+                if (uangInputDesktop) uangInputDesktop.readOnly = false;
+                if (uangInputMobile) uangInputMobile.readOnly = false;
+            } else {
+                // For non-cash payments, set uang diterima = total automatically
+                const totalMobile = parseFloat(document.getElementById('totalMobile').textContent.replace(/[^0-9]/g, '')) || 0;
+                const totalDesktop = parseFloat(document.getElementById('totalDesktop').textContent.replace(/[^0-9]/g, '')) || 0;
+                
+                if (uangInputGroup) uangInputGroup.style.display = 'none';
+                if (uangInputGroupMobile) uangInputGroupMobile.style.display = 'none';
+                if (uangInputDesktop) {
+                    uangInputDesktop.value = totalDesktop;
+                    uangInputDesktop.readOnly = true;
+                }
+                if (uangInputMobile) {
+                    uangInputMobile.value = totalMobile;
+                    uangInputMobile.readOnly = true;
+                }
+                
+                calculateChange(isMobile ? 'mobile' : 'desktop');
+            }
+        }
+
+        function calculateChange(context) {
+            const totalMobile = parseFloat(document.getElementById('totalMobile').textContent.replace(/[^0-9]/g, '')) || 0;
+            const totalDesktop = parseFloat(document.getElementById('totalDesktop').textContent.replace(/[^0-9]/g, '')) || 0;
+            
+            if (context === 'mobile') {
+                const uangInput = document.getElementById('uangDiterimaMobile');
+                const kembalianInput = document.getElementById('kembalianMobile');
+                uangDiterima = parseFloat(uangInput.value) || 0;
+                kembalian = Math.max(0, uangDiterima - totalMobile);
+                kembalianInput.value = formatRp(kembalian);
+            } else {
+                const uangInput = document.getElementById('uangDiterimaDesktop');
+                const kembalianInput = document.getElementById('kembalianDesktop');
+                uangDiterima = parseFloat(uangInput.value) || 0;
+                kembalian = Math.max(0, uangDiterima - totalDesktop);
+                kembalianInput.value = formatRp(kembalian);
+            }
         }
 
         function openCartModal() {
@@ -1341,22 +1449,45 @@
             const discDesktop = parseInt(document.getElementById('discountDesktop').value) || 0;
             const disc = isMobile ? discMobile : discDesktop;
             const total = Math.max(0, sub - disc);
+            
+            // Get uang diterima and kembalian
+            if (selectedPaymentMethod === 'cash') {
+                if (uangDiterima < total) {
+                    showCustomModal('Perhatian', 'Uang yang diterima kurang!', null);
+                    return;
+                }
+            }
 
             try {
                 const docRef = await db.collection('transactions').add({
                     items: cart, subtotal: sub, discount: disc, total: total,
                     customerName: customerName, cashierId: currentUser.uid, cashierName: currentUser.name,
                     branchId: currentBranch, paymentMethod: selectedPaymentMethod,
+                    uangDiterima: uangDiterima, kembalian: kembalian,
                     orderType: 'offline',
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
-                lastTransaction = { id: docRef.id, items: cart, total: total, customerName: customerName };
+                lastTransaction = { 
+                    id: docRef.id, 
+                    items: cart, 
+                    total: total, 
+                    customerName: customerName,
+                    uangDiterima: uangDiterima,
+                    kembalian: kembalian,
+                    paymentMethod: selectedPaymentMethod
+                };
                 printStruk();
                 cart = []; 
                 document.getElementById('customerNameMobile').value = '';
                 document.getElementById('customerNameDesktop').value = '';
                 document.getElementById('discountMobile').value = '0';
                 document.getElementById('discountDesktop').value = '0';
+                document.getElementById('uangDiterimaMobile').value = '';
+                document.getElementById('uangDiterimaDesktop').value = '';
+                document.getElementById('kembalianMobile').value = 'Rp 0';
+                document.getElementById('kembalianDesktop').value = 'Rp 0';
+                uangDiterima = 0;
+                kembalian = 0;
                 renderCart();
                 updateCartBadge();
                 closeCartModal();
@@ -1373,12 +1504,14 @@
             const timeStr = date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
             
             let text = '';
+            // Header - Centered
             text += '       THAI TEA CST\n';
             text += '--------------------------------\n';
             text += `Pelanggan: ${lastTransaction.customerName}\n`;
             text += `${dateStr} ${timeStr}\n`;
             text += '--------------------------------\n';
             
+            // Items
             lastTransaction.items.forEach(item => {
                 const name = item.name.length > 18 ? item.name.substring(0, 15) + '...' : item.name;
                 const price = formatRp(item.price * item.qty);
@@ -1388,10 +1521,26 @@
             });
             
             text += '--------------------------------\n';
-            text += `TOTAL: ${formatRp(lastTransaction.total).padStart(30)}\n`;
-            text += '--------------------------------\n\n';
+            
+            // Totals - Right aligned
+            const subtotalStr = formatRp(lastTransaction.items.reduce((s, i) => s + (i.price * i.qty), 0));
+            const totalStr = formatRp(lastTransaction.total);
+            const bayarStr = formatRp(lastTransaction.uangDiterima || lastTransaction.total);
+            const kembaliStr = formatRp(lastTransaction.kembalian || 0);
+            
+            text += `Subtotal:${subtotalStr.padStart(22 - 'Subtotal:'.length)}\n`;
+            if (lastTransaction.items.reduce((s, i) => s + (i.price * i.qty), 0) !== lastTransaction.total) {
+                text += `Diskon:${formatRp(lastTransaction.items.reduce((s, i) => s + (i.price * i.qty), 0) - lastTransaction.total).padStart(22 - 'Diskon:'.length)}\n`;
+            }
+            text += '================================\n';
+            text += `TOTAL:${totalStr.padStart(22 - 'TOTAL:'.length)}\n`;
+            text += `BAYAR:${bayarStr.padStart(22 - 'BAYAR:'.length)}\n`;
+            text += `KEMBALI:${kembaliStr.padStart(22 - 'KEMBALI:'.length)}\n`;
+            text += '================================\n\n';
+            
+            // Footer - Centered
             text += 'Pesanan Kembali: +62 822-9999-7227\n';
-            text += '   Terima Kasih!\n';
+            text += '     TERIMA KASIH\n';
             
             const cleanText = text.replace(/[^\x00-\x7F]/g, '').trim();
             const b64 = btoa(cleanText);
@@ -1684,6 +1833,8 @@
                         cashierName: currentUser.name,
                         branchId: orderData.branchId || currentBranch,
                         paymentMethod: orderData.paymentMethod || selectedPaymentMethod,
+                        uangDiterima: orderData.total, // Assume paid in full for online orders
+                        kembalian: 0,
                         orderType: 'online',
                         orderId: orderId,
                         timestamp: firebase.firestore.FieldValue.serverTimestamp()
@@ -1696,7 +1847,10 @@
                         id: orderId,
                         items: orderData.items || [],
                         total: orderData.total,
-                        customerName: orderData.customerName
+                        customerName: orderData.customerName,
+                        uangDiterima: orderData.total,
+                        kembalian: 0,
+                        paymentMethod: orderData.paymentMethod || selectedPaymentMethod
                     };
                     
                     // Print struk
