@@ -1499,55 +1499,87 @@
 
         function printStruk() {
             if (!lastTransaction) return;
+            
             const date = new Date();
             const dateStr = date.toLocaleDateString('id-ID');
             const timeStr = date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            const width = 32; // Lebar kertas thermal 58mm = 32 karakter
             
-            let text = '';
-            // Header - Centered
-            text += '       THAI TEA CST\n';
-            text += '--------------------------------\n';
-            text += `Pelanggan: ${lastTransaction.customerName}\n`;
-            text += `${dateStr} ${timeStr}\n`;
-            text += '--------------------------------\n';
+            // Format Rupiah konsisten
+            const formatRp = (n) => 'Rp' + new Intl.NumberFormat('id-ID').format(n);
             
-            // Items
+            // 1. FUNGSI CENTER (Rata Tengah)
+            const center = (text, w = width) => {
+                const padding = Math.floor((w - text.length) / 2);
+                return ' '.repeat(Math.max(0, padding)) + text;
+            };
+            
+            // 2. FUNGSI ITEM: [Nama] [SPASI] [Qty]x [Harga] -> Harga mentok kanan
+            const formatItem = (name, qty, priceStr, w = width) => {
+                const qtyText = `${qty}x `;
+                const rightPart = qtyText + priceStr;
+                let spacesCount = w - name.length - rightPart.length;
+                
+                // Jika nama terlalu panjang, potong dengan ...
+                if (spacesCount < 1) {
+                    const maxNameLen = w - rightPart.length - 3;
+                    const shortName = name.substring(0, Math.max(0, maxNameLen)) + '...';
+                    spacesCount = w - shortName.length - rightPart.length;
+                    return shortName + ' '.repeat(Math.max(0, spacesCount)) + rightPart;
+                }
+                return name + ' '.repeat(spacesCount) + rightPart;
+            };
+            
+            // 3. FUNGSI PAYMENT: [Label:] [SPASI] [Rp...] -> Angka mentok kanan & sejajar
+            const formatPayment = (label, amountStr, w = width) => {
+                const labelWithColon = label + ':';
+                const spacesCount = w - labelWithColon.length - amountStr.length;
+                return labelWithColon + ' '.repeat(Math.max(1, spacesCount)) + amountStr;
+            };
+            
+            let strukText = '';
+            
+            // === HEADER (Center) ===
+            strukText += center('THAI TEA CST') + '\n';
+            strukText += '--------------------------------\n';
+            strukText += `Pelanggan: ${lastTransaction.customerName}\n`;
+            strukText += `${dateStr} ${timeStr}\n`;
+            strukText += '--------------------------------\n';
+            
+            // === ITEMS (Kiri-Kanan) ===
             lastTransaction.items.forEach(item => {
-                const name = item.name.length > 18 ? item.name.substring(0, 15) + '...' : item.name;
-                const price = formatRp(item.price * item.qty);
-                const qtyLine = `${item.qty}x ${formatRp(item.price)}`;
-                text += `${name.padEnd(18)}${price.padStart(12)}\n`;
-                text += `  ${qtyLine}\n\n`;
+                const subtotal = formatRp(item.price * item.qty);
+                strukText += formatItem(item.name, item.qty, subtotal) + '\n';
             });
             
-            text += '--------------------------------\n';
+            strukText += '--------------------------------\n';
             
-            // Totals - Right aligned
-            const subtotalStr = formatRp(lastTransaction.items.reduce((s, i) => s + (i.price * i.qty), 0));
+            // === PEMBAYARAN (Label kiri, Angka kanan sejajar) ===
             const totalStr = formatRp(lastTransaction.total);
             const bayarStr = formatRp(lastTransaction.uangDiterima || lastTransaction.total);
             const kembaliStr = formatRp(lastTransaction.kembalian || 0);
             
-            text += `Subtotal:${subtotalStr.padStart(22 - 'Subtotal:'.length)}\n`;
-            if (lastTransaction.items.reduce((s, i) => s + (i.price * i.qty), 0) !== lastTransaction.total) {
-                text += `Diskon:${formatRp(lastTransaction.items.reduce((s, i) => s + (i.price * i.qty), 0) - lastTransaction.total).padStart(22 - 'Diskon:'.length)}\n`;
-            }
-            text += '================================\n';
-            text += `TOTAL:${totalStr.padStart(22 - 'TOTAL:'.length)}\n`;
-            text += `BAYAR:${bayarStr.padStart(22 - 'BAYAR:'.length)}\n`;
-            text += `KEMBALI:${kembaliStr.padStart(22 - 'KEMBALI:'.length)}\n`;
-            text += '================================\n\n';
+            strukText += formatPayment('Total', totalStr) + '\n';
+            strukText += '================================\n';
+            strukText += formatPayment('BAYAR', bayarStr) + '\n';
+            strukText += formatPayment('KEMBALI', kembaliStr) + '\n';
+            strukText += '================================\n\n';
             
-            // Footer - Centered
-            text += 'Pesanan Kembali: +62 822-9999-7227\n';
-            text += '     TERIMA KASIH\n';
+            // === FOOTER (Center - 3 baris terpisah) ===
+            strukText += center('Pesanan Kembali:') + '\n';
+            strukText += center('+62 822-9999-7227') + '\n';
+            strukText += center('TERIMA KASIH') + '\n';
             
-            const cleanText = text.replace(/[^\x00-\x7F]/g, '').trim();
+            // === PROSES CETAK ===
+            // Bersihkan karakter aneh (anti-â)
+            const cleanText = strukText.replace(/[^\x00-\x7F]/g, '').trim();
             const b64 = btoa(cleanText);
             
             if (/Android/i.test(navigator.userAgent)) {
+                // RawBT untuk Android
                 window.location.href = `rawbt:base64,${b64}`;
             } else {
+                // Print dialog untuk PC
                 const printWindow = window.open('', '_blank', 'width=400,height=600');
                 printWindow.document.write(`
                     <!DOCTYPE html><html><head><title>Struk</title>
@@ -1558,7 +1590,6 @@
                 printWindow.document.close();
             }
         }
-
         function openReportModal() {
             document.getElementById('reportModal').classList.add('active');
             document.getElementById('branchFilter').value = currentBranch;
