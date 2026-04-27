@@ -443,7 +443,7 @@
         function calcTotal() { const sub = cart.reduce((s, i) => s + (i.price * i.qty), 0); const disc = parseInt(document.getElementById('discount').value) || 0; document.getElementById('subtotal').textContent = formatRp(sub); document.getElementById('total').textContent = formatRp(Math.max(0, sub - disc)); }
 
         // ============================================
-        // CHECKOUT & PRINT (PERFECT ALIGNMENT)
+        // CHECKOUT & PROFESSIONAL PRINT (FIXED)
         // ============================================
         async function checkout() {
             const name = document.getElementById('customerName').value.trim();
@@ -471,36 +471,61 @@
             if (!lastTransaction) return;
             
             const date = new Date();
-            const dateStr = date.toLocaleDateString('id-ID') + ' ' + date.toLocaleTimeString('id-ID');
+            const dateStr = date.toLocaleDateString('id-ID');
+            const timeStr = date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
             
-            // --- FORMAT STRUK PROFESIONAL (32 Karakter Lebar) ---
+            // --- FORMAT STRUK PROFESIONAL (Lebar 32 Karakter untuk Kertas 58mm) ---
+            // Fungsi helper untuk rata kiri-kanan
+            const printLine = (left, right) => {
+                if (!right) return left;
+                const spaces = 32 - left.length - right.length;
+                return left + ' '.repeat(spaces > 0 ? spaces : 1) + right;
+            };
+            
+            const centerText = (text) => {
+                const spaces = Math.floor((32 - text.length) / 2);
+                return ' '.repeat(spaces) + text;
+            };
+
             let text = '';
-            text += '       THAI TEA CST\n';
-            text += '--------------------------------\n';
-            text += `Pelanggan: ${lastTransaction.customerName}\n`;
-            text += `${dateStr}\n`;
+            
+            // HEADER
+            text += centerText('THAI TEA CST') + '\n';
+            text += centerText('Point of Sale System') + '\n';
             text += '--------------------------------\n';
             
-            // Loop item dengan format: Nama (Rata Kiri) ... Harga (Rata Kanan)
+            // INFO TRANSAKSI
+            text += `Pelanggan: ${lastTransaction.customerName}\n`;
+            text += `Tgl/Jam  : ${dateStr} ${timeStr}\n`;
+            text += '--------------------------------\n';
+            
+            // ITEM (Tabel Rapi)
             lastTransaction.items.forEach(item => {
-                const name = item.name;
+                // Baris 1: Nama Item ... Harga Total Item
+                const name = item.name.length > 18 ? item.name.substring(0, 15) + '...' : item.name;
                 const price = formatRp(item.price * item.qty);
-                const qtyInfo = `${item.qty}x ${formatRp(item.price)}`;
+                text += printLine(name, price) + '\n';
                 
-                // PadEnd untuk nama (18 char), PadStart untuk harga (12 char)
-                // Ini membuat layout seperti struk Meatsmith Steakhouse
-                const line1 = name.padEnd(18, ' ') + price.padStart(12, ' ');
-                const line2 = '  ' + qtyInfo;
-                
-                text += line1 + '\n' + line2 + '\n';
+                // Baris 2: Qty x Harga Satuan
+                text += `  ${item.qty}x ${formatRp(item.price)}\n`;
             });
             
             text += '--------------------------------\n';
-            // Format total juga rata kanan
-            text += `TOTAL: `.padEnd(22, ' ') + formatRp(lastTransaction.total).padStart(10, ' ') + '\n';
-            text += '--------------------------------\n\n';
-            text += 'Pesanan Kembali: +62 822-9999-7227\n';
-            text += '   Terima Kasih!\n';
+            
+            // KALKULASI
+            text += printLine('Subtotal', formatRp(lastTransaction.items.reduce((s, i) => s + (i.price * i.qty), 0))) + '\n';
+            if (lastTransaction.discount > 0) {
+                 text += printLine('Diskon', '-' + formatRp(lastTransaction.discount)) + '\n';
+            }
+            text += '================================\n'; // Garis ganda untuk Total
+            text += printLine('TOTAL', formatRp(lastTransaction.total)) + '\n';
+            text += '================================\n';
+            
+            // FOOTER
+            text += '\n';
+            text += centerText('*** THANK YOU ***') + '\n';
+            text += centerText('Pesanan Kembali:') + '\n';
+            text += centerText('+62 822-9999-7227') + '\n';
             
             // Bersihkan karakter aneh (agar tidak error di printer)
             const cleanText = text.replace(/[^\x00-\x7F]/g, '').trim();
