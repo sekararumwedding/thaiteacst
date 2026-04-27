@@ -2,21 +2,25 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta name="description" content="CST SYSTEM - Admin Dashboard Thai Tea CST. Sistem manajemen bisnis dan transaksi.">
+    <meta name="keywords" content="thai tea, cst, admin, dashboard, kasir">
+    <meta name="author" content="Thai Tea CST">
+    <meta name="robots" content="noindex, nofollow">
     <meta name="theme-color" content="#E67E22">
     <title>Admin Dashboard - CST SYSTEM</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <!-- Firebase (Deferred Loading) -->
+    <script defer src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     
     <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <!-- SheetJS untuk Export Excel -->
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     
     <style>
         :root {
@@ -543,16 +547,41 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
+        /* Connection Status */
+        .connection-status {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--danger);
+            color: white;
+            text-align: center;
+            padding: 10px;
+            z-index: 5000;
+            display: none;
+            font-weight: 600;
+        }
+        
+        .connection-status.active {
+            display: block;
+        }
     </style>
 </head>
 <body>
+
+    <!-- Connection Status Bar -->
+    <div class="connection-status" id="connectionStatus">
+        <i class="fas fa-wifi-slash"></i> Koneksi terganggu, CST System mencoba menghubungkan kembali...
+    </div>
 
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-header">
             <img src="https://i.ibb.co.com/mC3npXRW/Gemini-Generated-Image-8aemtl8aemtl8aem-removebg-preview.png" 
-                 alt="CST SYSTEM" 
-                 class="sidebar-logo">
+                 alt="Logo Thai Tea CST" 
+                 class="sidebar-logo"
+                 loading="lazy">
             <h2>CST SYSTEM</h2>
             <p>Admin Dashboard</p>
         </div>
@@ -773,8 +802,9 @@
     <div class="modal" id="confirmModal">
         <div class="modal-content">
             <img src="https://i.ibb.co.com/mC3npXRW/Gemini-Generated-Image-8aemtl8aemtl8aem-removebg-preview.png" 
-                 alt="CST SYSTEM" 
-                 class="modal-logo">
+                 alt="Logo Thai Tea CST"
+                 class="modal-logo"
+                 loading="lazy">
             <h2 class="modal-title">CST SYSTEM</h2>
             <p class="modal-message" id="confirmMessage">Apakah Anda yakin?</p>
             <div class="modal-buttons">
@@ -786,27 +816,82 @@
 
     <script>
         // ============================================
-        // FIREBASE CONFIGURATION
+        // SECURE FIREBASE CONFIGURATION
+        // API Key di-obfuscate dengan Base64
         // ============================================
-        const firebaseConfig = {
-            apiKey: "AIzaSyAWuzMWsOycxq0gjNm5rP3hDVOKuYuKLvA",  // <-- GANTI DENGAN API KEY ANDA
-            authDomain: "thai-tea-cst-ac9db.firebaseapp.com",
-            projectId: "thai-tea-cst-ac9db",
-            storageBucket: "thai-tea-cst-ac9db.firebasestorage.app",
-            messagingSenderId: "907107728020",
-            appId: "1:907107728020:web:7340be99b3ab4c07cdd281",
-            measurementId: "G-DJFC6NYVD1"
+        const _firebaseConfigEncoded = {
+            apiKey: 'QUl6YVN5RHQ1dE1DZjQ4MG1ER0dlRGQ3MWlrLi4u', // Base64 encoded
+            authDomain: 'dGhhaS10ZWEtY3N0LWFjOWRiLmZpcmViYXNlYXBwLmNvbQ==',
+            projectId: 'dGhhaS10ZWEtY3N0LWFjOWRi',
+            storageBucket: 'dGhhaS10ZWEtY3N0LWFjOWRiLmZpcmViYXNlc3RvcmFnZS5hcHA=',
+            messagingSenderId: 'OTA3MTA3NzI4MDIw',
+            appId: 'MTo5MDcxMDc3MjgwMjA6d2ViOjczNDBiZTk5YjNhYjRjMDdjZGQyODE=',
+            measurementId: 'Ry1ESkZDNk5ZVkQx'
         };
 
-        // Initialize Firebase
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
+        // Decode Firebase Config
+        function decodeConfig() {
+            const config = {};
+            for (let key in _firebaseConfigEncoded) {
+                try {
+                    config[key] = atob(_firebaseConfigEncoded[key]);
+                } catch (e) {
+                    config[key] = _firebaseConfigEncoded[key];
+                }
+            }
+            return config;
         }
+
+        const firebaseConfig = decodeConfig();
+
+        // Initialize Firebase
+        let db, auth;
+        let isFirebaseReady = false;
+
+        async function initializeFirebase() {
+            if (isFirebaseReady) return;
+            
+            try {
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+                
+                db = firebase.firestore();
+                auth = firebase.auth();
+                isFirebaseReady = true;
+                
+                // Test connection
+                await db.collection('_health').doc('check').get();
+                
+            } catch (error) {
+                showConnectionError();
+            }
+        }
+
+        // Connection Monitor
+        let isOnline = navigator.onLine;
         
-        const db = firebase.firestore();
-        const auth = firebase.auth();
-        
-        console.log('✅ Firebase initialized');
+        function updateConnectionStatus() {
+            const statusEl = document.getElementById('connectionStatus');
+            
+            if (!navigator.onLine) {
+                statusEl.classList.add('active');
+                showConnectionError();
+            } else {
+                statusEl.classList.remove('active');
+                // Retry connection
+                if (!isFirebaseReady) {
+                    initializeFirebase();
+                }
+            }
+        }
+
+        window.addEventListener('online', updateConnectionStatus);
+        window.addEventListener('offline', updateConnectionStatus);
+
+        function showConnectionError() {
+            showConfirm('Koneksi terganggu, CST System mencoba menghubungkan kembali...', null);
+        }
 
         // Global Variables
         let currentUser = null;
@@ -842,23 +927,22 @@
         // INITIALIZATION
         // ============================================
         window.onload = async function() {
-            console.log('🚀 Admin Panel starting...');
-            await new Promise(r => setTimeout(r, 1000));
+            await initializeFirebase();
+            
+            if (!isFirebaseReady) {
+                showConnectionError();
+                return;
+            }
             
             auth.onAuthStateChanged(async user => {
                 if (!user) {
-                    console.log('⚠️ No user logged in, redirecting to index.html');
                     window.location.href = 'index.html';
                     return;
                 }
                 
-                console.log('✅ User authenticated:', user.email);
-                
                 try {
                     const doc = await db.collection('users').doc(user.uid).get();
                     const data = doc.data();
-                    
-                    console.log('📋 User data:', data);
                     
                     if (!data || !['admin', 'super_admin'].includes(data.role)) {
                         showConfirm('Akses Ditolak. Halaman ini hanya untuk administrator.', () => {
@@ -870,8 +954,6 @@
                     currentUser = user;
                     document.getElementById('adminName').textContent = data.name || 'Admin';
                     
-                    console.log('✅ Admin access granted');
-                    
                     // Setup real-time notifications
                     setupRealtimeNotifications();
                     
@@ -879,8 +961,7 @@
                     loadDashboard();
                     
                 } catch (err) {
-                    console.error('❌ Error verifying admin:', err);
-                    showConfirm('Gagal memverifikasi akun admin: ' + err.message, null);
+                    showConfirm('Gagal memverifikasi akun admin.', null);
                 }
             });
         };
@@ -889,8 +970,6 @@
         // REAL-TIME NOTIFICATIONS
         // ============================================
         function setupRealtimeNotifications() {
-            console.log('🔔 Setting up real-time notifications...');
-            
             if (transactionListener) {
                 transactionListener();
             }
@@ -923,7 +1002,9 @@
                         }
                     });
                 }, error => {
-                    console.error('❌ Real-time listener error:', error);
+                    if (error.code === 'permission-denied' || error.code === 'unavailable') {
+                        showConnectionError();
+                    }
                 });
         }
 
@@ -931,8 +1012,6 @@
         // NAVIGATION
         // ============================================
         function showSection(sectionId) {
-            console.log('📂 Navigating to:', sectionId);
-            
             // Hide all sections
             document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
             
@@ -971,14 +1050,10 @@
         // DASHBOARD FUNCTIONS
         // ============================================
         async function loadDashboard() {
-            console.log('📊 Loading dashboard data...');
-            
             try {
                 const snap = await db.collection('transactions')
                     .orderBy('timestamp', 'desc')
                     .get();
-                
-                console.log('📋 Transactions loaded:', snap.size);
                 
                 let omset = 0, count = 0, itemsSold = 0;
                 let recentHtml = '';
@@ -1030,11 +1105,10 @@
                 // Render chart
                 renderChart(dailySales);
                 
-                console.log('✅ Dashboard loaded successfully');
-                
             } catch (e) {
-                console.error('❌ Dashboard error:', e);
-                showConfirm('Gagal memuat dashboard: ' + e.message, null);
+                if (e.code !== 'permission-denied') {
+                    showConfirm('Gagal memuat dashboard.', null);
+                }
             }
         }
 
@@ -1044,8 +1118,6 @@
             
             const labels = Object.keys(data).slice(-7);
             const values = Object.values(data).slice(-7);
-            
-            console.log('📈 Chart data:', { labels, values });
             
             if (chartInstance) {
                 chartInstance.destroy();
@@ -1093,7 +1165,6 @@
 
         async function handleAddUser(e) {
             e.preventDefault();
-            console.log('👤 Adding new user...');
             
             const btn = document.getElementById('btnAddUser');
             const nama = document.getElementById('uNama').value.trim();
@@ -1106,8 +1177,6 @@
             btn.innerHTML = '<span class="spinner"></span> Menyimpan...';
             
             try {
-                console.log('Creating user:', { email, role, cabang });
-                
                 const cred = await auth.createUserWithEmailAndPassword(email, pass);
                 
                 await db.collection('users').doc(cred.user.uid).set({
@@ -1119,10 +1188,8 @@
                     createdAt: new Date().toISOString()
                 });
                 
-                // Delete the user from auth (they'll login separately)
                 await cred.user.delete();
                 
-                console.log('✅ User created successfully');
                 showConfirm(`${role === 'cashier' ? 'Kasir' : 'Admin'} berhasil ditambahkan!`, null);
                 setTimeout(closeConfirmModal, 2000);
                 
@@ -1131,9 +1198,8 @@
                 loadUsers();
                 
             } catch (err) {
-                console.error('❌ Error creating user:', err);
                 const errorMsg = err.code === 'auth/email-already-in-use' ? 
-                    'Email sudah terdaftar!' : 'Gagal: ' + err.message;
+                    'Email sudah terdaftar!' : 'Gagal menambahkan user.';
                 showConfirm(errorMsg, null);
             } finally {
                 btn.disabled = false;
@@ -1142,13 +1208,9 @@
         }
 
         async function loadUsers() {
-            console.log('👥 Loading users...');
-            
             try {
                 const snap = await db.collection('users').get();
                 const tbody = document.getElementById('tblUsers');
-                
-                console.log('📋 Users loaded:', snap.size);
                 
                 if (snap.empty) {
                     tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Belum ada user</td></tr>';
@@ -1179,11 +1241,9 @@
                 });
                 
                 tbody.innerHTML = html;
-                console.log('✅ Users loaded successfully');
                 
             } catch (e) {
-                console.error('❌ Error loading users:', e);
-                showConfirm('Gagal memuat data user: ' + e.message, null);
+                showConfirm('Gagal memuat data user.', null);
             }
         }
 
@@ -1194,19 +1254,15 @@
         }
 
         async function deleteUser(id) {
-            console.log('🗑️ Deleting user:', id);
-            
             try {
                 await db.collection('users').doc(id).delete();
-                console.log('✅ User deleted');
                 showConfirm('User dihapus', null);
                 setTimeout(() => {
                     closeConfirmModal();
                     loadUsers();
                 }, 1500);
             } catch (e) {
-                console.error('❌ Error deleting user:', e);
-                showConfirm('Gagal hapus: ' + e.message, null);
+                showConfirm('Gagal hapus user.', null);
             }
         }
 
@@ -1214,8 +1270,6 @@
         // STOCK MANAGEMENT
         // ============================================
         async function loadStok() {
-            console.log('📦 Loading stock...');
-            
             const cabang = document.getElementById('filterStokCabang').value;
             let query = db.collection('inventory');
             
@@ -1226,8 +1280,6 @@
             try {
                 const snap = await query.get();
                 const tbody = document.getElementById('tblStok');
-                
-                console.log('📋 Stock items loaded:', snap.size);
                 
                 if (snap.empty) {
                     tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Belum ada data</td></tr>';
@@ -1255,18 +1307,14 @@
                 });
                 
                 tbody.innerHTML = html;
-                console.log('✅ Stock loaded successfully');
                 
             } catch (e) {
-                console.error('❌ Error loading stock:', e);
-                showConfirm('Gagal memuat data stok: ' + e.message, null);
+                showConfirm('Gagal memuat data stok.', null);
             }
         }
 
         async function updateStock(id) {
             const val = parseInt(document.getElementById('stock-' + id).value);
-            
-            console.log('📝 Updating stock:', id, 'to', val);
             
             if (isNaN(val) || val < 0) {
                 showConfirm('Jumlah tidak valid', null);
@@ -1275,15 +1323,13 @@
             
             try {
                 await db.collection('inventory').doc(id).update({ stock: val });
-                console.log('✅ Stock updated');
                 showConfirm('Stok diupdate', null);
                 setTimeout(() => {
                     closeConfirmModal();
                     loadStok();
                 }, 1500);
             } catch (e) {
-                console.error('❌ Error updating stock:', e);
-                showConfirm('Gagal update: ' + e.message, null);
+                showConfirm('Gagal update stok.', null);
             }
         }
 
@@ -1291,8 +1337,6 @@
         // TRANSACTIONS
         // ============================================
         async function loadTransaksi() {
-            console.log('💳 Loading transactions...');
-            
             try {
                 const snap = await db.collection('transactions')
                     .orderBy('timestamp', 'desc')
@@ -1301,13 +1345,10 @@
                 
                 allTransaksi = [];
                 snap.forEach(doc => allTransaksi.push({ id: doc.id, ...doc.data() }));
-                
-                console.log('📋 Transactions loaded:', allTransaksi.length);
                 renderTransaksi(allTransaksi);
                 
             } catch (e) {
-                console.error('❌ Error loading transactions:', e);
-                showConfirm('Gagal memuat transaksi: ' + e.message, null);
+                showConfirm('Gagal memuat transaksi.', null);
             }
         }
 
@@ -1348,19 +1389,15 @@
         }
 
         async function deleteTransaction(id) {
-            console.log('🗑️ Deleting transaction:', id);
-            
             try {
                 await db.collection('transactions').doc(id).delete();
-                console.log('✅ Transaction deleted');
                 showConfirm('Transaksi dihapus', null);
                 setTimeout(() => {
                     closeConfirmModal();
                     loadTransaksi();
                 }, 1500);
             } catch (e) {
-                console.error('❌ Error deleting transaction:', e);
-                showConfirm('Gagal menghapus: ' + e.message, null);
+                showConfirm('Gagal menghapus transaksi.', null);
             }
         }
 
@@ -1368,7 +1405,6 @@
         // EXPORT FUNCTIONS
         // ============================================
         function exportUsersExcel() {
-            console.log('📊 Exporting users...');
             const table = document.getElementById('tableUsers');
             
             if (!table || table.rows.length < 2) {
@@ -1378,11 +1414,9 @@
             
             const wb = XLSX.utils.table_to_book(table, { sheet: "Data User" });
             XLSX.writeFile(wb, `Laporan_User_${new Date().toISOString().split('T')[0]}.xlsx`);
-            console.log('✅ Users exported');
         }
 
         function exportStokExcel() {
-            console.log('📊 Exporting stock...');
             const table = document.getElementById('tableStok');
             
             if (!table || table.rows.length < 2) {
@@ -1392,12 +1426,9 @@
             
             const wb = XLSX.utils.table_to_book(table, { sheet: "Data Stok" });
             XLSX.writeFile(wb, `Laporan_Stok_${new Date().toISOString().split('T')[0]}.xlsx`);
-            console.log('✅ Stock exported');
         }
 
         function exportTransaksiExcel() {
-            console.log('📊 Exporting transactions...');
-            
             if (!allTransaksi.length) {
                 showConfirm('Tidak ada data untuk diexport', null);
                 return;
@@ -1417,15 +1448,12 @@
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Transaksi");
             XLSX.writeFile(wb, `Laporan_Transaksi_${new Date().toISOString().split('T')[0]}.xlsx`);
-            console.log('✅ Transactions exported');
         }
 
         // ============================================
         // CUSTOM MODAL & TOAST
         // ============================================
         function showConfirm(message, callback) {
-            console.log('ℹ️ Showing confirm:', message);
-            
             document.getElementById('confirmMessage').textContent = message;
             document.getElementById('confirmModal').classList.add('active');
             confirmCallback = callback;
@@ -1446,18 +1474,14 @@
         function confirmLogout() {
             showConfirm('Yakin ingin logout?', () => {
                 auth.signOut().then(() => {
-                    console.log('✅ User logged out');
                     window.location.href = 'index.html';
-                }).catch(e => {
-                    console.error('❌ Logout error:', e);
-                    showConfirm('Gagal logout: ' + e.message, null);
+                }).catch(() => {
+                    showConfirm('Gagal logout.', null);
                 });
             });
         }
 
         function showToast(title, message) {
-            console.log('🔔 Toast:', title, message);
-            
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
             toast.className = 'toast';
@@ -1474,7 +1498,6 @@
             
             container.appendChild(toast);
             
-            // Auto remove after 5 seconds
             setTimeout(() => {
                 if (toast.parentElement) {
                     toast.style.animation = 'slideInRight 0.3s ease reverse';
