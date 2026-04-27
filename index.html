@@ -3,37 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="description" content="CST SYSTEM - Kasir Thai Tea CST. Sistem kasir digital profesional.">
+    <meta name="description" content="CST SYSTEM - Kasir Thai Tea CST">
     <meta name="theme-color" content="#E67E22">
     <title>Kasir Thai Tea CST</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Firebase -->
-    <script defer src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script defer src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script defer src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     
-    <!-- SheetJS untuk Export Excel -->
-    <script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- SheetJS -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     
     <style>
         :root {
             --primary: #E67E22;
             --primary-dark: #D35400;
             --dark: #2C3E50;
-            --darker: #1a252f;
             --success: #27AE60;
             --danger: #E74C3C;
             --warning: #F39C12;
             --light: #ECF0F1;
-            --gray: #95a5a6;
+            --white: #ffffff;
         }
         
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            font-family: 'Poppins', sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
         
@@ -46,8 +46,8 @@
         /* Professional Header */
         .header {
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
-            padding: 15px 20px;
+            color: var(--white);
+            padding: 20px;
             position: sticky;
             top: 0;
             z-index: 100;
@@ -58,7 +58,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
         
         .brand {
@@ -68,9 +68,9 @@
         }
         
         .brand-logo {
-            width: 45px;
-            height: 45px;
-            background: white;
+            width: 50px;
+            height: 50px;
+            background: var(--white);
             border-radius: 50%;
             padding: 5px;
             display: flex;
@@ -85,16 +85,16 @@
         }
         
         .brand-text h1 {
-            font-size: 1.3rem;
+            font-size: 1.5rem;
             font-weight: 800;
-            color: white;
+            color: var(--white);
             letter-spacing: 0.5px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
         
         .brand-text p {
-            font-size: 0.75rem;
-            opacity: 0.9;
+            font-size: 0.8rem;
+            opacity: 0.95;
             font-weight: 500;
         }
         
@@ -105,12 +105,12 @@
         }
         
         .icon-btn {
-            width: 40px;
-            height: 40px;
+            width: 42px;
+            height: 42px;
             border-radius: 50%;
             background: rgba(255,255,255,0.2);
             border: none;
-            color: white;
+            color: var(--white);
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -126,12 +126,12 @@
         
         .notification-badge {
             position: absolute;
-            top: -2px;
-            right: -2px;
+            top: -3px;
+            right: -3px;
             background: var(--danger);
-            color: white;
-            width: 18px;
-            height: 18px;
+            color: var(--white);
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
             font-size: 0.7rem;
             font-weight: 700;
@@ -147,26 +147,33 @@
         
         @keyframes pulse {
             0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
+            50% { transform: scale(1.15); }
         }
         
         .user-info {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 0.85rem;
-            font-weight: 600;
+            gap: 10px;
+            background: rgba(255,255,255,0.15);
+            padding: 8px 15px;
+            border-radius: 25px;
         }
         
         .user-avatar {
-            width: 32px;
-            height: 32px;
+            width: 35px;
+            height: 35px;
             background: rgba(255,255,255,0.3);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
+            font-size: 0.9rem;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            font-size: 0.9rem;
         }
         
         /* Main Content */
@@ -175,7 +182,7 @@
         }
         
         .section-title {
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             font-weight: 700;
             color: var(--dark);
             margin-bottom: 15px;
@@ -192,7 +199,7 @@
         .category-filter {
             display: flex;
             gap: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             overflow-x: auto;
             padding-bottom: 5px;
             -webkit-overflow-scrolling: touch;
@@ -203,8 +210,8 @@
         }
         
         .cat-btn {
-            padding: 10px 20px;
-            background: white;
+            padding: 12px 24px;
+            background: var(--white);
             border: 2px solid var(--light);
             border-radius: 25px;
             cursor: pointer;
@@ -216,11 +223,37 @@
         
         .cat-btn.active {
             background: var(--primary);
-            color: white;
+            color: var(--white);
             border-color: var(--primary);
         }
         
-        /* Products Grid - 2 Columns for Mobile */
+        /* Loading State */
+        .loading-container {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--light);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            color: var(--gray);
+            font-size: 0.95rem;
+        }
+        
+        /* Products Grid */
         .products-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -241,7 +274,7 @@
         }
         
         .product-card {
-            background: white;
+            background: var(--white);
             border-radius: 12px;
             overflow: hidden;
             box-shadow: 0 2px 10px rgba(0,0,0,0.08);
@@ -254,7 +287,7 @@
         
         .product-img {
             width: 100%;
-            height: 130px;
+            height: 140px;
             object-fit: cover;
             background: #f8f9fa;
         }
@@ -275,14 +308,14 @@
             color: var(--primary);
             font-weight: 800;
             font-size: 1.05rem;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
         
         .add-btn {
             width: 100%;
             padding: 10px;
             background: var(--primary);
-            color: white;
+            color: var(--white);
             border: none;
             border-radius: 8px;
             font-weight: 700;
@@ -297,12 +330,12 @@
         /* Floating Cart Button */
         .floating-cart {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
+            bottom: 25px;
+            right: 25px;
             background: var(--success);
-            color: white;
-            width: 65px;
-            height: 65px;
+            color: var(--white);
+            width: 70px;
+            height: 70px;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -312,7 +345,7 @@
             z-index: 90;
             transition: 0.3s;
             border: none;
-            font-size: 1.8rem;
+            font-size: 2rem;
         }
         
         .floating-cart:active {
@@ -324,14 +357,14 @@
             top: -5px;
             right: -5px;
             background: var(--danger);
-            color: white;
-            width: 24px;
-            height: 24px;
+            color: var(--white);
+            width: 26px;
+            height: 26px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             font-weight: 700;
         }
         
@@ -355,7 +388,7 @@
         }
         
         .modal-content {
-            background: white;
+            background: var(--white);
             width: 100%;
             max-height: 85vh;
             border-radius: 20px 20px 0 0;
@@ -370,7 +403,7 @@
         
         .modal-header {
             background: var(--primary);
-            color: white;
+            color: var(--white);
             padding: 20px;
             display: flex;
             justify-content: space-between;
@@ -385,7 +418,7 @@
         .modal-close {
             background: rgba(255,255,255,0.2);
             border: none;
-            color: white;
+            color: var(--white);
             width: 35px;
             height: 35px;
             border-radius: 50%;
@@ -401,12 +434,17 @@
         
         /* Online Orders Panel */
         .online-orders-panel {
-            background: white;
+            background: var(--white);
             border-radius: 12px;
             padding: 15px;
             margin-bottom: 20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.08);
             border-left: 4px solid var(--warning);
+            display: none;
+        }
+        
+        .online-orders-panel.active {
+            display: block;
         }
         
         .online-order-header {
@@ -430,7 +468,7 @@
         
         .accept-btn {
             background: var(--success);
-            color: white;
+            color: var(--white);
             border: none;
             padding: 8px 16px;
             border-radius: 8px;
@@ -494,7 +532,7 @@
         }
         
         .custom-modal-content {
-            background: white;
+            background: var(--white);
             padding: 30px;
             border-radius: 16px;
             width: 100%;
@@ -548,7 +586,7 @@
         
         .modal-btn-primary {
             background: var(--primary);
-            color: white;
+            color: var(--white);
         }
         
         .modal-btn-secondary {
@@ -637,7 +675,7 @@
             width: 100%;
             padding: 16px;
             background: var(--success);
-            color: white;
+            color: var(--white);
             border: none;
             border-radius: 10px;
             font-weight: 700;
@@ -654,38 +692,40 @@
         /* Responsive */
         @media (max-width: 768px) {
             .brand-text h1 {
-                font-size: 1.1rem;
+                font-size: 1.2rem;
             }
             
             .brand-logo {
-                width: 40px;
-                height: 40px;
+                width: 45px;
+                height: 45px;
             }
             
-            .icon-btn {
-                width: 36px;
-                height: 36px;
-            }
-            
-            .user-info span {
+            .user-name {
                 display: none;
             }
         }
         
-        /* Loading Spinner */
-        .spinner {
-            border: 3px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
-            border-top: 3px solid white;
-            width: 20px;
-            height: 20px;
-            animation: spin 1s linear infinite;
-            display: inline-block;
+        /* Error State */
+        .error-container {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--danger);
         }
         
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .error-container i {
+            font-size: 4rem;
+            margin-bottom: 15px;
+        }
+        
+        .retry-btn {
+            margin-top: 20px;
+            padding: 12px 30px;
+            background: var(--primary);
+            color: var(--white);
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -706,18 +746,18 @@
                 </div>
             </div>
             <div class="header-actions">
-                <button class="icon-btn" onclick="openNotifications()">
+                <button class="icon-btn" onclick="openNotifications()" title="Pesanan Online">
                     <i class="fas fa-bell"></i>
                     <span class="notification-badge" id="notifBadge">0</span>
                 </button>
-                <button class="icon-btn" onclick="openReport()">
+                <button class="icon-btn" onclick="openReport()" title="Laporan">
                     <i class="fas fa-chart-bar"></i>
                 </button>
             </div>
         </div>
         <div class="user-info">
             <div class="user-avatar" id="userAvatar">U</div>
-            <span id="userName">User</span>
+            <span class="user-name" id="userName">User</span>
         </div>
     </div>
 
@@ -735,8 +775,24 @@
             <button class="cat-btn" onclick="filterCategory('topping')">Topping</button>
         </div>
         
-        <!-- Online Orders Panel (Hidden by default) -->
-        <div class="online-orders-panel" id="onlineOrdersPanel" style="display: none;">
+        <!-- Loading State -->
+        <div class="loading-container" id="loadingContainer">
+            <div class="loading-spinner"></div>
+            <p class="loading-text">Memuat Menu...</p>
+        </div>
+        
+        <!-- Error State -->
+        <div class="error-container" id="errorContainer" style="display: none;">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h3>Gagal Memuat Data</h3>
+            <p>Terjadi kesalahan saat mengambil data produk</p>
+            <button class="retry-btn" onclick="loadProducts()">
+                <i class="fas fa-redo"></i> Coba Lagi
+            </button>
+        </div>
+        
+        <!-- Online Orders Panel -->
+        <div class="online-orders-panel" id="onlineOrdersPanel">
             <div class="online-order-header">
                 <div class="online-order-title">
                     <i class="fas fa-shopping-bag"></i>
@@ -746,19 +802,13 @@
                     <i class="fas fa-check"></i> Terima Pesanan
                 </button>
             </div>
-            <div class="customer-info" id="onlineCustomerInfo">
-                <!-- Will be filled dynamically -->
-            </div>
-            <div class="order-items" id="onlineOrderItems">
-                <!-- Will be filled dynamically -->
-            </div>
-            <div class="order-total" id="onlineOrderTotal">
-                Total: Rp 0
-            </div>
+            <div class="customer-info" id="onlineCustomerInfo"></div>
+            <div class="order-items" id="onlineOrderItems"></div>
+            <div class="order-total" id="onlineOrderTotal"></div>
         </div>
         
         <!-- Products Grid -->
-        <div class="products-grid" id="productsGrid">
+        <div class="products-grid" id="productsGrid" style="display: none;">
             <!-- Products will be loaded here -->
         </div>
     </div>
@@ -792,56 +842,52 @@
             <h2 class="modal-title-custom">CST SYSTEM</h2>
             <p class="modal-message" id="modalMessage">Pesan</p>
             <div class="modal-buttons">
-                <button class="modal-btn modal-btn-secondary" onclick="closeCustomModal()">Batal</button>
+                <button class="modal-btn modal-btn-secondary" onclick="closeCustomModal()">Tutup</button>
                 <button class="modal-btn modal-btn-primary" id="modalConfirmBtn">Ya</button>
             </div>
         </div>
     </div>
 
     <script>
-        // Firebase Configuration (Obfuscated)
-        const _firebaseConfigEncoded = {
-            apiKey: 'QUl6YVN5RHQ1dE1DZjQ4MG1ER0dlRGQ3MWlrLi4u',
-            authDomain: 'dGhhaS10ZWEtY3N0LWFjOWRiLmZpcmViYXNlYXBwLmNvbQ==',
-            projectId: 'dGhhaS10ZWEtY3N0LWFjOWRi',
-            storageBucket: 'dGhhaS10ZWEtY3N0LWFjOWRiLmZpcmViYXNlc3RvcmFnZS5hcHA=',
-            messagingSenderId: 'OTA3MTA3NzI4MDIw',
-            appId: 'MTo5MDcxMDc3MjgwMjA6d2ViOjczNDBiZTk5YjNhYjRjMDdjZGQyODE='
+        // ============================================
+        // FIREBASE CONFIGURATION
+        // ============================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyAWuzMWsOycxq0gjNm5rP3hDVOKuYuKLvA",  // <-- GANTI DENGAN API KEY ANDA
+            authDomain: "thai-tea-cst-ac9db.firebaseapp.com",
+            projectId: "thai-tea-cst-ac9db",
+            storageBucket: "thai-tea-cst-ac9db.firebasestorage.app",
+            messagingSenderId: "907107728020",
+            appId: "1:907107728020:web:7340be99b3ab4c07cdd281",
+            measurementId: "G-DJFC6NYVD1"
         };
 
-        function decodeConfig() {
-            const config = {};
-            for (let key in _firebaseConfigEncoded) {
-                try {
-                    config[key] = atob(_firebaseConfigEncoded[key]);
-                } catch (e) {
-                    config[key] = _firebaseConfigEncoded[key];
-                }
-            }
-            return config;
-        }
-
-        const firebaseConfig = decodeConfig();
-        
         // Initialize Firebase
-        let db, auth;
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
-        db = firebase.firestore();
-        auth = firebase.auth();
+        
+        const db = firebase.firestore();
+        const auth = firebase.auth();
 
         // Global Variables
         let cart = [];
         let currentUser = null;
         let currentBranch = null;
         let products = [];
-        let onlineOrders = [];
         let currentOnlineOrder = null;
         let confirmCallback = null;
         
-        const branchNames = { cabang_01: 'Sport Center Bandara Soetta', cabang_02: 'TOD M1, Benda' };
-        const formatRp = n => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n || 0);
+        const branchNames = { 
+            cabang_01: 'Sport Center Bandara Soetta', 
+            cabang_02: 'TOD M1, Benda' 
+        };
+        
+        const formatRp = n => new Intl.NumberFormat('id-ID', { 
+            style: 'currency', 
+            currency: 'IDR', 
+            minimumFractionDigits: 0 
+        }).format(n || 0);
         
         const defaultProducts = [
             { id: 'prem_thai', name: 'Premium Thai Tea', cat: 'premium', price: 20000, img: 'https://i.ibb.co.com/S44X01hn/Premium-Thai-Tea-with-Cream-Cheese-Shredded-Cheese.jpg' },
@@ -855,15 +901,20 @@
             { id: 'top_bubble', name: 'Bubble', cat: 'topping', price: 3000, img: 'https://i.ibb.co.com/d0DwHSr4/Extra-Topping-Bubble-Tapioca-Pearl.jpg' }
         ];
 
-        // Initialize
+        // ============================================
+        // INITIALIZATION
+        // ============================================
         window.onload = async function() {
-            await new Promise(r => setTimeout(r, 1000));
+            console.log('🚀 Kasir app starting...');
             
             auth.onAuthStateChanged(async user => {
                 if (!user) {
+                    console.log('⚠️ No user, redirecting...');
                     window.location.href = 'index.html';
                     return;
                 }
+                
+                console.log('✅ User authenticated:', user.email);
                 
                 try {
                     const doc = await db.collection('users').doc(user.uid).get();
@@ -881,6 +932,8 @@
                     document.getElementById('userName').textContent = data.name || 'Kasir';
                     document.getElementById('userAvatar').textContent = (data.name || 'K').charAt(0).toUpperCase();
                     
+                    console.log('✅ User data loaded, branch:', currentBranch);
+                    
                     // Load products
                     await loadProducts();
                     
@@ -888,35 +941,70 @@
                     listenForOnlineOrders();
                     
                 } catch (e) {
-                    showConfirm('Gagal memuat data: ' + e.message, null);
+                    console.error('❌ Error:', e);
+                    showError('Gagal memuat data: ' + e.message);
                 }
             });
         };
 
-        // Load Products
+        // ============================================
+        // LOAD PRODUCTS - FIXED
+        // ============================================
         async function loadProducts() {
+            console.log('📦 Loading products...');
+            
+            const loadingContainer = document.getElementById('loadingContainer');
+            const errorContainer = document.getElementById('errorContainer');
+            const productsGrid = document.getElementById('productsGrid');
+            
+            loadingContainer.style.display = 'block';
+            errorContainer.style.display = 'none';
+            productsGrid.style.display = 'none';
+            
             try {
                 const snap = await db.collection('products').get();
+                console.log('📊 Products snapshot:', snap.size, 'documents');
+                
                 if (!snap.empty) {
                     products = [];
-                    snap.forEach(doc => products.push({ id: doc.id, ...doc.data() }));
+                    snap.forEach(doc => {
+                        const data = { id: doc.id, ...doc.data() };
+                        console.log('✅ Loaded product:', data.name);
+                        products.push(data);
+                    });
                 } else {
+                    console.log('⚠️ No products in database, using defaults');
                     products = defaultProducts;
                 }
+                
+                loadingContainer.style.display = 'none';
+                productsGrid.style.display = 'grid';
                 renderProducts('all');
+                
             } catch (e) {
+                console.error('❌ Error loading products:', e);
+                loadingContainer.style.display = 'none';
+                errorContainer.style.display = 'block';
                 products = defaultProducts;
-                renderProducts('all');
             }
         }
 
         function renderProducts(category) {
+            console.log('🎨 Rendering products, category:', category);
+            
             const grid = document.getElementById('productsGrid');
             const filtered = category === 'all' ? products : products.filter(p => p.cat === category);
             
+            console.log('📋 Filtered products:', filtered.length);
+            
+            if (filtered.length === 0) {
+                grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #7f8c8d;">Tidak ada produk</div>';
+                return;
+            }
+            
             grid.innerHTML = filtered.map(p => `
                 <div class="product-card">
-                    <img src="${p.img}" alt="${p.name}" class="product-img" loading="lazy">
+                    <img src="${p.img}" alt="${p.name}" class="product-img" loading="lazy" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23f8f9fa%22 width=%22100%22 height=%22100%22/><text y=%22.9em%22 font-size=%2280%22 x=%2250%22 text-anchor=%22middle%22>🧋</text></svg>'">
                     <div class="product-info">
                         <div class="product-name">${p.name}</div>
                         <div class="product-price">${formatRp(p.price)}</div>
@@ -934,10 +1022,16 @@
             renderProducts(cat);
         }
 
-        // Cart Functions
+        // ============================================
+        // CART FUNCTIONS
+        // ============================================
         function addToCart(productId) {
+            console.log('🛒 Adding to cart:', productId);
             const product = products.find(p => p.id === productId);
-            if (!product) return;
+            if (!product) {
+                console.error('❌ Product not found');
+                return;
+            }
             
             const existing = cart.find(item => item.id === productId);
             if (existing) {
@@ -947,7 +1041,7 @@
             }
             
             updateCartUI();
-            showConfirm(`${product.name} ditambahkan ke keranjang`, null);
+            showConfirm(`${product.name} ditambahkan`, null);
             setTimeout(closeCustomModal, 1500);
         }
 
@@ -957,11 +1051,12 @@
         }
 
         function openCart() {
+            console.log('🛒 Opening cart, items:', cart.length);
             const modal = document.getElementById('cartModal');
             const body = document.getElementById('cartBody');
             
             if (cart.length === 0) {
-                body.innerHTML = '<p style="text-align: center; padding: 40px; color: #7f8c8d;">Keranjang kosong</p>';
+                body.innerHTML = '<p style="text-align: center; padding: 40px; color: #7f8c8d;"><i class="fas fa-shopping-cart" style="font-size: 3rem; opacity: 0.3; display: block; margin-bottom: 15px;"></i>Keranjang kosong</p>';
             } else {
                 body.innerHTML = cart.map((item, index) => `
                     <div class="cart-item">
@@ -973,6 +1068,7 @@
                                 <button class="qty-btn" onclick="decreaseQty(${index})"><i class="fas fa-minus"></i></button>
                                 <span class="qty-value">${item.qty}</span>
                                 <button class="qty-btn" onclick="increaseQty(${index})"><i class="fas fa-plus"></i></button>
+                                <button class="qty-btn" style="background: var(--danger); color: white; margin-left: auto;" onclick="removeFromCart(${index})"><i class="fas fa-trash"></i></button>
                             </div>
                         </div>
                     </div>
@@ -1012,13 +1108,22 @@
             updateCartUI();
         }
 
+        function removeFromCart(index) {
+            showConfirm('Hapus item ini?', () => {
+                cart.splice(index, 1);
+                openCart();
+                updateCartUI();
+            });
+        }
+
         async function checkout() {
             if (cart.length === 0) return;
+            
+            console.log('💳 Checkout, items:', cart.length);
             
             const total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
             
             try {
-                // Save to transactions
                 await db.collection('transactions').add({
                     items: cart,
                     total: total,
@@ -1029,6 +1134,7 @@
                     paymentMethod: 'cash'
                 });
                 
+                console.log('✅ Transaction saved');
                 showConfirm('Transaksi berhasil!', null);
                 setTimeout(() => {
                     closeCustomModal();
@@ -1038,12 +1144,17 @@
                 }, 2000);
                 
             } catch (e) {
-                showConfirm('Gagal menyimpan transaksi: ' + e.message, null);
+                console.error('❌ Checkout error:', e);
+                showConfirm('Gagal: ' + e.message, null);
             }
         }
 
-        // Online Orders Listener
+        // ============================================
+        // ONLINE ORDERS
+        // ============================================
         function listenForOnlineOrders() {
+            console.log('🔔 Listening for online orders...');
+            
             db.collection('orders')
                 .where('status', '==', 'pending')
                 .orderBy('createdAt', 'desc')
@@ -1053,15 +1164,21 @@
                         const order = snapshot.docs[0].data();
                         currentOnlineOrder = { id: snapshot.docs[0].id, ...order };
                         showOnlineOrder(currentOnlineOrder);
+                    } else {
+                        hideOnlineOrders();
                     }
+                }, error => {
+                    console.error('❌ Order listener error:', error);
                 });
         }
 
         function showOnlineOrder(order) {
+            console.log('📦 New online order:', order);
+            
             const panel = document.getElementById('onlineOrdersPanel');
             const badge = document.getElementById('notifBadge');
             
-            panel.style.display = 'block';
+            panel.classList.add('active');
             badge.textContent = '1';
             badge.classList.add('active');
             
@@ -1081,10 +1198,16 @@
             document.getElementById('onlineOrderTotal').textContent = `Total: ${formatRp(order.total)}`;
         }
 
+        function hideOnlineOrders() {
+            document.getElementById('onlineOrdersPanel').classList.remove('active');
+            document.getElementById('notifBadge').classList.remove('active');
+        }
+
         function acceptOnlineOrder() {
             if (!currentOnlineOrder) return;
             
-            // Add items to cart
+            console.log('✅ Accepting online order');
+            
             currentOnlineOrder.items.forEach(item => {
                 cart.push({
                     id: item.id,
@@ -1097,17 +1220,13 @@
             
             updateCartUI();
             
-            // Mark order as accepted
             db.collection('orders').doc(currentOnlineOrder.id).update({
                 status: 'accepted',
                 acceptedAt: new Date().toISOString()
             });
             
-            // Hide panel
-            document.getElementById('onlineOrdersPanel').style.display = 'none';
-            document.getElementById('notifBadge').classList.remove('active');
-            
-            showConfirm('Pesanan online diterima dan ditambahkan ke keranjang', null);
+            hideOnlineOrders();
+            showConfirm('Pesanan diterima & ditambahkan ke keranjang', null);
             setTimeout(closeCustomModal, 2000);
             
             currentOnlineOrder = null;
@@ -1117,7 +1236,7 @@
             if (currentOnlineOrder) {
                 document.getElementById('onlineOrdersPanel').scrollIntoView({ behavior: 'smooth' });
             } else {
-                showConfirm('Tidak ada notifikasi baru', null);
+                showConfirm('Tidak ada pesanan baru', null);
                 setTimeout(closeCustomModal, 2000);
             }
         }
@@ -1126,7 +1245,9 @@
             window.location.href = 'admin.html';
         }
 
-        // Custom Modal
+        // ============================================
+        // CUSTOM MODAL
+        // ============================================
         function showConfirm(message, callback) {
             document.getElementById('modalMessage').textContent = message;
             document.getElementById('customModal').classList.add('active');
@@ -1138,6 +1259,10 @@
                 }
                 closeCustomModal();
             };
+        }
+
+        function showError(message) {
+            showConfirm(message, null);
         }
 
         function closeCustomModal() {
