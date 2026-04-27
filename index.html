@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- Firebase SDK -->
+    <!-- Firebase SDK v8.10.1 -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -53,7 +53,7 @@
         .btn-link { background: transparent; color: var(--primary); margin-top: 15px; text-decoration: underline; cursor: pointer; }
         .error-message { background: #fadbd8; color: var(--danger); padding: 10px; border-radius: 8px; margin-bottom: 15px; display: none; font-size: 0.85rem; text-align: center; }
         
-        /* Header (Optimized Mobile) */
+        /* Header (Optimized Mobile & Desktop) */
         .header {
             background: var(--primary);
             color: white;
@@ -71,16 +71,18 @@
         .brand { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
         .brand-logo { width: 38px; height: 38px; background: white; border-radius: 50%; padding: 4px; flex-shrink: 0; }
         .brand-logo img { width: 100%; height: 100%; object-fit: contain; }
-        .brand-text h1 { font-size: 1.05rem; font-weight: 800; line-height: 1.2; margin: 0; white-space: nowrap; }
-        .brand-text p { font-size: 0.65rem; margin: 0; opacity: 0.9; }
+        .brand-text h1 { 
+            font-size: 1rem; /* Default size */
+            font-weight: 800; line-height: 1.2; margin: 0; white-space: nowrap; 
+        }
+        .brand-text p { font-size: 0.7rem; margin: 0; opacity: 0.9; }
         
         .header-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
         .action-btn {
             background: rgba(255,255,255,0.2); color: white; border: none;
-            padding: 7px 12px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: 600;
-            white-space: nowrap;
+            padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: 600;
+            white-space: nowrap; display: flex; align-items: center; gap: 5px;
         }
-        .action-btn:hover { background: rgba(255,255,255,0.3); }
         .user-avatar {
             width: 32px; height: 32px; background: rgba(255,255,255,0.3);
             border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem;
@@ -90,8 +92,10 @@
         @media (max-width: 480px) {
             .header { padding: 10px 12px; }
             .brand-logo { width: 34px; height: 34px; }
-            .brand-text h1 { font-size: 0.95rem; }
-            .action-btn { padding: 6px 10px; font-size: 0.75rem; }
+            .brand-text h1 { font-size: 0.9rem; } /* Smaller text on mobile */
+            .brand-text p { display: none; } /* Hide subtitle on small mobile */
+            .action-btn { padding: 6px 8px; font-size: 0.75rem; }
+            .action-btn span { display: none; } /* Hide text, show icon only on very small screens */
         }
         
         /* Content Layout */
@@ -153,7 +157,7 @@
         .modal-btn-secondary { background: var(--light); color: var(--dark); }
         .close-modal { position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 1.5rem; cursor: pointer; }
         
-        /* Report Table */
+        /* Report Table & Filter */
         .report-filter { display: flex; gap: 10px; margin-bottom: 15px; align-items: center; }
         .report-filter select { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9rem; }
         .report-table-container { overflow-x: auto; margin-bottom: 15px; max-height: 300px; }
@@ -199,9 +203,9 @@
                 </div>
             </div>
             <div class="header-actions">
-                <button class="action-btn" onclick="openReportModal()"><i class="fas fa-chart-bar"></i> Laporan</button>
+                <button class="action-btn" onclick="openReportModal()"><i class="fas fa-chart-bar"></i> <span>Laporan</span></button>
                 <div class="user-avatar" id="userAvatar">U</div>
-                <button class="action-btn" onclick="confirmLogout()" style="background:var(--danger);"><i class="fas fa-sign-out-alt"></i></button>
+                <button class="action-btn" onclick="confirmLogout()" style="background:var(--danger);"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></button>
             </div>
         </div>
 
@@ -243,6 +247,7 @@
             <button class="close-modal" onclick="closeReportModal()">&times;</button>
             <div class="modal-title"><i class="fas fa-chart-pie"></i> Laporan Penjualan</div>
             
+            <!-- Filter Cabang -->
             <div class="report-filter">
                 <select id="branchFilter" onchange="loadReports()">
                     <option value="all">Semua Cabang</option>
@@ -404,7 +409,7 @@
             const list = cat === 'all' ? products : products.filter(p => p.cat === cat);
             grid.innerHTML = list.map(p => `
                 <div class="product-card">
-                    <img src="${p.img}" class="product-img" loading="lazy" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23f8f9fa%22 width=%22100%22 height=%22100%22/><text y=%22.9em%22 font-size=%2280%22 x=%2250%22 text-anchor=%22middle%22>🧋</text></svg>'">
+                    <img src="${p.img}" class="product-img" loading="lazy" onerror="this.src='image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23f8f9fa%22 width=%22100%22 height=%22100%22/><text y=%22.9em%22 font-size=%2280%22 x=%2250%22 text-anchor=%22middle%22>🧋</text></svg>'">
                     <div class="product-info">
                         <div class="product-name">${p.name}</div>
                         <div class="product-price">${formatRp(p.price)}</div>
@@ -438,7 +443,7 @@
         function calcTotal() { const sub = cart.reduce((s, i) => s + (i.price * i.qty), 0); const disc = parseInt(document.getElementById('discount').value) || 0; document.getElementById('subtotal').textContent = formatRp(sub); document.getElementById('total').textContent = formatRp(Math.max(0, sub - disc)); }
 
         // ============================================
-        // CHECKOUT & PRINT (FIXED ALIGNMENT)
+        // CHECKOUT & PRINT (PERFECT ALIGNMENT)
         // ============================================
         async function checkout() {
             const name = document.getElementById('customerName').value.trim();
@@ -464,37 +469,87 @@
 
         function printStruk() {
             if (!lastTransaction) return;
+            
             const date = new Date();
             const dateStr = date.toLocaleDateString('id-ID') + ' ' + date.toLocaleTimeString('id-ID');
             
-            // Format fixed-width for thermal (32 chars wide)
-            let text = '       THAI TEA CST\n';
+            // --- FORMAT STRUK PROFESIONAL (32 Karakter Lebar) ---
+            let text = '';
+            text += '       THAI TEA CST\n';
             text += '--------------------------------\n';
-            text += `${lastTransaction.customerName}\n`;
+            text += `Pelanggan: ${lastTransaction.customerName}\n`;
             text += `${dateStr}\n`;
             text += '--------------------------------\n';
             
+            // Loop item dengan format: Nama (Rata Kiri) ... Harga (Rata Kanan)
             lastTransaction.items.forEach(item => {
-                const name = item.name.length > 18 ? item.name.substring(0, 15) + '...' : item.name;
+                const name = item.name;
                 const price = formatRp(item.price * item.qty);
-                const qtyLine = `${item.qty}x ${formatRp(item.price)}`;
-                // Align name left, price right
-                text += `${name.padEnd(18)}${price.padStart(12)}\n`;
-                text += `  ${qtyLine}\n\n`;
+                const qtyInfo = `${item.qty}x ${formatRp(item.price)}`;
+                
+                // PadEnd untuk nama (18 char), PadStart untuk harga (12 char)
+                // Ini membuat layout seperti struk Meatsmith Steakhouse
+                const line1 = name.padEnd(18, ' ') + price.padStart(12, ' ');
+                const line2 = '  ' + qtyInfo;
+                
+                text += line1 + '\n' + line2 + '\n';
             });
             
             text += '--------------------------------\n';
-            text += `TOTAL: ${formatRp(lastTransaction.total).padStart(30)}\n`;
+            // Format total juga rata kanan
+            text += `TOTAL: `.padEnd(22, ' ') + formatRp(lastTransaction.total).padStart(10, ' ') + '\n';
             text += '--------------------------------\n\n';
             text += 'Pesanan Kembali: +62 822-9999-7227\n';
             text += '   Terima Kasih!\n';
             
+            // Bersihkan karakter aneh (agar tidak error di printer)
             const cleanText = text.replace(/[^\x00-\x7F]/g, '').trim();
             const b64 = btoa(cleanText);
             
-            if (/Android/i.test(navigator.userAgent)) {
-                window.location.href = `rawbt:base64,${b64}`;
-                setTimeout(() => { if(!document.hidden) alert('Jika printer tidak merespon, pastikan aplikasi RawBT sudah terinstall.'); }, 2000);
+            // Deteksi HP vs PC
+            const isAndroid = /Android/i.test(navigator.userAgent);
+            
+            if (isAndroid) {
+                // --- PRINT RAWBT (HP) ---
+                try {
+                    // Skema rawbt:base64, (Paling Stabil)
+                    window.location.href = `rawbt:base64,${b64}`;
+                    
+                    setTimeout(() => { 
+                        if(!document.hidden) alert('Jika printer tidak merespon, pastikan aplikasi RawBT sudah terinstall.'); 
+                    }, 2000);
+                } catch(e) {
+                    alert('Gagal print: ' + e.message);
+                }
+            } else {
+                // --- PRINT PC (Browser Default) ---
+                const printWindow = window.open('', '_blank', 'width=400,height=600');
+                printWindow.document.write(`
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>Struk Pembayaran</title>
+                        <style>
+                            @media print {
+                                @page { margin: 0; size: 58mm auto; }
+                                body { margin: 0; padding: 5px; font-family: 'Courier New', monospace; font-size: 12px; }
+                            }
+                            body { 
+                                font-family: 'Courier New', monospace; 
+                                font-size: 12px;
+                                max-width: 300px;
+                                margin: 0 auto;
+                                padding: 10px;
+                                white-space: pre-wrap; /* Menjaga spasi agar lurus */
+                                word-wrap: break-word;
+                                line-height: 1.4;
+                            }
+                        </style>
+                    </head>
+                    <body>${cleanText}<script>window.onload=function(){window.print();setTimeout(()=>window.close(),1000);};<\/script></body>
+                    </html>
+                `);
+                printWindow.document.close();
             }
         }
 
@@ -503,7 +558,8 @@
         // ============================================
         function openReportModal() {
             document.getElementById('reportModal').classList.add('active');
-            document.getElementById('branchFilter').value = currentBranch; // Default to current branch
+            // Default filter ke cabang user saat ini
+            document.getElementById('branchFilter').value = currentBranch; 
             document.getElementById('reportLoading').style.display = 'block';
             document.getElementById('reportContent').style.display = 'none';
             loadReports();
