@@ -10,13 +10,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- Firebase SDK - MUST be loaded first -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    
-    <!-- SheetJS for Excel Export -->
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- Firebase SDK v8.10.1 Compatibility Mode -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     
     <style>
         :root {
@@ -39,63 +36,72 @@
         }
         
         body {
-            background: #f5f6fa;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding-bottom: 100px;
-        }
-        
-        /* Login Screen */
-        .login-box {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(44,62,80,0.95);
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 1000;
             padding: 20px;
         }
         
-        .login-content {
+        /* Login Container */
+        .login-container {
             background: white;
-            padding: 30px 25px;
-            border-radius: 16px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             width: 100%;
-            max-width: 400px;
+            max-width: 450px;
+            padding: 40px 30px;
+            animation: slideUp 0.5s ease;
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .login-header {
             text-align: center;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
         }
         
         .login-logo {
             width: 100px;
             height: auto;
             margin-bottom: 15px;
+            animation: bounce 2s infinite;
         }
         
-        .login-content h2 {
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .login-header h1 {
             color: var(--primary);
-            margin-bottom: 10px;
-            font-size: 1.8rem;
-            font-weight: 700;
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 5px;
+        }
+        
+        .login-header p {
+            color: #7f8c8d;
+            font-size: 0.95rem;
         }
         
         .form-group {
-            margin-bottom: 15px;
-            text-align: left;
+            margin-bottom: 20px;
         }
         
         .form-group label {
             display: block;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             font-weight: 600;
-            font-size: 0.9rem;
             color: var(--dark);
+            font-size: 0.9rem;
         }
         
-        .form-group input {
+        .form-group input, .form-group select {
             width: 100%;
             padding: 14px;
             border: 2px solid #e0e0e0;
@@ -104,9 +110,10 @@
             transition: 0.3s;
         }
         
-        .form-group input:focus {
+        .form-group input:focus, .form-group select:focus {
             border-color: var(--primary);
             outline: none;
+            box-shadow: 0 0 0 3px rgba(230,126,34,0.1);
         }
         
         .btn {
@@ -116,452 +123,65 @@
             cursor: pointer;
             font-weight: 600;
             font-size: 1rem;
-            margin-top: 10px;
-            width: 100%;
             transition: all 0.3s;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
+            width: 100%;
         }
         
         .btn:active { transform: scale(0.98); }
         .btn-primary { background: var(--primary); color: white; }
         .btn-primary:hover { background: var(--primary-dark); }
         .btn-success { background: var(--success); color: white; }
-        .btn-info { background: #3498DB; color: white; }
-        .btn-warning { background: var(--warning); color: white; }
-        .btn-danger { background: var(--danger); color: white; }
+        .btn-link { background: transparent; color: var(--primary); text-decoration: underline; margin-top: 15px; }
         
-        .error {
+        .error-message {
             background: #fadbd8;
             color: var(--danger);
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            display: none;
-            font-size: 0.9rem;
-            text-align: center;
-        }
-        
-        /* Header */
-        .header {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
-            padding: 20px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-        
-        .header-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        .brand-logo {
-            width: 50px;
-            height: 50px;
-            background: white;
-            border-radius: 50%;
-            padding: 5px;
-        }
-        
-        .brand-logo img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-        
-        .brand-text h1 {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: white;
-            letter-spacing: 0.5px;
-        }
-        
-        .brand-text p {
-            font-size: 0.8rem;
-            opacity: 0.95;
-        }
-        
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            background: rgba(255,255,255,0.3);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-        }
-        
-        .logout-btn {
-            background: var(--danger);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-        
-        /* Main Content - Mobile First */
-        .main-content {
-            padding: 20px;
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 20px;
-        }
-        
-        @media (min-width: 768px) {
-            .main-content {
-                grid-template-columns: 1fr 380px;
-            }
-        }
-        
-        .section-title {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: var(--dark);
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .section-title i {
-            color: var(--primary);
-        }
-        
-        /* Category Filter */
-        .category-filter {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            overflow-x: auto;
-            padding-bottom: 5px;
-        }
-        
-        .category-filter::-webkit-scrollbar {
-            display: none;
-        }
-        
-        .cat-btn {
-            padding: 10px 20px;
-            background: white;
-            border: 2px solid var(--light);
-            border-radius: 25px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.9rem;
-            white-space: nowrap;
-            transition: 0.3s;
-        }
-        
-        .cat-btn.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-        
-        /* Products Grid */
-        .products-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        
-        @media (min-width: 768px) {
-            .products-grid {
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
-        
-        .product-card {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-            transition: 0.3s;
-        }
-        
-        .product-card:active {
-            transform: scale(0.98);
-        }
-        
-        .product-img {
-            width: 100%;
-            height: 130px;
-            object-fit: cover;
-            background: #f8f9fa;
-        }
-        
-        .product-info {
-            padding: 12px;
-        }
-        
-        .product-name {
-            font-weight: 700;
-            color: var(--dark);
-            margin-bottom: 5px;
-            font-size: 0.9rem;
-        }
-        
-        .product-price {
-            color: var(--primary);
-            font-weight: 800;
-            font-size: 1.05rem;
-            margin-bottom: 10px;
-        }
-        
-        .add-btn {
-            width: 100%;
-            padding: 10px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-weight: 700;
-            cursor: pointer;
-        }
-        
-        .add-btn:active {
-            background: var(--primary-dark);
-        }
-        
-        /* Cart Section */
-        .cart-section {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            position: sticky;
-            top: 100px;
-        }
-        
-        .customer-input {
-            margin-bottom: 15px;
-            background: #fff5eb;
             padding: 15px;
             border-radius: 10px;
-            border: 2px solid var(--primary);
-        }
-        
-        .customer-input label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 700;
-            color: var(--primary-dark);
-            font-size: 0.95rem;
-        }
-        
-        .customer-input input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid var(--light);
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-        }
-        
-        .customer-input input:focus {
-            border-color: var(--primary);
-            outline: none;
-        }
-        
-        .cart-items {
-            max-height: 300px;
-            overflow-y: auto;
-            margin-bottom: 15px;
-        }
-        
-        .cart-item {
-            display: flex;
-            gap: 10px;
-            padding: 12px 0;
-            border-bottom: 1px solid var(--light);
-            align-items: center;
-        }
-        
-        .cart-item:last-child {
-            border-bottom: none;
-        }
-        
-        .cart-item-img {
-            width: 60px;
-            height: 60px;
-            border-radius: 8px;
-            object-fit: cover;
-        }
-        
-        .cart-item-info {
-            flex: 1;
-        }
-        
-        .cart-item-name {
-            font-weight: 700;
-            color: var(--dark);
-            margin-bottom: 5px;
+            margin-bottom: 20px;
+            display: none;
             font-size: 0.9rem;
-        }
-        
-        .cart-item-price {
-            color: var(--primary);
-            font-weight: 700;
-            font-size: 0.9rem;
-        }
-        
-        .cart-controls {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 8px;
-        }
-        
-        .qty-btn {
-            width: 30px;
-            height: 30px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            background: var(--light);
-            color: var(--dark);
-        }
-        
-        .qty-btn.minus {
-            background: var(--danger);
-            color: white;
-        }
-        
-        .qty-btn.plus {
-            background: var(--primary);
-            color: white;
-        }
-        
-        .qty-value {
-            font-weight: 700;
-            min-width: 30px;
             text-align: center;
+            border-left: 4px solid var(--danger);
         }
         
-        .cart-summary {
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 2px solid var(--light);
+        .error-message.show {
+            display: block;
+            animation: shake 0.5s;
         }
         
-        .summary-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            font-size: 1rem;
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
         }
         
-        .summary-total {
-            font-size: 1.4rem;
-            font-weight: 800;
-            color: var(--primary);
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 2px solid var(--light);
+        .divider {
+            margin: 20px 0;
+            text-align: center;
+            position: relative;
         }
         
-        .checkout-btn {
-            width: 100%;
-            padding: 16px;
-            background: var(--success);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-weight: 700;
-            font-size: 1.1rem;
-            cursor: pointer;
-            margin-top: 15px;
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #e0e0e0;
         }
         
-        .checkout-btn:active {
-            transform: scale(0.98);
-            background: #229954;
-        }
-        
-        .action-buttons {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 12px;
-        }
-        
-        /* Payment Method */
-        .payment-method {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
-            margin: 15px 0;
-        }
-        
-        .pay-btn {
-            padding: 12px 10px;
-            border: 2px solid var(--light);
+        .divider span {
             background: white;
-            border-radius: 10px;
-            cursor: pointer;
-            text-align: center;
-            transition: 0.3s;
-            font-size: 0.9rem;
-            font-weight: 600;
-        }
-        
-        .pay-btn.active {
-            border-color: var(--primary);
-            background: #fff5eb;
-            color: var(--primary);
-        }
-        
-        .pay-btn i {
-            display: block;
-            font-size: 1.5rem;
-            margin-bottom: 4px;
-        }
-        
-        /* Loading */
-        .loading {
-            text-align: center;
-            padding: 40px;
+            padding: 0 15px;
             color: #7f8c8d;
-        }
-        
-        .spinner {
-            border: 4px solid var(--light);
-            border-top: 4px solid var(--primary);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            font-size: 0.85rem;
+            position: relative;
         }
         
         /* Custom Modal */
@@ -589,9 +209,11 @@
             padding: 30px;
             border-radius: 16px;
             width: 100%;
-            max-width: 400px;
+            max-width: 450px;
             text-align: center;
             animation: modalSlide 0.3s ease;
+            max-height: 90vh;
+            overflow-y: auto;
         }
         
         @keyframes modalSlide {
@@ -623,6 +245,7 @@
             display: flex;
             gap: 10px;
             justify-content: center;
+            flex-wrap: wrap;
         }
         
         .modal-btn {
@@ -634,7 +257,7 @@
             font-size: 1rem;
             transition: 0.3s;
             flex: 1;
-            max-width: 150px;
+            min-width: 120px;
         }
         
         .modal-btn-primary {
@@ -655,268 +278,124 @@
             background: #d5dbdb;
         }
         
-        /* Report Modal */
-        .report-modal .modal-content {
-            max-width: 700px;
-            max-height: 85vh;
-            overflow-y: auto;
-            text-align: left;
-        }
-        
-        .report-modal .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid var(--light);
-        }
-        
-        .report-modal .modal-title {
-            text-align: left;
-            margin-bottom: 0;
-        }
-        
         .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
             background: none;
             border: none;
-            font-size: 2rem;
+            font-size: 1.5rem;
             cursor: pointer;
             color: #7f8c8d;
-            line-height: 1;
-            padding: 0 5px;
         }
         
-        .close-modal:active {
+        .close-modal:hover {
             color: var(--danger);
         }
         
-        .table-wrapper {
-            overflow-x: auto;
-            margin-top: 15px;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 500px;
-        }
-        
-        th, td {
-            padding: 10px;
-            text-align: left;
-            border-bottom: 1px solid var(--light);
-            font-size: 0.9rem;
-        }
-        
-        th {
-            background: var(--light);
-            font-weight: 600;
-            color: #666;
-            white-space: nowrap;
-        }
-        
-        tr:last-child td {
-            border-bottom: none;
+        /* Responsive */
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 30px 20px;
+            }
+            
+            .login-header h1 {
+                font-size: 1.5rem;
+            }
         }
     </style>
 </head>
 <body>
 
-    <!-- Login Screen -->
-    <div id="loginBox" class="login-box">
-        <div class="login-content">
+    <div class="login-container">
+        <div class="login-header">
             <img src="https://i.ibb.co.com/mC3npXRW/Gemini-Generated-Image-8aemtl8aemtl8aem-removebg-preview.png" 
                  alt="Thai Tea CST" 
                  class="login-logo">
-            <h2>THAI TEA CST</h2>
-            <p style="margin-bottom: 20px; color: #7f8c8d; font-size: 0.95rem;">Sistem Kasir Digital</p>
-            <div id="loginError" class="error"></div>
+            <h1>THAI TEA CST</h1>
+            <p>Sistem Kasir Digital</p>
+        </div>
+        
+        <div id="errorMessage" class="error-message"></div>
+        
+        <form id="loginForm" onsubmit="handleLogin(event)">
             <div class="form-group">
                 <label for="loginEmail"><i class="fas fa-envelope"></i> Email</label>
-                <input type="email" id="loginEmail" placeholder="kasir@thaiteacst.com" autocomplete="email">
+                <input type="email" id="loginEmail" required placeholder="kasir@thaiteacst.com" autocomplete="email">
             </div>
+            
             <div class="form-group">
                 <label for="loginPass"><i class="fas fa-lock"></i> Password</label>
-                <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password">
+                <input type="password" id="loginPass" required placeholder="••••••••" autocomplete="current-password">
             </div>
-            <button class="btn btn-primary" onclick="doLogin()">
+            
+            <button type="submit" class="btn btn-primary" id="loginBtn">
                 <i class="fas fa-sign-in-alt"></i> Masuk Sistem
             </button>
+        </form>
+        
+        <div class="divider">
+            <span>atau</span>
         </div>
+        
+        <button class="btn btn-link" onclick="openRegisterModal()">
+            <i class="fas fa-user-plus"></i> Daftar Kasir Baru
+        </button>
     </div>
 
-    <!-- Main App -->
-    <div id="app" style="display: none;">
-        <!-- Header -->
-        <div class="header">
-            <div class="header-top">
-                <div class="brand">
-                    <div class="brand-logo">
-                        <img src="https://i.ibb.co.com/mC3npXRW/Gemini-Generated-Image-8aemtl8aemtl8aem-removebg-preview.png" 
-                             alt="Thai Tea CST">
-                    </div>
-                    <div class="brand-text">
-                        <h1>THAI TEA CST</h1>
-                        <p>Point of Sale</p>
-                    </div>
-                </div>
-                <div class="user-info">
-                    <div class="user-avatar" id="userAvatar">U</div>
-                    <span id="userName" style="font-weight: 600; font-size: 0.9rem;">User</span>
-                    <button class="logout-btn" onclick="confirmLogout()">
-                        <i class="fas fa-sign-out-alt"></i> Logout
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Main Content -->
-        <div class="main-content">
-            <!-- Menu Section -->
-            <div class="menu-section">
-                <h2 class="section-title">
-                    <i class="fas fa-list"></i> Menu
-                </h2>
-                
-                <div class="category-filter">
-                    <button class="cat-btn active" onclick="filterCategory('all')">Semua</button>
-                    <button class="cat-btn" onclick="filterCategory('premium')">Premium</button>
-                    <button class="cat-btn" onclick="filterCategory('original')">Original</button>
-                    <button class="cat-btn" onclick="filterCategory('topping')">Topping</button>
-                </div>
-                
-                <div id="loadingContainer" class="loading">
-                    <div class="spinner"></div>
-                    <p>Memuat Menu...</p>
-                </div>
-                
-                <div class="products-grid" id="productsGrid" style="display: none;">
-                    <!-- Products will be loaded here -->
-                </div>
-            </div>
-
-            <!-- Cart Section -->
-            <div class="cart-section">
-                <h2 class="section-title">
-                    <i class="fas fa-shopping-cart"></i> Keranjang
-                </h2>
-                
-                <div class="customer-input">
-                    <label for="customerName"><i class="fas fa-user"></i> Nama Pembeli</label>
-                    <input type="text" id="customerName" placeholder="Masukkan nama pembeli (wajib)">
-                </div>
-                
-                <div class="cart-items" id="cartItems">
-                    <p style="text-align: center; color: #7f8c8d; padding: 40px 20px;">
-                        <i class="fas fa-shopping-basket" style="font-size: 3rem; opacity: 0.3; display: block; margin-bottom: 10px;"></i>
-                        Keranjang kosong
-                    </p>
-                </div>
-                
-                <div class="cart-summary">
-                    <div class="summary-row">
-                        <span>Subtotal</span>
-                        <span id="subtotal">Rp 0</span>
-                    </div>
-                    <div class="summary-row">
-                        <span>Diskon</span>
-                        <input type="number" id="discount" value="0" oninput="calcTotal()" placeholder="0" style="width: 100px; padding: 8px; border: 1px solid #ddd; border-radius: 6px; text-align: right; font-weight: 600;">
-                    </div>
-                    <div class="summary-total">
-                        <span>Total</span>
-                        <span id="total">Rp 0</span>
-                    </div>
-                    
-                    <div style="margin: 15px 0 10px;">
-                        <strong style="display: block; margin-bottom: 10px; color: var(--dark);">Pembayaran</strong>
-                        <div class="payment-method">
-                            <div class="pay-btn active" onclick="selectPay('cash', this)">
-                                <i class="fas fa-money-bill-wave" style="color: var(--success);"></i>
-                                Tunai
-                            </div>
-                            <div class="pay-btn" onclick="selectPay('qris', this)">
-                                <i class="fas fa-qrcode" style="color: #3498DB;"></i>
-                                QRIS
-                            </div>
-                            <div class="pay-btn" onclick="selectPay('transfer', this)">
-                                <i class="fas fa-university" style="color: #9B59B6;"></i>
-                                Transfer
-                            </div>
-                            <div class="pay-btn" onclick="selectPay('ewallet', this)">
-                                <i class="fas fa-wallet" style="color: var(--warning);"></i>
-                                E-Wallet
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <button class="checkout-btn" id="checkoutBtn" onclick="checkout()">
-                        <i class="fas fa-check-circle"></i> Bayar Sekarang
-                    </button>
-                    
-                    <div class="action-buttons" id="actionButtons" style="display:none;">
-                        <button class="btn btn-warning" onclick="resetCart()">
-                            <i class="fas fa-redo"></i> Pesanan Baru
-                        </button>
-                        <button class="btn btn-success" onclick="printStruk()">
-                            <i class="fas fa-print"></i> Cetak Struk
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Custom Confirm Modal -->
-    <div class="modal" id="confirmModal">
-        <div class="modal-content">
+    <!-- Custom Modal -->
+    <div class="modal" id="customModal">
+        <div class="modal-content" style="position: relative;">
+            <button class="close-modal" onclick="closeCustomModal()">&times;</button>
             <img src="https://i.ibb.co.com/mC3npXRW/Gemini-Generated-Image-8aemtl8aemtl8aem-removebg-preview.png" 
                  alt="CST SYSTEM" 
                  class="modal-logo">
             <h2 class="modal-title">CST SYSTEM</h2>
-            <p class="modal-message" id="confirmMessage">Apakah Anda yakin?</p>
+            <p class="modal-message" id="modalMessage">Pesan</p>
             <div class="modal-buttons">
-                <button class="modal-btn modal-btn-secondary" onclick="closeConfirmModal()">Batal</button>
-                <button class="modal-btn modal-btn-primary" id="confirmBtn">Ya</button>
+                <button class="modal-btn modal-btn-secondary" onclick="closeCustomModal()">Tutup</button>
+                <button class="modal-btn modal-btn-primary" id="modalConfirmBtn">Ya</button>
             </div>
         </div>
     </div>
 
-    <!-- Report Modal -->
-    <div class="modal report-modal" id="reportModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title"><i class="fas fa-chart-bar"></i> Laporan Transaksi</h2>
-                <button class="close-modal" onclick="closeReportModal()">&times;</button>
-            </div>
-            <div class="form-group">
-                <label>Filter Tanggal</label>
-                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <input type="date" id="reportDari" style="flex: 1; min-width: 120px; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px;">
-                    <input type="date" id="reportSampai" style="flex: 1; min-width: 120px; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px;">
-                    <button class="btn btn-primary" onclick="loadReport()" style="width: auto; margin: 0; padding: 10px 20px;">
-                        <i class="fas fa-filter"></i> Filter
-                    </button>
+    <!-- Register Modal -->
+    <div class="modal" id="registerModal">
+        <div class="modal-content" style="position: relative; max-height: 90vh; overflow-y: auto;">
+            <button class="close-modal" onclick="closeRegisterModal()">&times;</button>
+            <img src="https://i.ibb.co.com/mC3npXRW/Gemini-Generated-Image-8aemtl8aemtl8aem-removebg-preview.png" 
+                 alt="CST SYSTEM" 
+                 class="modal-logo">
+            <h2 class="modal-title">Daftar Kasir Baru</h2>
+            <form id="registerForm" onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label for="regName"><i class="fas fa-user"></i> Nama Lengkap</label>
+                    <input type="text" id="regName" required placeholder="Masukkan nama lengkap">
                 </div>
-            </div>
-            <div class="table-wrapper">
-                <table id="reportTable">
-                    <thead>
-                        <tr>
-                            <th>Waktu</th>
-                            <th>Kasir</th>
-                            <th>Item</th>
-                            <th>Total</th>
-                            <th>Metode</th>
-                        </tr>
-                    </thead>
-                    <tbody id="reportBody">
-                        <tr><td colspan="5" style="text-align:center; padding: 30px;">
-                            <div class="loading"><div class="spinner"></div>Memuat data...</div>
-                        </td></tr>
-                    </tbody>
-                </table>
-            </div>
+                
+                <div class="form-group">
+                    <label for="regEmail"><i class="fas fa-envelope"></i> Email</label>
+                    <input type="email" id="regEmail" required placeholder="email@contoh.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="regPass"><i class="fas fa-lock"></i> Password</label>
+                    <input type="password" id="regPass" required minlength="6" placeholder="Minimal 6 karakter">
+                </div>
+                
+                <div class="form-group">
+                    <label for="regBranch"><i class="fas fa-store"></i> Cabang</label>
+                    <select id="regBranch" required>
+                        <option value="">Pilih Cabang</option>
+                        <option value="cabang_01">Sport Center Bandara Soetta</option>
+                        <option value="cabang_02">TOD M1, Benda</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn btn-success" id="registerBtn">
+                    <i class="fas fa-user-plus"></i> Daftar Sekarang
+                </button>
+            </form>
         </div>
     </div>
 
@@ -925,7 +404,7 @@
         // FIREBASE CONFIGURATION
         // ============================================
         const firebaseConfig = {
-            apiKey: "AIzaSyAWuzMWsOycxq0gjNm5rP3hDVOKuYuKLvA",  // <-- GANTI DENGAN API KEY ANDA
+            apiKey: "AIzaSyDt5tMCf480mDGGeDd71ik...",  // <-- GANTI DENGAN API KEY ANDA
             authDomain: "thai-tea-cst-ac9db.firebaseapp.com",
             projectId: "thai-tea-cst-ac9db",
             storageBucket: "thai-tea-cst-ac9db.firebasestorage.app",
@@ -937,543 +416,244 @@
         // Initialize Firebase
         let db, auth;
         let isFirebaseReady = false;
+        let loginAttempts = 0;
+        let lastAttemptTime = 0;
         
         try {
-            if (!firebase.apps.length) {
-                firebase.initializeApp(firebaseConfig);
-            }
-            db = firebase.firestore();
+            firebase.initializeApp(firebaseConfig);
             auth = firebase.auth();
+            db = firebase.firestore();
             isFirebaseReady = true;
             console.log('✅ Firebase initialized');
         } catch (error) {
             console.error('❌ Firebase error:', error);
+            showError('Gagal menghubungkan ke database. Silakan refresh halaman.');
         }
 
-        // Global Variables
-        let cart = [];
-        let currentUser = null;
-        let currentBranch = null;
-        let products = [];
-        let selectedPayment = 'cash';
-        let lastTransaction = null;
-        let confirmCallback = null;
-        
-        const branchNames = { 
-            cabang_01: 'Sport Center Bandara Soetta', 
-            cabang_02: 'TOD M1, Benda' 
-        };
-        
-        const formatRp = n => new Intl.NumberFormat('id-ID', { 
-            style: 'currency', 
-            currency: 'IDR', 
-            minimumFractionDigits: 0 
-        }).format(n || 0);
-        
-        const defaultProducts = [
-            { id: 'prem_thai', name: 'Premium Thai Tea', cat: 'premium', price: 20000, img: 'https://i.ibb.co.com/S44X01hn/Premium-Thai-Tea-with-Cream-Cheese-Shredded-Cheese.jpg' },
-            { id: 'prem_matcha', name: 'Premium Matcha', cat: 'premium', price: 25000, img: 'https://i.ibb.co.com/XZ2k5y1T/Premium-Matcha-with-Cream-Cheese-Shredded-Cheese.jpg' },
-            { id: 'prem_choco', name: 'Premium Chocolate', cat: 'premium', price: 20000, img: 'https://i.ibb.co.com/ZzSGpkQB/Premium-Chocolate-with-Cream-Cheese-Shredded-Cheese.jpg' },
-            { id: 'orig_thai', name: 'Thai Tea', cat: 'original', price: 10000, img: 'https://i.ibb.co.com/N6jCd6sw/Thai-Tea-original.jpg' },
-            { id: 'orig_matcha', name: 'Matcha', cat: 'original', price: 10000, img: 'https://i.ibb.co.com/99Tb8ZjY/Matcha-original.jpg' },
-            { id: 'orig_choco', name: 'Chocolate', cat: 'original', price: 10000, img: 'https://i.ibb.co.com/bjzr6NNm/Chocolate-original.jpg' },
-            { id: 'top_cream', name: 'Cream Cheese', cat: 'topping', price: 3000, img: 'https://i.ibb.co.com/SXyM8m2L/Extra-Topping-Cream-Cheese.jpg' },
-            { id: 'top_cheese', name: 'Cheese Parut', cat: 'topping', price: 3000, img: 'https://i.ibb.co.com/gZv3pDvz/Extra-Topping-Cheese-Keju-Parut.jpg' },
-            { id: 'top_bubble', name: 'Bubble', cat: 'topping', price: 3000, img: 'https://i.ibb.co.com/d0DwHSr4/Extra-Topping-Bubble-Tapioca-Pearl.jpg' }
-        ];
+        // ============================================
+        // ERROR HANDLING
+        // ============================================
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.classList.add('show');
+            
+            setTimeout(() => {
+                errorDiv.classList.remove('show');
+            }, 8000);
+        }
+
+        function checkRateLimit() {
+            const now = Date.now();
+            const timeDiff = now - lastAttemptTime;
+            
+            if (loginAttempts >= 5 && timeDiff < 300000) { // 5 attempts in 5 minutes
+                const waitTime = Math.ceil((300000 - timeDiff) / 60000);
+                showCustomModal(
+                    'Terlalu Banyak Percobaan',
+                    `Akun Anda diblokir sementara karena terlalu banyak percobaan login. Silakan tunggu ${waitTime} menit sebelum mencoba lagi.`,
+                    null
+                );
+                return false;
+            }
+            
+            if (timeDiff > 300000) {
+                loginAttempts = 0;
+            }
+            
+            return true;
+        }
 
         // ============================================
-        // INITIALIZATION
+        // LOGIN FUNCTION
         // ============================================
-        window.onload = async function() {
-            if (!isFirebaseReady) {
-                showConfirm('Gagal menghubungkan ke database. Silakan refresh halaman.', null);
+        async function handleLogin(event) {
+            event.preventDefault();
+            
+            if (!checkRateLimit()) {
                 return;
             }
             
-            // Check if user already logged in
-            auth.onAuthStateChanged(async user => {
-                if (user) {
-                    try {
-                        const doc = await db.collection('users').doc(user.uid).get();
-                        const data = doc.data();
-                        
-                        if (!data || data.role !== 'cashier') {
-                            showConfirm('Akses ditolak. Halaman ini khusus kasir.', () => {
-                                auth.signOut();
-                                location.reload();
-                            });
-                            return;
-                        }
-                        
-                        currentUser = user;
-                        currentBranch = data.branchId;
-                        document.getElementById('userName').textContent = data.name || 'Kasir';
-                        document.getElementById('userAvatar').textContent = (data.name || 'K').charAt(0).toUpperCase();
-                        
-                        document.getElementById('loginBox').style.display = 'none';
-                        document.getElementById('app').style.display = 'block';
-                        
-                        await loadProducts();
-                        
-                    } catch (e) {
-                        console.error('Auth error:', e);
-                        showConfirm('Gagal memverifikasi akun: ' + e.message, () => {
-                            auth.signOut();
-                            location.reload();
-                        });
-                    }
-                }
-            });
-        };
-
-        // ============================================
-        // LOGIN & LOGOUT
-        // ============================================
-        async function doLogin() {
             const email = document.getElementById('loginEmail').value.trim();
-            const pass = document.getElementById('loginPass').value;
+            const password = document.getElementById('loginPass').value;
+            const loginBtn = document.getElementById('loginBtn');
             
-            if (!email || !pass) {
-                document.getElementById('loginError').textContent = 'Email dan password wajib diisi!';
-                document.getElementById('loginError').style.display = 'block';
-                return;
-            }
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
             
             try {
-                await auth.signInWithEmailAndPassword(email, pass);
-            } catch(e) {
-                document.getElementById('loginError').textContent = 'Login gagal: ' + e.message;
-                document.getElementById('loginError').style.display = 'block';
-            }
-        }
-
-        function confirmLogout() {
-            showConfirm('Yakin ingin logout?', () => {
-                auth.signOut().then(() => {
-                    location.reload();
-                }).catch(e => {
-                    showConfirm('Gagal logout: ' + e.message, null);
-                });
-            });
-        }
-
-        // ============================================
-        // LOAD PRODUCTS
-        // ============================================
-        async function loadProducts() {
-            const loadingContainer = document.getElementById('loadingContainer');
-            const productsGrid = document.getElementById('productsGrid');
-            
-            try {
-                const snap = await db.collection('products').get();
+                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                const user = userCredential.user;
                 
-                if (!snap.empty) {
-                    products = [];
-                    snap.forEach(doc => {
-                        products.push({ id: doc.id, ...doc.data() });
-                    });
-                } else {
-                    products = defaultProducts;
+                // Get user data from Firestore
+                const userDoc = await db.collection('users').doc(user.uid).get();
+                
+                if (!userDoc.exists) {
+                    throw new Error('Data user tidak ditemukan');
                 }
                 
-                loadingContainer.style.display = 'none';
-                productsGrid.style.display = 'grid';
-                renderProducts('all');
+                const userData = userDoc.data();
                 
-            } catch (e) {
-                console.error('Error loading products:', e);
-                products = defaultProducts;
-                loadingContainer.innerHTML = `
-                    <p style="color: var(--danger); margin-bottom: 15px;">
-                        <i class="fas fa-exclamation-triangle" style="font-size: 2rem; display: block; margin-bottom: 10px;"></i>
-                        Gagal memuat menu. Koneksi database bermasalah.
-                    </p>
-                    <button class="btn btn-primary" onclick="location.reload()">
-                        <i class="fas fa-redo"></i> Coba Lagi
-                    </button>
-                `;
-            }
-        }
-
-        function renderProducts(category) {
-            const grid = document.getElementById('productsGrid');
-            const filtered = category === 'all' ? products : products.filter(p => p.cat === category);
-            
-            grid.innerHTML = filtered.map(p => `
-                <div class="product-card">
-                    <img src="${p.img}" alt="${p.name}" class="product-img" loading="lazy" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23f8f9fa%22 width=%22100%22 height=%22100%22/><text y=%22.9em%22 font-size=%2280%22 x=%2250%22 text-anchor=%22middle%22>🧋</text></svg>'">
-                    <div class="product-info">
-                        <div class="product-name">${p.name}</div>
-                        <div class="product-price">${formatRp(p.price)}</div>
-                        <button class="add-btn" onclick="addToCart('${p.id}')">
-                            <i class="fas fa-cart-plus"></i> Tambah
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function filterCategory(cat) {
-            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
-            renderProducts(cat);
-        }
-
-        // ============================================
-        // CART FUNCTIONS
-        // ============================================
-        function addToCart(productId) {
-            const product = products.find(p => p.id === productId);
-            if (!product) return;
-            
-            const existing = cart.find(item => item.id === productId);
-            if (existing) {
-                existing.qty++;
-            } else {
-                cart.push({ ...product, qty: 1 });
-            }
-            
-            renderCart();
-            showConfirm(`${product.name} ditambahkan`, null);
-            setTimeout(closeConfirmModal, 1500);
-        }
-
-        function renderCart() {
-            const container = document.getElementById('cartItems');
-            
-            if (cart.length === 0) {
-                container.innerHTML = '<p style="text-align: center; color: #7f8c8d; padding: 40px 20px;"><i class="fas fa-shopping-basket" style="font-size: 3rem; opacity: 0.3; display: block; margin-bottom: 10px;"></i>Keranjang kosong</p>';
-                document.getElementById('checkoutBtn').disabled = true;
-                document.getElementById('actionButtons').style.display = 'none';
-                calcTotal();
-                return;
-            }
-            
-            container.innerHTML = cart.map((item, index) => `
-                <div class="cart-item">
-                    <img src="${item.img}" alt="${item.name}" class="cart-item-img">
-                    <div class="cart-item-info">
-                        <div class="cart-item-name">${item.name}</div>
-                        <div class="cart-item-price">${formatRp(item.price)}</div>
-                        <div class="cart-controls">
-                            <button class="qty-btn minus" onclick="decreaseQty(${index})"><i class="fas fa-minus"></i></button>
-                            <span class="qty-value">${item.qty}</span>
-                            <button class="qty-btn plus" onclick="increaseQty(${index})"><i class="fas fa-plus"></i></button>
-                            <button class="qty-btn" style="background: #95a5a6; color: white; margin-left: auto;" onclick="removeFromCart(${index})"><i class="fas fa-trash"></i></button>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-            
-            document.getElementById('checkoutBtn').disabled = false;
-            calcTotal();
-        }
-
-        function increaseQty(index) {
-            cart[index].qty++;
-            renderCart();
-        }
-
-        function decreaseQty(index) {
-            if (cart[index].qty > 1) {
-                cart[index].qty--;
-            } else {
-                removeFromCart(index);
-            }
-            renderCart();
-        }
-
-        function removeFromCart(index) {
-            showConfirm('Hapus item ini?', () => {
-                cart.splice(index, 1);
-                renderCart();
-            });
-        }
-
-        function resetCart() {
-            showConfirm('Reset keranjang untuk pesanan baru?', () => {
-                cart = [];
-                document.getElementById('discount').value = '0';
-                document.getElementById('customerName').value = '';
-                renderCart();
-                document.getElementById('actionButtons').style.display = 'none';
-            });
-        }
-
-        function calcTotal() {
-            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-            const discount = parseInt(document.getElementById('discount').value) || 0;
-            const total = Math.max(0, subtotal - discount);
-            
-            document.getElementById('subtotal').textContent = formatRp(subtotal);
-            document.getElementById('total').textContent = formatRp(total);
-        }
-
-        function selectPay(method, btn) {
-            selectedPayment = method;
-            document.querySelectorAll('.pay-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-        }
-
-        // ============================================
-        // CHECKOUT
-        // ============================================
-        async function checkout() {
-            if (cart.length === 0) return;
-            
-            const customerName = document.getElementById('customerName').value.trim();
-            if (!customerName) {
-                showConfirm('Mohon masukkan nama pembeli!', null);
-                setTimeout(closeConfirmModal, 2000);
-                return;
-            }
-            
-            const btn = document.getElementById('checkoutBtn');
-            const originalText = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
-            
-            try {
-                const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-                const discount = parseInt(document.getElementById('discount').value) || 0;
-                const total = Math.max(0, subtotal - discount);
+                // Check if user is cashier
+                if (userData.role !== 'cashier' && userData.role !== 'admin' && userData.role !== 'super_admin') {
+                    throw new Error('Akun ini bukan akun kasir');
+                }
                 
-                // Save to transactions
-                const transactionData = {
-                    items: cart,
-                    subtotal: subtotal,
-                    discount: discount,
-                    total: total,
-                    paymentMethod: selectedPayment,
-                    cashierId: currentUser.uid,
-                    cashierName: document.getElementById('userName').textContent,
-                    customerName: customerName,
-                    branchId: currentBranch,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                };
+                // Store user session
+                sessionStorage.setItem('currentUser', JSON.stringify({
+                    uid: user.uid,
+                    email: user.email,
+                    name: userData.name,
+                    role: userData.role,
+                    branchId: userData.branchId
+                }));
                 
-                const transactionRef = await db.collection('transactions').add(transactionData);
-                lastTransaction = { id: transactionRef.id, ...transactionData };
+                // Redirect to kasir page
+                window.location.href = 'kasir.html';
                 
-                showConfirm('✅ Transaksi berhasil!', null);
-                setTimeout(() => {
-                    closeConfirmModal();
-                    document.getElementById('actionButtons').style.display = 'grid';
-                    printStruk();
-                }, 1500);
+            } catch (error) {
+                loginAttempts++;
+                lastAttemptTime = Date.now();
                 
-            } catch (e) {
-                console.error('Checkout error:', e);
-                showConfirm('❌ Gagal: ' + e.message, null);
+                console.error('Login error:', error);
+                
+                let errorMessage = 'Login gagal. ';
+                
+                if (error.code === 'auth/too-many-requests') {
+                    errorMessage = 'Terlalu banyak percobaan login. Silakan tunggu beberapa menit sebelum mencoba lagi.';
+                } else if (error.code === 'auth/user-not-found') {
+                    errorMessage = 'Email tidak terdaftar.';
+                } else if (error.code === 'auth/wrong-password') {
+                    errorMessage = 'Password salah.';
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMessage = 'Format email tidak valid.';
+                } else {
+                    errorMessage += error.message;
+                }
+                
+                showError(errorMessage);
             } finally {
-                btn.disabled = false;
-                btn.innerHTML = originalText;
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Masuk Sistem';
             }
         }
 
         // ============================================
-        // PRINT STRUK - RAWBT (FIXED)
+        // REGISTER FUNCTION
         // ============================================
-        function printStruk() {
-            if (!lastTransaction) {
-                showConfirm('Tidak ada transaksi untuk dicetak', null);
-                return;
-            }
+        async function handleRegister(event) {
+            event.preventDefault();
             
-            const customerName = lastTransaction.customerName || 'Pelanggan';
-            const date = new Date();
-            const dateStr = date.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
-            const timeStr = date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-            const branch = branchNames[currentBranch] || currentBranch;
+            const name = document.getElementById('regName').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const password = document.getElementById('regPass').value;
+            const branchId = document.getElementById('regBranch').value;
+            const registerBtn = document.getElementById('registerBtn');
             
-            // Build receipt text
-            let receipt = '';
-            receipt += '       THAI TEA CST\n';
-            receipt += '--------------------------------\n';
-            receipt += `Pelanggan: ${customerName}\n`;
-            receipt += `${branch}\n`;
-            receipt += `${dateStr} ${timeStr}\n`;
-            receipt += '--------------------------------\n\n';
-            
-            lastTransaction.items.forEach(item => {
-                const itemName = item.name.padEnd(22, ' ');
-                const itemTotal = formatRp(item.price * item.qty).padStart(10, ' ');
-                receipt += `${itemName}${itemTotal}\n`;
-                receipt += `${item.qty} x ${formatRp(item.price)}\n\n`;
-            });
-            
-            receipt += '--------------------------------\n';
-            receipt += `Subtotal:       ${formatRp(lastTransaction.subtotal)}\n`;
-            if (lastTransaction.discount > 0) {
-                receipt += `Diskon:         -${formatRp(lastTransaction.discount)}\n`;
-            }
-            receipt += '--------------------------------\n';
-            receipt += `TOTAL:          ${formatRp(lastTransaction.total)}\n`;
-            receipt += `Pembayaran:     ${selectedPayment.toUpperCase()}\n`;
-            receipt += '--------------------------------\n\n';
-            receipt += 'WA: +62 822-9999-7227\n\n';
-            receipt += '      Terima Kasih!\n';
-            receipt += '   Selamat Menikmati!\n';
-            
-            // Clean text - remove non-ASCII
-            const cleanReceipt = receipt.replace(/[^\x00-\x7F]/g, '').trim();
-            
-            const isAndroid = /Android/i.test(navigator.userAgent);
-            
-            if (isAndroid) {
-                try {
-                    const encodedData = btoa(cleanReceipt);
-                    const intentUrl = "intent://base64," + encodedData + "#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;end;";
-                    
-                    window.location.href = intentUrl;
-                    
-                    setTimeout(() => {
-                        if (!document.hidden) {
-                            showConfirm('RawBT tidak terbuka. Install aplikasi RawBT Printer?', () => {
-                                window.open('https://play.google.com/store/apps/details?id=ru.a402d.rawbtprinter', '_blank');
-                            });
-                        }
-                    }, 2000);
-                    
-                } catch (e) {
-                    console.error('Print error:', e);
-                    showConfirm('Gagal mencetak. Pastikan aplikasi RawBT Printer sudah terinstall.', null);
-                }
-            } else {
-                // Desktop print
-                const printWindow = window.open('', '_blank', 'width=400,height=600');
-                printWindow.document.write(`
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <title>Struk Pembayaran</title>
-                        <style>
-                            @media print {
-                                @page { margin: 0; size: 58mm auto; }
-                                body { margin: 0; padding: 3px; font-family: 'Courier New', Courier, monospace; font-size: 10px; }
-                            }
-                            body { 
-                                font-family: 'Courier New', Courier, monospace; 
-                                font-size: 10px;
-                                max-width: 58mm;
-                                margin: 0 auto;
-                                padding: 5px;
-                                white-space: pre-wrap;
-                                word-wrap: break-word;
-                                line-height: 1.3;
-                            }
-                        </style>
-                    </head>
-                    <body>${cleanReceipt}<script>window.onload=function(){window.print();setTimeout(()=>window.close(),1000);};<\/script></body>
-                    </html>
-                `);
-                printWindow.document.close();
-            }
-        }
-
-        // ============================================
-        // REPORT (VIEW ONLY FOR CASHIER)
-        // ============================================
-        function openReportModal() {
-            document.getElementById('reportModal').classList.add('active');
-            
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('reportDari').value = today;
-            document.getElementById('reportSampai').value = today;
-            
-            loadReport();
-        }
-
-        function closeReportModal() {
-            document.getElementById('reportModal').classList.remove('active');
-        }
-
-        async function loadReport() {
-            const dari = document.getElementById('reportDari').value;
-            const sampai = document.getElementById('reportSampai').value;
-            
-            if (!dari || !sampai) {
-                showConfirm('Pilih tanggal dari dan sampai!', null);
-                return;
-            }
-            
-            const start = new Date(dari).getTime();
-            const end = new Date(sampai).getTime() + (24 * 60 * 60 * 1000);
+            registerBtn.disabled = true;
+            registerBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mendaftar...';
             
             try {
-                const snap = await db.collection('transactions')
-                    .where('branchId', '==', currentBranch)
-                    .orderBy('timestamp', 'desc')
-                    .get();
+                // Create user in Firebase Auth
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                const user = userCredential.user;
                 
-                const tbody = document.getElementById('reportBody');
-                
-                if (snap.empty) {
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 30px;">Tidak ada data</td></tr>';
-                    return;
-                }
-                
-                let html = '';
-                snap.forEach(doc => {
-                    const d = doc.data();
-                    if (!d.timestamp) return;
-                    
-                    const tTime = d.timestamp.seconds * 1000;
-                    if (tTime >= start && tTime <= end) {
-                        const timeStr = new Date(tTime).toLocaleString('id-ID', { 
-                            day: '2-digit', month: '2-digit', year: 'numeric',
-                            hour: '2-digit', minute: '2-digit'
-                        });
-                        
-                        html += `<tr>
-                            <td>${timeStr}</td>
-                            <td>${d.cashierName || '-'}</td>
-                            <td>${Array.isArray(d.items) ? d.items.map(i => i.name).join(', ') : '-'}</td>
-                            <td><b>${formatRp(d.total)}</b></td>
-                            <td><span style="padding:4px 10px; background:#e3f2fd; color:#1565c0; border-radius:12px; font-size:0.75rem; font-weight:600;">${d.paymentMethod}</span></td>
-                        </tr>`;
-                    }
+                // Save user data to Firestore
+                await db.collection('users').doc(user.uid).set({
+                    name: name,
+                    email: email,
+                    role: 'cashier',
+                    branchId: branchId,
+                    active: true,
+                    createdAt: new Date().toISOString()
                 });
                 
-                if (html === '') {
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 30px;">Tidak ada data</td></tr>';
+                // Delete the user from auth (admin will activate later)
+                await user.delete();
+                
+                showCustomModal(
+                    'Pendaftaran Berhasil',
+                    'Akun kasir berhasil dibuat. Silakan hubungi administrator untuk aktivasi akun.',
+                    () => {
+                        closeRegisterModal();
+                        document.getElementById('registerForm').reset();
+                    }
+                );
+                
+            } catch (error) {
+                console.error('Register error:', error);
+                
+                let errorMessage = 'Pendaftaran gagal. ';
+                
+                if (error.code === 'auth/email-already-in-use') {
+                    errorMessage = 'Email sudah terdaftar. Gunakan email lain.';
+                } else if (error.code === 'auth/weak-password') {
+                    errorMessage = 'Password terlalu lemah. Minimal 6 karakter.';
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMessage = 'Format email tidak valid.';
                 } else {
-                    tbody.innerHTML = html;
+                    errorMessage += error.message;
                 }
                 
-            } catch (e) {
-                console.error(e);
-                document.getElementById('reportBody').innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 30px; color: var(--danger);">Gagal memuat data</td></tr>';
+                showCustomModal('Error', errorMessage, null);
+            } finally {
+                registerBtn.disabled = false;
+                registerBtn.innerHTML = '<i class="fas fa-user-plus"></i> Daftar Sekarang';
             }
         }
 
         // ============================================
-        // CUSTOM MODAL
+        // MODAL FUNCTIONS
         // ============================================
-        function showConfirm(message, callback) {
-            document.getElementById('confirmMessage').textContent = message;
-            document.getElementById('confirmModal').classList.add('active');
-            confirmCallback = callback;
+        let modalCallback = null;
+
+        function showCustomModal(title, message, callback) {
+            document.querySelector('#customModal .modal-title').textContent = title;
+            document.getElementById('modalMessage').textContent = message;
+            document.getElementById('customModal').classList.add('active');
+            modalCallback = callback;
             
-            document.getElementById('confirmBtn').onclick = function() {
-                if (confirmCallback) {
-                    confirmCallback();
-                }
-                closeConfirmModal();
-            };
+            const confirmBtn = document.getElementById('modalConfirmBtn');
+            if (callback) {
+                confirmBtn.style.display = 'inline-flex';
+                confirmBtn.onclick = function() {
+                    callback();
+                    closeCustomModal();
+                };
+            } else {
+                confirmBtn.style.display = 'none';
+            }
         }
 
-        function closeConfirmModal() {
-            document.getElementById('confirmModal').classList.remove('active');
-            confirmCallback = null;
+        function closeCustomModal() {
+            document.getElementById('customModal').classList.remove('active');
+            modalCallback = null;
         }
 
+        function openRegisterModal() {
+            document.getElementById('registerModal').classList.add('active');
+        }
+
+        function closeRegisterModal() {
+            document.getElementById('registerModal').classList.remove('active');
+            document.getElementById('registerForm').reset();
+        }
+
+        // Close modal when clicking outside
         window.onclick = function(event) {
             if (event.target.classList.contains('modal')) {
                 event.target.classList.remove('active');
             }
         }
+
+        // Check if already logged in
+        window.onload = function() {
+            const savedUser = sessionStorage.getItem('currentUser');
+            if (savedUser && isFirebaseReady) {
+                // User already logged in, redirect to kasir
+                window.location.href = 'kasir.html';
+            }
+        };
     </script>
 </body>
 </html>
