@@ -991,7 +991,13 @@
             const savedUser = sessionStorage.getItem('currentUser');
             if (savedUser) {
                 const userData = JSON.parse(savedUser);
-                showKasirSection(userData);
+                // Validate user data
+                if (userData.uid && userData.branchId) {
+                    showKasirSection(userData);
+                } else {
+                    // Invalid session, clear it
+                    sessionStorage.removeItem('currentUser');
+                }
             }
             
             // Auth state observer
@@ -1016,15 +1022,18 @@
                     throw new Error('Akun ini bukan akun kasir');
                 }
                 
-                sessionStorage.setItem('currentUser', JSON.stringify({
+                // Store complete user data in session
+                const userDataToStore = {
                     uid: user.uid,
                     email: user.email,
                     name: userData.name,
                     role: userData.role,
                     branchId: userData.branchId
-                }));
+                };
                 
-                showKasirSection(userData);
+                sessionStorage.setItem('currentUser', JSON.stringify(userDataToStore));
+                
+                showKasirSection(userDataToStore);
                 
             } catch (error) {
                 console.error('Load user error:', error);
@@ -1036,7 +1045,21 @@
         }
 
         function showKasirSection(userData) {
-            currentUser = { uid: userData.uid, email: userData.email };
+            // Validate user data before showing kasir
+            if (!userData || !userData.uid || !userData.branchId) {
+                console.error('Invalid user data:', userData);
+                showCustomModal('Error', 'Data user tidak valid. Silakan login ulang.', () => {
+                    auth.signOut();
+                    location.reload();
+                });
+                return;
+            }
+            
+            currentUser = { 
+                uid: userData.uid, 
+                email: userData.email,
+                name: userData.name 
+            };
             currentBranch = userData.branchId;
             
             document.getElementById('loginSection').classList.remove('active');
@@ -1088,6 +1111,7 @@
             
             try {
                 await auth.signInWithEmailAndPassword(email, password);
+                // User data will be loaded by onAuthStateChanged
                 
             } catch (error) {
                 loginAttempts++;
@@ -1393,10 +1417,18 @@
         }
 
         // ============================================
-        // CHECKOUT
+        // CHECKOUT - FIXED
         // ============================================
         async function checkout() {
             if (cart.length === 0) return;
+            
+            // Validate user is logged in
+            if (!currentUser || !currentUser.uid) {
+                showCustomModal('Error', 'Session expired. Silakan login ulang.', () => {
+                    location.reload();
+                });
+                return;
+            }
             
             const customerName = document.getElementById('customerName').value.trim();
             if (!customerName) {
@@ -1415,18 +1447,28 @@
                 const discount = parseInt(document.getElementById('discount').value) || 0;
                 const total = Math.max(0, subtotal - discount);
                 
+                // Prepare transaction data with validated fields
                 const transactionData = {
                     items: cart,
                     subtotal: subtotal,
                     discount: discount,
                     total: total,
                     paymentMethod: selectedPayment,
-                    cashierId: currentUser.uid,
-                    cashierName: document.getElementById('userName').textContent,
+                    cashierId: currentUser.uid,  // This should never be undefined now
+                    cashierName: currentUser.name || document.getElementById('userName').textContent,
                     customerName: customerName,
-                    branchId: currentBranch,
+                    branchId: currentBranch || 'unknown',
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 };
+                
+                // Validate all required fields
+                if (!transactionData.cashierId) {
+                    throw new Error('Cashier ID tidak valid. Silakan login ulang.');
+                }
+                
+                if (!transactionData.branchId) {
+                    throw new Error('Branch ID tidak valid. Silakan login ulang.');
+                }
                 
                 const transactionRef = await db.collection('transactions').add(transactionData);
                 lastTransaction = { id: transactionRef.id, ...transactionData };
