@@ -5,11 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="description" content="CST SYSTEM - Kasir Thai Tea CST">
     <meta name="theme-color" content="#E67E22">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧋</text></svg>">
     <title>Kasir Thai Tea CST</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- Firebase -->
+    <!-- Firebase SDK - Loaded synchronously to ensure availability -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -862,13 +863,36 @@
             measurementId: "G-DJFC6NYVD1"
         };
 
-        // Initialize Firebase
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
+        // Global variables
+        let db, auth;
+        let isFirebaseInitialized = false;
+
+        // ============================================
+        // INITIALIZE FIREBASE
+        // ============================================
+        function initializeFirebase() {
+            try {
+                if (typeof firebase === 'undefined') {
+                    throw new Error('Firebase SDK belum dimuat. Silakan refresh halaman.');
+                }
+                
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+                
+                db = firebase.firestore();
+                auth = firebase.auth();
+                isFirebaseInitialized = true;
+                
+                console.log('✅ Firebase initialized successfully');
+                return true;
+                
+            } catch (error) {
+                console.error('❌ Firebase initialization error:', error);
+                showConfirm('Gagal menghubungkan ke database: ' + error.message, null);
+                return false;
+            }
         }
-        
-        const db = firebase.firestore();
-        const auth = firebase.auth();
 
         // Global Variables
         let cart = [];
@@ -902,10 +926,24 @@
         ];
 
         // ============================================
-        // INITIALIZATION
+        // INITIALIZATION - Wait for DOM and Firebase
         // ============================================
-        window.onload = async function() {
-            console.log('🚀 Kasir app starting...');
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 DOM Loaded, initializing...');
+            
+            // Initialize Firebase first
+            if (!initializeFirebase()) {
+                return;
+            }
+            
+            // Wait a moment for Firebase to be ready
+            setTimeout(() => {
+                startApp();
+            }, 500);
+        });
+
+        function startApp() {
+            console.log('🚀 Starting app...');
             
             auth.onAuthStateChanged(async user => {
                 if (!user) {
@@ -945,13 +983,18 @@
                     showError('Gagal memuat data: ' + e.message);
                 }
             });
-        };
+        }
 
         // ============================================
         // LOAD PRODUCTS - FIXED
         // ============================================
         async function loadProducts() {
             console.log('📦 Loading products...');
+            
+            if (!isFirebaseInitialized) {
+                showError('Database belum terhubung. Silakan refresh halaman.');
+                return;
+            }
             
             const loadingContainer = document.getElementById('loadingContainer');
             const errorContainer = document.getElementById('errorContainer');
@@ -1154,6 +1197,8 @@
         // ============================================
         function listenForOnlineOrders() {
             console.log('🔔 Listening for online orders...');
+            
+            if (!isFirebaseInitialized) return;
             
             db.collection('orders')
                 .where('status', '==', 'pending')
