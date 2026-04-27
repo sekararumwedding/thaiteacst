@@ -1177,7 +1177,7 @@
         let kembalian = 0;
         const isMobile = window.innerWidth <= 768;
 
-        const branchNames = { cabang_01: 'Soetta', cabang_02: 'TOD M1' };
+        const branchNames = { cabang_01: 'Sport Center Bandara Soetta', cabang_02: 'TOD M1, Benda' };
         const formatRp = n => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n || 0);
         
         const defaultProducts = [
@@ -1539,8 +1539,16 @@
             
             let strukText = '';
             
-            // === HEADER (Center) ===
+            // === HEADER (Center + Bold + Double Size via ESC/POS) ===
+            // ESC/POS commands: \x1B\x40 (initialize), \x1B\x21\x30 (double height/width), \x1B\x45\x01 (bold on)
+            strukText += '\x1B\x40'; // Initialize printer
+            strukText += '\x1B\x21\x30'; // Double height and width
+            strukText += '\x1B\x45\x01'; // Bold on
             strukText += center('THAI TEA CST') + '\n';
+            strukText += '\x1B\x21\x00'; // Normal size
+            strukText += '\x1B\x45\x00'; // Bold off
+            strukText += center(branchNames[currentBranch] || '') + '\n\n';
+            
             strukText += '--------------------------------\n';
             strukText += `Pelanggan: ${lastTransaction.customerName}\n`;
             strukText += `${dateStr} ${timeStr}\n`;
@@ -1568,28 +1576,42 @@
             // === FOOTER (Center - 3 baris terpisah) ===
             strukText += center('Pesanan Kembali:') + '\n';
             strukText += center('+62 822-9999-7227') + '\n';
-            strukText += center('TERIMA KASIH') + '\n';
+            strukText += center('TERIMA KASIH') + '\n\n';
+            strukText += '\x1B\x64\x02'; // Cut paper (if supported)
             
             // === PROSES CETAK ===
-            // Bersihkan karakter aneh (anti-â)
-            const cleanText = strukText.replace(/[^\x00-\x7F]/g, '').trim();
+            // Bersihkan karakter aneh (anti-â) - tapi pertahankan ESC/POS commands
+            const cleanText = strukText.replace(/[^\x00-\x7F\x1B]/g, (char) => {
+                // Keep ESC character (\x1B) and ASCII
+                return char;
+            }).trim();
+            
             const b64 = btoa(cleanText);
             
             if (/Android/i.test(navigator.userAgent)) {
                 // RawBT untuk Android
                 window.location.href = `rawbt:base64,${b64}`;
             } else {
-                // Print dialog untuk PC
+                // Print dialog untuk PC (tanpa ESC/POS untuk preview yang lebih baik)
+                const previewText = strukText.replace(/\x1B\[[0-9;]*[A-Za-z]/g, ''); // Remove ESC/POS commands
                 const printWindow = window.open('', '_blank', 'width=400,height=600');
                 printWindow.document.write(`
                     <!DOCTYPE html><html><head><title>Struk</title>
                     <style>@media print { @page { margin: 0; size: 58mm auto; } body { margin: 0; padding: 5px; font-family: 'Courier New', monospace; font-size: 12px; } }
                     body { font-family: 'Courier New', monospace; font-size: 12px; max-width: 300px; margin: 0 auto; padding: 10px; white-space: pre-wrap; word-wrap: break-word; line-height: 1.4; }
-                    </style></head><body>${cleanText}<script>window.onload=function(){window.print();setTimeout(()=>window.close(),1000);};<\/script></body></html>
+                    .bold { font-weight: bold; }
+                    .large { font-size: 18px; }
+                    .center { text-align: center; }
+                    </style></head><body>
+                    <div class="center"><span class="large bold">THAI TEA CST</span></div>
+                    <div class="center">${branchNames[currentBranch] || ''}</div><br>
+                    ${previewText.replace(/\n/g, '<br>')}
+                    <script>window.onload=function(){window.print();setTimeout(()=>window.close(),1000);};<\/script></body></html>
                 `);
                 printWindow.document.close();
             }
         }
+
         function openReportModal() {
             document.getElementById('reportModal').classList.add('active');
             document.getElementById('branchFilter').value = currentBranch;
