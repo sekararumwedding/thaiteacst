@@ -619,7 +619,7 @@
             if (!lastTransaction) return;
             const date = new Date();
             const text = 
-`       THAI TEA CST
+`          THAI TEA CST
 --------------------------------
 Pelanggan: ${lastTransaction.customerName}
 ${date.toLocaleDateString()} ${date.toLocaleTimeString()}
@@ -634,7 +634,8 @@ ${lastTransaction.items.map(item => {
 TOTAL:${formatRp(lastTransaction.total).padStart(26)}
 --------------------------------
 
-Pesanan Kembali: +62 822-9999-7227
+  Pesanan Kembali: 
++62 822-9999-7227
    Terima Kasih!`;
 
             const cleanText = text.replace(/[^\x00-\x7F]/g, '').trim();
