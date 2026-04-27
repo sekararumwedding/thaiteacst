@@ -32,6 +32,9 @@
             --info: #3498DB;
             --light: #ECF0F1;
             --sidebar-width: 260px;
+            /* Colors for Online Platforms */
+            --gofood-color: #00AA13;
+            --shopee-color: #EE4D2D;
         }
         
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
@@ -224,7 +227,7 @@
             margin-bottom: 25px;
         }
         
-        /* NEW: Modern Stats Grid */
+        /* Modern Stats Grid */
         .stats-grid-modern {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -507,6 +510,10 @@
         .badge-warning { background: #fff3cd; color: #856404; }
         .badge-pending { background: #fff8e1; color: #f57f17; }
         
+        /* New Badges for Online Platforms */
+        .badge-gofood { background: #e8f5e9; color: var(--gofood-color); border: 1px solid #c8e6c9; }
+        .badge-shopee { background: #fff3e0; color: var(--shopee-color); border: 1px solid #ffe0b2; }
+        
         .order-card {
             background: white;
             border-radius: 12px;
@@ -777,9 +784,13 @@
             <div class="menu-item" onclick="showSection('transaksi')">
                 <i class="fas fa-receipt"></i> <span>Transaksi</span>
             </div>
+            <!-- NEW MENU ITEM -->
+            <div class="menu-item" onclick="showSection('online-sales')">
+                <i class="fas fa-motorcycle"></i> <span>Penjualan Online</span>
+            </div>
             <div class="menu-item" onclick="showSection('online-orders')">
                 <i class="fas fa-shopping-bag notification-icon"></i> 
-                <span>Pesanan Online</span>
+                <span>Pesanan Masuk</span>
                 <span class="notification-badge" id="onlineOrderBadge">0</span>
             </div>
             <div class="menu-item" onclick="showSection('laporan')">
@@ -1096,11 +1107,76 @@
             </div>
         </div>
 
-        <!-- ONLINE ORDERS SECTION -->
+        <!-- PENJUALAN ONLINE SECTION (GoFood/Shopee) -->
+        <div id="sec-online-sales" class="section">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-motorcycle"></i> Input Penjualan Online (GoFood/ShopeeFood)</h2>
+                </div>
+                <form id="formOnlineSale" onsubmit="handleAddOnlineSale(event)">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Platform</label>
+                            <select id="osPlatform" required>
+                                <option value="GoFood">GoFood (Green)</option>
+                                <option value="ShopeeFood">ShopeeFood (Orange)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>No Order / Kode Booking</label>
+                            <input type="text" id="osOrderNo" required placeholder="Contoh: 1234567890">
+                        </div>
+                        <div class="form-group">
+                            <label>Nama Barang / Menu</label>
+                            <input type="text" id="osItem" required placeholder="Contoh: Thai Tea Boba">
+                        </div>
+                        <div class="form-group">
+                            <label>Harga (Rp)</label>
+                            <input type="number" id="osPrice" required placeholder="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Jam Order</label>
+                            <input type="datetime-local" id="osTime" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Simpan Penjualan
+                    </button>
+                </form>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-list-alt"></i> Riwayat Penjualan Online</h2>
+                    <button class="btn btn-info" onclick="exportOnlineSalesExcel()">
+                        <i class="fas fa-file-excel"></i> Export Excel
+                    </button>
+                </div>
+                <div class="table-wrapper">
+                    <table id="tableOnlineSales">
+                        <thead>
+                            <tr>
+                                <th>Waktu Order</th>
+                                <th>Platform</th>
+                                <th>No Order</th>
+                                <th>Item</th>
+                                <th>Harga</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tblOnlineSales">
+                            <tr><td colspan="6" style="text-align:center;"><div class="loading"><div class="spinner"></div>Memuat data...</div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ONLINE ORDERS SECTION (Customer Orders) -->
         <div id="sec-online-orders" class="section">
             <div class="card">
                 <div class="card-header">
-                    <h2><i class="fas fa-shopping-bag"></i> Pesanan Online Masuk</h2>
+                    <h2><i class="fas fa-shopping-bag"></i> Pesanan Masuk (Website)</h2>
                 </div>
                 <div id="onlineOrdersContainer">
                     <div class="loading"><div class="spinner"></div>Memuat pesanan...</div>
@@ -1122,7 +1198,7 @@
                     </button>
                     <button class="btn btn-info" onclick="exportTransaksiExcel()" style="padding: 20px;">
                         <i class="fas fa-receipt" style="font-size: 2rem; display: block; margin-bottom: 10px;"></i>
-                        Transaksi
+                        Transaksi Kasir
                     </button>
                     <button class="btn btn-primary" onclick="exportStokExcel()" style="padding: 20px;">
                         <i class="fas fa-box" style="font-size: 2rem; display: block; margin-bottom: 10px;"></i>
@@ -1131,6 +1207,10 @@
                     <button class="btn btn-warning" onclick="exportBahanBakuExcel()" style="padding: 20px;">
                         <i class="fas fa-boxes" style="font-size: 2rem; display: block; margin-bottom: 10px;"></i>
                         Bahan Baku
+                    </button>
+                    <button class="btn btn-info" onclick="exportOnlineSalesExcel()" style="padding: 20px;">
+                        <i class="fas fa-motorcycle" style="font-size: 2rem; display: block; margin-bottom: 10px;"></i>
+                        Penjualan Online
                     </button>
                 </div>
             </div>
@@ -1311,7 +1391,7 @@
             
             document.querySelectorAll('.menu-item').forEach((el, index) => {
                 el.classList.remove('active');
-                const sections = ['dashboard', 'users', 'inventory-bahan', 'stok', 'transaksi', 'online-orders', 'laporan'];
+                const sections = ['dashboard', 'users', 'inventory-bahan', 'stok', 'transaksi', 'online-sales', 'online-orders', 'laporan'];
                 if (sections[index] === sectionId) {
                     el.classList.add('active');
                 }
@@ -1323,7 +1403,8 @@
                 'inventory-bahan': 'Inventory Bahan Baku',
                 stok: 'Manajemen Stok',
                 transaksi: 'Transaksi',
-                'online-orders': 'Pesanan Online',
+                'online-sales': 'Penjualan Online',
+                'online-orders': 'Pesanan Masuk',
                 laporan: 'Laporan'
             };
             
@@ -1335,6 +1416,7 @@
             if (sectionId === 'inventory-bahan') loadBahanBaku();
             if (sectionId === 'stok') loadStok();
             if (sectionId === 'transaksi') loadTransaksi();
+            if (sectionId === 'online-sales') loadOnlineSales(); // NEW
             if (sectionId === 'online-orders') loadOnlineOrders();
         }
 
@@ -1457,11 +1539,11 @@
             
             chartInstance = new Chart(ctx, {
                 type: 'bar',
-                data: {
+                 {
                     labels: labels.length ? labels : ['Tidak ada data'],
                     datasets: [{
                         label: 'Omset',
-                        data: values.length ? values : [0],
+                         values.length ? values : [0],
                         backgroundColor: '#E67E22',
                         borderRadius: 6
                     }]
@@ -1914,6 +1996,114 @@
             } catch (e) {
                 showToast('Gagal menghapus: ' + e.message, 'error');
             }
+        }
+
+        // NEW: ONLINE SALES FUNCTIONS
+        async function handleAddOnlineSale(e) {
+            e.preventDefault();
+            
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+            btn.disabled = true;
+            
+            const sale = {
+                platform: document.getElementById('osPlatform').value,
+                orderNo: document.getElementById('osOrderNo').value.trim(),
+                item: document.getElementById('osItem').value.trim(),
+                price: parseInt(document.getElementById('osPrice').value) || 0,
+                timestamp: new Date(document.getElementById('osTime').value),
+                createdAt: new Date().toISOString()
+            };
+            
+            try {
+                await db.collection('online_sales').add(sale);
+                showToast('Penjualan online berhasil ditambahkan');
+                document.getElementById('formOnlineSale').reset();
+                loadOnlineSales();
+            } catch (err) {
+                showToast('Gagal menyimpan: ' + err.message, 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        async function loadOnlineSales() {
+            try {
+                const snap = await db.collection('online_sales').orderBy('timestamp', 'desc').get();
+                const tbody = document.getElementById('tblOnlineSales');
+                
+                if (snap.empty) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Belum ada data penjualan online</td></tr>';
+                    return;
+                }
+                
+                let html = '';
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    const timeStr = d.timestamp ? new Date(d.timestamp.toDate()).toLocaleString('id-ID') : '-';
+                    const badgeClass = d.platform === 'GoFood' ? 'badge-gofood' : 'badge-shopee';
+                    
+                    html += `<tr>
+                        <td><small>${timeStr}</small></td>
+                        <td><span class="badge ${badgeClass}">${d.platform}</span></td>
+                        <td>${d.orderNo}</td>
+                        <td>${d.item}</td>
+                        <td><b>${formatRp(d.price)}</b></td>
+                        <td>
+                            <button class="btn btn-sm btn-danger" onclick="confirmDeleteOnlineSale('${doc.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>`;
+                });
+                
+                tbody.innerHTML = html;
+                
+            } catch (e) {
+                console.error('Load online sales error:', e);
+                showToast('Gagal memuat data penjualan online', 'error');
+            }
+        }
+
+        function confirmDeleteOnlineSale(id) {
+            showConfirm('Hapus data penjualan ini?', () => {
+                deleteOnlineSale(id);
+            });
+        }
+
+        async function deleteOnlineSale(id) {
+            try {
+                await db.collection('online_sales').doc(id).delete();
+                showToast('Data penjualan dihapus');
+                loadOnlineSales();
+            } catch (e) {
+                showToast('Gagal menghapus: ' + e.message, 'error');
+            }
+        }
+
+        function exportOnlineSalesExcel() {
+            const data = [];
+            db.collection('online_sales').get().then(snap => {
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    const timeStr = d.timestamp ? new Date(d.timestamp.toDate()).toLocaleString('id-ID') : '-';
+                    data.push({
+                        'Waktu': timeStr,
+                        'Platform': d.platform,
+                        'No Order': d.orderNo,
+                        'Item': d.item,
+                        'Harga': d.price
+                    });
+                });
+                
+                const ws = XLSX.utils.json_to_sheet(data);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Penjualan Online");
+                XLSX.writeFile(wb, `Laporan_Online_Sales_${new Date().toISOString().split('T')[0]}.xlsx`);
+                showToast('File Excel berhasil diunduh');
+            });
         }
 
         async function loadOnlineOrders() {
