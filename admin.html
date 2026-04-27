@@ -1565,7 +1565,6 @@
                 }
             });
         }
-
         function renderTopProducts(productSales) {
             const list = document.getElementById('topProductsList');
             const sorted = Object.entries(productSales).sort((a,b) => b[1] - a[1]).slice(0, 5);
