@@ -5,12 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="description" content="CST SYSTEM - Kasir Thai Tea CST">
     <meta name="theme-color" content="#E67E22">
-    <link rel="icon" href="image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧋</text></svg>">
-    <title>Thai Tea CST - Kasir</title>
+    <title>Thai Tea CST - Kasir Digital</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- Firebase SDK v8.10.1 -->
+    <!-- Firebase SDK v8.10.1 Compatibility Mode -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -40,7 +39,6 @@
             min-height: 100vh;
         }
         
-        /* Sections */
         .section {
             display: none;
         }
@@ -143,7 +141,17 @@
         .btn-primary { background: var(--primary); color: white; }
         .btn-primary:hover { background: var(--primary-dark); }
         .btn-success { background: var(--success); color: white; }
-        .btn-link { background: transparent; color: var(--primary); text-decoration: underline; margin-top: 15px; border: none; cursor: pointer; font-size: 1rem; }
+        .btn-link { 
+            background: transparent; 
+            color: var(--primary); 
+            text-decoration: underline; 
+            margin-top: 15px; 
+            border: none; 
+            cursor: pointer; 
+            font-size: 1rem;
+            width: auto;
+            display: inline;
+        }
         
         .error-message {
             background: #fadbd8;
@@ -157,16 +165,7 @@
             border-left: 4px solid var(--danger);
         }
         
-        .error-message.show {
-            display: block;
-            animation: shake 0.5s;
-        }
-        
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-10px); }
-            75% { transform: translateX(10px); }
-        }
+        .error-message.show { display: block; }
         
         .divider {
             margin: 20px 0;
@@ -297,9 +296,7 @@
             gap: 10px;
         }
         
-        .section-title i {
-            color: var(--primary);
-        }
+        .section-title i { color: var(--primary); }
         
         .category-filter {
             display: flex;
@@ -309,9 +306,7 @@
             padding-bottom: 5px;
         }
         
-        .category-filter::-webkit-scrollbar {
-            display: none;
-        }
+        .category-filter::-webkit-scrollbar { display: none; }
         
         .cat-btn {
             padding: 10px 20px;
@@ -339,9 +334,7 @@
         }
         
         @media (min-width: 768px) {
-            .products-grid {
-                grid-template-columns: repeat(3, 1fr);
-            }
+            .products-grid { grid-template-columns: repeat(3, 1fr); }
         }
         
         .product-card {
@@ -352,9 +345,7 @@
             transition: 0.3s;
         }
         
-        .product-card:active {
-            transform: scale(0.98);
-        }
+        .product-card:active { transform: scale(0.98); }
         
         .product-img {
             width: 100%;
@@ -363,9 +354,7 @@
             background: #f8f9fa;
         }
         
-        .product-info {
-            padding: 12px;
-        }
+        .product-info { padding: 12px; }
         
         .product-name {
             font-weight: 700;
@@ -392,9 +381,7 @@
             cursor: pointer;
         }
         
-        .add-btn:active {
-            background: var(--primary-dark);
-        }
+        .add-btn:active { background: var(--primary-dark); }
         
         .cart-section {
             background: white;
@@ -449,9 +436,7 @@
             align-items: center;
         }
         
-        .cart-item:last-child {
-            border-bottom: none;
-        }
+        .cart-item:last-child { border-bottom: none; }
         
         .cart-item-img {
             width: 60px;
@@ -460,9 +445,7 @@
             object-fit: cover;
         }
         
-        .cart-item-info {
-            flex: 1;
-        }
+        .cart-item-info { flex: 1; }
         
         .cart-item-name {
             font-weight: 700;
@@ -605,9 +588,7 @@
             backdrop-filter: blur(4px);
         }
         
-        .modal.active {
-            display: flex;
-        }
+        .modal.active { display: flex; }
         
         .modal-content {
             background: white;
@@ -671,18 +652,14 @@
             color: white;
         }
         
-        .modal-btn-primary:hover {
-            background: var(--primary-dark);
-        }
+        .modal-btn-primary:hover { background: var(--primary-dark); }
         
         .modal-btn-secondary {
             background: var(--light);
             color: var(--dark);
         }
         
-        .modal-btn-secondary:hover {
-            background: #d5dbdb;
-        }
+        .modal-btn-secondary:hover { background: #d5dbdb; }
         
         .close-modal {
             position: absolute;
@@ -695,9 +672,7 @@
             color: #7f8c8d;
         }
         
-        .close-modal:hover {
-            color: var(--danger);
-        }
+        .close-modal:hover { color: var(--danger); }
         
         .loading {
             text-align: center;
@@ -837,7 +812,8 @@
                     </div>
                     <div class="summary-row">
                         <span>Diskon</span>
-                        <input type="number" id="discount" value="0" oninput="calcTotal()" placeholder="0" style="width: 100px; padding: 8px; border: 1px solid #ddd; border-radius: 6px; text-align: right; font-weight: 600;">
+                        <input type="number" id="discount" value="0" oninput="calcTotal()" placeholder="0" 
+                               style="width: 100px; padding: 8px; border: 1px solid #ddd; border-radius: 6px; text-align: right; font-weight: 600;">
                     </div>
                     <div class="summary-total">
                         <span>Total</span>
@@ -941,7 +917,7 @@
 
     <script>
         // ============================================
-        // FIREBASE CONFIGURATION
+        // FIREBASE CONFIGURATION - ISI DENGAN DATA ANDA
         // ============================================
         const firebaseConfig = {
             apiKey: "AIzaSyAWuzMWsOycxq0gjNm5rP3hDVOKuYuKLvA",  // <-- GANTI DENGAN API KEY ANDA
@@ -967,6 +943,7 @@
             console.log('✅ Firebase initialized');
         } catch (error) {
             console.error('❌ Firebase error:', error);
+            alert('Gagal menginisialisasi Firebase. Periksa konfigurasi API Key.');
         }
 
         // Global Variables
@@ -1020,7 +997,6 @@
             // Auth state observer
             auth.onAuthStateChanged(user => {
                 if (user) {
-                    // User is signed in
                     loadUserData(user);
                 }
             });
@@ -1036,12 +1012,10 @@
                 
                 const userData = userDoc.data();
                 
-                // Check if user is cashier or admin
                 if (userData.role !== 'cashier' && userData.role !== 'admin' && userData.role !== 'super_admin') {
                     throw new Error('Akun ini bukan akun kasir');
                 }
                 
-                // Store user session
                 sessionStorage.setItem('currentUser', JSON.stringify({
                     uid: user.uid,
                     email: user.email,
@@ -1081,7 +1055,7 @@
             const now = Date.now();
             const timeDiff = now - lastAttemptTime;
             
-            if (loginAttempts >= 5 && timeDiff < 300000) { // 5 attempts in 5 minutes
+            if (loginAttempts >= 5 && timeDiff < 300000) {
                 const waitTime = Math.ceil((300000 - timeDiff) / 60000);
                 showCustomModal(
                     'Terlalu Banyak Percobaan',
@@ -1114,7 +1088,6 @@
             
             try {
                 await auth.signInWithEmailAndPassword(email, password);
-                // User data will be loaded by onAuthStateChanged
                 
             } catch (error) {
                 loginAttempts++;
@@ -1163,11 +1136,9 @@
             registerBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mendaftar...';
             
             try {
-                // Create user in Firebase Auth
                 const userCredential = await auth.createUserWithEmailAndPassword(email, password);
                 const user = userCredential.user;
                 
-                // Save user data to Firestore
                 await db.collection('users').doc(user.uid).set({
                     name: name,
                     email: email,
@@ -1177,7 +1148,6 @@
                     createdAt: new Date().toISOString()
                 });
                 
-                // Sign out the user (admin will activate later)
                 await auth.signOut();
                 
                 showCustomModal(
@@ -1257,7 +1227,6 @@
             document.getElementById('registerForm').reset();
         }
 
-        // Close modal when clicking outside
         window.onclick = function(event) {
             if (event.target.classList.contains('modal')) {
                 event.target.classList.remove('active');
@@ -1308,7 +1277,8 @@
             
             grid.innerHTML = filtered.map(p => `
                 <div class="product-card">
-                    <img src="${p.img}" alt="${p.name}" class="product-img" loading="lazy" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23f8f9fa%22 width=%22100%22 height=%22100%22/><text y=%22.9em%22 font-size=%2280%22 x=%2250%22 text-anchor=%22middle%22>🧋</text></svg>'">
+                    <img src="${p.img}" alt="${p.name}" class="product-img" loading="lazy" 
+                         onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23f8f9fa%22 width=%22100%22 height=%22100%22/><text y=%22.9em%22 font-size=%2280%22 x=%2250%22 text-anchor=%22middle%22>🧋</text></svg>'">
                     <div class="product-info">
                         <div class="product-name">${p.name}</div>
                         <div class="product-price">${formatRp(p.price)}</div>
@@ -1445,7 +1415,6 @@
                 const discount = parseInt(document.getElementById('discount').value) || 0;
                 const total = Math.max(0, subtotal - discount);
                 
-                // Save to transactions
                 const transactionData = {
                     items: cart,
                     subtotal: subtotal,
@@ -1479,7 +1448,7 @@
         }
 
         // ============================================
-        // PRINT STRUK - RAWBT (FIXED)
+        // PRINT STRUK - RAWBT (OPTIMIZED)
         // ============================================
         function printStruk() {
             if (!lastTransaction) {
@@ -1493,7 +1462,7 @@
             const timeStr = date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
             const branch = branchNames[currentBranch] || currentBranch;
             
-            // Build receipt text
+            // Build receipt text - Clean format
             let receipt = '';
             receipt += '       THAI TEA CST\n';
             receipt += '--------------------------------\n';
@@ -1518,11 +1487,11 @@
             receipt += `TOTAL:          ${formatRp(lastTransaction.total)}\n`;
             receipt += `Pembayaran:     ${selectedPayment.toUpperCase()}\n`;
             receipt += '--------------------------------\n\n';
-            receipt += 'WA: +62 822-9999-7227\n\n';
+            receipt += 'Pesanan Kembali: +62 822-9999-7227\n\n';
             receipt += '      Terima Kasih!\n';
             receipt += '   Selamat Menikmati!\n';
             
-            // Clean text - remove non-ASCII
+            // Clean text - remove non-ASCII characters
             const cleanReceipt = receipt.replace(/[^\x00-\x7F]/g, '').trim();
             
             const isAndroid = /Android/i.test(navigator.userAgent);
@@ -1575,12 +1544,6 @@
                     </html>
                 `);
                 printWindow.document.close();
-            }
-        }
-
-        window.onclick = function(event) {
-            if (event.target.classList.contains('modal')) {
-                event.target.classList.remove('active');
             }
         }
     </script>
