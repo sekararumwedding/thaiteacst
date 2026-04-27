@@ -1503,45 +1503,75 @@
             const dateStr = date.toLocaleDateString('id-ID');
             const timeStr = date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
             
+            // Helper function untuk center text (32 karakter width)
+            const centerText = (text, width = 32) => {
+                const padding = Math.floor((width - text.length) / 2);
+                return ' '.repeat(padding) + text;
+            };
+            
+            // Helper function untuk format item (kiri-kanan)
+            const formatItemLine = (name, price, width = 32) => {
+                const nameLength = Math.min(name.length, 18); // Max 18 char untuk nama
+                const priceStr = price.toString();
+                const spaces = width - nameLength - priceStr.length;
+                return name.substring(0, 18).padEnd(18, ' ') + priceStr.padStart(spaces > 0 ? spaces : 1, ' ');
+            };
+            
+            // Helper function untuk format payment (kiri-kanan dengan alignment)
+            const formatPaymentLine = (label, amount, width = 32) => {
+                const labelStr = label + ':';
+                const amountStr = amount.toString();
+                const spaces = width - labelStr.length - amountStr.length;
+                return labelStr.padEnd(labelStr.length + (spaces > 0 ? spaces : 1), ' ') + amountStr;
+            };
+            
             let text = '';
-            // Header - Centered
-            text += '       THAI TEA CST\n';
+            
+            // HEADER - Centered
+            text += centerText('THAI TEA CST') + '\n';
             text += '--------------------------------\n';
             text += `Pelanggan: ${lastTransaction.customerName}\n`;
             text += `${dateStr} ${timeStr}\n`;
             text += '--------------------------------\n';
             
-            // Items
+            // ITEMS - Name left, Price right
             lastTransaction.items.forEach(item => {
                 const name = item.name.length > 18 ? item.name.substring(0, 15) + '...' : item.name;
                 const price = formatRp(item.price * item.qty);
                 const qtyLine = `${item.qty}x ${formatRp(item.price)}`;
-                text += `${name.padEnd(18)}${price.padStart(12)}\n`;
-                text += `  ${qtyLine}\n\n`;
+                
+                text += formatItemLine(name, price) + '\n';
+                text += `  ${qtyLine}\n`;
             });
             
             text += '--------------------------------\n';
             
-            // Totals - Right aligned
-            const subtotalStr = formatRp(lastTransaction.items.reduce((s, i) => s + (i.price * i.qty), 0));
+            // PAYMENT SECTION - Labels left, amounts right aligned
+            const subtotal = lastTransaction.items.reduce((s, i) => s + (i.price * i.qty), 0);
             const totalStr = formatRp(lastTransaction.total);
             const bayarStr = formatRp(lastTransaction.uangDiterima || lastTransaction.total);
             const kembaliStr = formatRp(lastTransaction.kembalian || 0);
             
-            text += `Subtotal:${subtotalStr.padStart(22 - 'Subtotal:'.length)}\n`;
-            if (lastTransaction.items.reduce((s, i) => s + (i.price * i.qty), 0) !== lastTransaction.total) {
-                text += `Diskon:${formatRp(lastTransaction.items.reduce((s, i) => s + (i.price * i.qty), 0) - lastTransaction.total).padStart(22 - 'Diskon:'.length)}\n`;
+            if (subtotal !== lastTransaction.total) {
+                const diskonStr = formatRp(subtotal - lastTransaction.total);
+                text += formatPaymentLine('Subtotal', formatRp(subtotal)) + '\n';
+                text += formatPaymentLine('Diskon', '-' + diskonStr) + '\n';
+            } else {
+                text += formatPaymentLine('Total', totalStr) + '\n';
             }
+            
             text += '================================\n';
-            text += `TOTAL:${totalStr.padStart(22 - 'TOTAL:'.length)}\n`;
-            text += `BAYAR:${bayarStr.padStart(22 - 'BAYAR:'.length)}\n`;
-            text += `KEMBALI:${kembaliStr.padStart(22 - 'KEMBALI:'.length)}\n`;
+            text += formatPaymentLine('TOTAL', totalStr) + '\n';
+            text += formatPaymentLine('BAYAR', bayarStr) + '\n';
+            text += formatPaymentLine('KEMBALI', kembaliStr) + '\n';
             text += '================================\n\n';
             
-            // Footer - Centered
-            text += 'Pesanan Kembali: +62 822-9999-7227\n';
-            text += '     TERIMA KASIH\n';
+            // FOOTER - Centered (3 lines)
+            text += centerText('Pesanan Kembali:') + '\n';
+            text += centerText('+62 822-9999-7227') + '\n';
+            text += centerText('TERIMA KASIH') + '\n';
             
+            // Clean non-ASCII characters
             const cleanText = text.replace(/[^\x00-\x7F]/g, '').trim();
             const b64 = btoa(cleanText);
             
