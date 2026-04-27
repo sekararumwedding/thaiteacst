@@ -1539,14 +1539,11 @@
             
             let strukText = '';
             
-            // === HEADER (Center + Bold + Double Size via ESC/POS) ===
-            // ESC/POS commands: \x1B\x40 (initialize), \x1B\x21\x30 (double height/width), \x1B\x45\x01 (bold on)
+            // === HEADER (Bold + Normal Size, Center) ===
             strukText += '\x1B\x40'; // Initialize printer
-            strukText += '\x1B\x21\x30'; // Double height and width
-            strukText += '\x1B\x45\x01'; // Bold on
+            strukText += '\x1B\x45\x01'; // Bold ON
             strukText += center('THAI TEA CST') + '\n';
-            strukText += '\x1B\x21\x00'; // Normal size
-            strukText += '\x1B\x45\x00'; // Bold off
+            strukText += '\x1B\x45\x00'; // Bold OFF
             strukText += center(branchNames[currentBranch] || '') + '\n\n';
             
             strukText += '--------------------------------\n';
@@ -1603,7 +1600,7 @@
                     .large { font-size: 18px; }
                     .center { text-align: center; }
                     </style></head><body>
-                    <div class="center"><span class="large bold">THAI TEA CST</span></div>
+                    <div class="center"><span class="bold">THAI TEA CST</span></div>
                     <div class="center">${branchNames[currentBranch] || ''}</div><br>
                     ${previewText.replace(/\n/g, '<br>')}
                     <script>window.onload=function(){window.print();setTimeout(()=>window.close(),1000);};<\/script></body></html>
@@ -1611,7 +1608,6 @@
                 printWindow.document.close();
             }
         }
-
         function openReportModal() {
             document.getElementById('reportModal').classList.add('active');
             document.getElementById('branchFilter').value = currentBranch;
