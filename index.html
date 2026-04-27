@@ -1153,7 +1153,7 @@
 
     <script>
         const firebaseConfig = {
-            apiKey: "AIzaSyAWuzMWsOycxq0gjNm5rP3hDVOKuYuKLvA",
+            apiKey: "AIzaSyDt5tMCf480mDGGeDd71ik...",
             authDomain: "thai-tea-cst-ac9db.firebaseapp.com",
             projectId: "thai-tea-cst-ac9db",
             storageBucket: "thai-tea-cst-ac9db.firebasestorage.app",
@@ -1499,108 +1499,68 @@
 
         function printStruk() {
             if (!lastTransaction) return;
-            
-            // Ambil data
-            const { customerName, items, total, cash, change } = lastTransaction;
             const date = new Date();
             const dateStr = date.toLocaleDateString('id-ID');
             const timeStr = date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
             
-            // Konfigurasi Lebar Kertas Thermal (58mm = 32 Karakter)
-            const width = 32;
-        
-            // Fungsi Format Rupiah (Tanpa spasi setelah Rp agar konsisten)
-            const formatRp = (n) => 'Rp' + new Intl.NumberFormat('id-ID').format(n);
-        
-            // 1. FUNGSI CENTER (Rata Tengah)
-            const center = (text) => {
-                const padding = Math.floor((width - text.length) / 2);
-                return ' '.repeat(padding > 0 ? padding : 0) + text;
-            };
-        
-            // 2. FUNGSI ALIGNMENT ITEM (Rata Kanan-Kiri)
-            // Logika: [Nama Barang] [SPASI] [Qty]x [Harga]
-            const formatItem = (name, qty, priceStr) => {
-                const qtyText = `${qty}x `;
-                // Hitung panjang bagian kanan (Qty + Harga)
-                const rightPart = qtyText + priceStr;
-                
-                // Hitung sisa spasi
-                // Rumus: 32 - (Nama + Qty + Harga)
-                let spacesCount = width - name.length - rightPart.length;
-                
-                // Jika nama terlalu panjang, potong nama
-                if (spacesCount < 1) {
-                    const maxNameLen = width - rightPart.length - 3; // -3 untuk titik-titik (...)
-                    const shortName = name.substring(0, maxNameLen) + '...';
-                    spacesCount = width - shortName.length - rightPart.length;
-                    return shortName + ' '.repeat(spacesCount) + rightPart;
-                }
-                
-                return name + ' '.repeat(spacesCount) + rightPart;
-            };
-        
-            // 3. FUNGSI ALIGNMENT TOTAL/BAYAR (Rata Kiri Label, Rata Kanan Angka)
-            // Logika: [Label:] [SPASI] [Rp...]
-            const formatRow = (label, valueStr) => {
-                const spacesCount = width - label.length - valueStr.length;
-                return label + ' '.repeat(spacesCount > 0 ? spacesCount : 1) + valueStr;
-            };
-        
-            let strukText = '';
-        
-            // --- HEADER ---
-            strukText += center('THAI TEA CST') + '\n';
-            strukText += '--------------------------------\n';
-            strukText += `Pelanggan: ${customerName}\n`;
-            strukText += `${dateStr} ${timeStr}\n`;
-            strukText += '--------------------------------\n';
-        
-            // --- ITEMS (Menggunakan formatItem) ---
-            items.forEach(item => {
-                const subtotal = formatRp(item.price * item.qty);
-                // Memanggil fungsi alignment item
-                strukText += formatItem(item.name, item.qty, subtotal) + '\n';
+            let text = '';
+            // Header - Centered
+            text += '       THAI TEA CST\n';
+            text += '--------------------------------\n';
+            text += `Pelanggan: ${lastTransaction.customerName}\n`;
+            text += `${dateStr} ${timeStr}\n`;
+            text += '--------------------------------\n';
+            
+            // Items
+            lastTransaction.items.forEach(item => {
+                const name = item.name.length > 18 ? item.name.substring(0, 15) + '...' : item.name;
+                const price = formatRp(item.price * item.qty);
+                const qtyLine = `${item.qty}x ${formatRp(item.price)}`;
+                text += `${name.padEnd(18)}${price.padStart(12)}\n`;
+                text += `  ${qtyLine}\n\n`;
             });
-        
-            strukText += '--------------------------------\n';
-        
-            // --- PEMBAYARAN (Menggunakan formatRow agar angka lurus ke bawah) ---
-            // Label di kiri (misal "Total:"), Angka di kanan mentok
-            strukText += formatRow('Total:', formatRp(total)) + '\n';
-            strukText += '================================\n';
-            strukText += formatRow('BAYAR:', formatRp(cash)) + '\n';
-            strukText += formatRow('KEMBALI:', formatRp(change)) + '\n';
-            strukText += '================================\n';
-        
+            
+            text += '--------------------------------\n';
+            
+            // Totals - Right aligned
+            const subtotalStr = formatRp(lastTransaction.items.reduce((s, i) => s + (i.price * i.qty), 0));
+            const totalStr = formatRp(lastTransaction.total);
+            const bayarStr = formatRp(lastTransaction.uangDiterima || lastTransaction.total);
+            const kembaliStr = formatRp(lastTransaction.kembalian || 0);
+            
+            text += `Subtotal:${subtotalStr.padStart(22 - 'Subtotal:'.length)}\n`;
+            if (lastTransaction.items.reduce((s, i) => s + (i.price * i.qty), 0) !== lastTransaction.total) {
+                text += `Diskon:${formatRp(lastTransaction.items.reduce((s, i) => s + (i.price * i.qty), 0) - lastTransaction.total).padStart(22 - 'Diskon:'.length)}\n`;
+            }
+            text += '================================\n';
+            text += `TOTAL:${totalStr.padStart(22 - 'TOTAL:'.length)}\n`;
+            text += `BAYAR:${bayarStr.padStart(22 - 'BAYAR:'.length)}\n`;
+            text += `KEMBALI:${kembaliStr.padStart(22 - 'KEMBALI:'.length)}\n`;
+            text += '================================\n\n';
+            
             // --- FOOTER (Rata Tengah) ---
             strukText += '\n';
             strukText += center('Pesanan Kembali:') + '\n';
             strukText += center('+62 822-9999-7227') + '\n';
             strukText += center('TERIMA KASIH') + '\n';
-        
-            // --- PROSES CETAK ---
-            // Bersihkan karakter aneh (anti-â)
-            const cleanText = strukText.replace(/[^\x00-\x7F]/g, '').trim();
             
-            // Encode ke Base64
+            const cleanText = text.replace(/[^\x00-\x7F]/g, '').trim();
             const b64 = btoa(cleanText);
-        
-            // Kirim ke RawBT
+            
             if (/Android/i.test(navigator.userAgent)) {
                 window.location.href = `rawbt:base64,${b64}`;
             } else {
-                // Fallback untuk PC (Print Dialog)
                 const printWindow = window.open('', '_blank', 'width=400,height=600');
                 printWindow.document.write(`
                     <!DOCTYPE html><html><head><title>Struk</title>
-                    <style>
-                        body { font-family: 'Courier New', monospace; font-size: 12px; width: 58mm; padding: 5px; white-space: pre-wrap; }
-                    </style></head><body>${cleanText}<script>window.onload=function(){window.print();window.close();};<\/script></body></html>
+                    <style>@media print { @page { margin: 0; size: 58mm auto; } body { margin: 0; padding: 5px; font-family: 'Courier New', monospace; font-size: 12px; } }
+                    body { font-family: 'Courier New', monospace; font-size: 12px; max-width: 300px; margin: 0 auto; padding: 10px; white-space: pre-wrap; word-wrap: break-word; line-height: 1.4; }
+                    </style></head><body>${cleanText}<script>window.onload=function(){window.print();setTimeout(()=>window.close(),1000);};<\/script></body></html>
                 `);
                 printWindow.document.close();
             }
         }
+
         function openReportModal() {
             document.getElementById('reportModal').classList.add('active');
             document.getElementById('branchFilter').value = currentBranch;
