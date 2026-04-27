@@ -224,6 +224,172 @@
             margin-bottom: 25px;
         }
         
+        /* NEW: Modern Stats Grid */
+        .stats-grid-modern {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card-modern {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border-left: 4px solid var(--primary);
+        }
+
+        .stat-card-modern.tea { border-left-color: #8B4513; }
+        .stat-card-modern.revenue { border-left-color: var(--success); }
+        .stat-card-modern.order { border-left-color: var(--info); }
+
+        .stat-card-modern .label {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .stat-card-modern .value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+
+        .stat-card-modern .change {
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .stat-card-modern .change.up { color: var(--success); }
+        .stat-card-modern .change.down { color: var(--danger); }
+        
+        /* Dashboard Grid Layout */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .dashboard-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .dashboard-card h3 {
+            font-size: 1.1rem;
+            color: var(--dark);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Sales Chart Bars */
+        .sales-chart {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            height: 200px;
+            gap: 8px;
+            padding: 10px 0;
+        }
+
+        .chart-bar {
+            flex: 1;
+            background: linear-gradient(to top, var(--primary), var(--primary-dark));
+            border-radius: 4px 4px 0 0;
+            position: relative;
+            min-width: 30px;
+            transition: height 0.3s ease;
+        }
+
+        .chart-bar:hover {
+            opacity: 0.9;
+        }
+
+        .chart-bar::after {
+            content: attr(data-value);
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.75rem;
+            color: #7f8c8d;
+        }
+
+        /* Top Products List */
+        .top-products {
+            list-style: none;
+            padding: 0;
+        }
+
+        .top-products li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--light);
+        }
+
+        .top-products li:last-child { border-bottom: none; }
+
+        .product-rank {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--light);
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-right: 10px;
+        }
+
+        .product-rank.top-3 {
+            background: var(--primary);
+            color: white;
+        }
+        
+        /* Buttons */
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            padding: 12px 24px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+        
         .stat-card {
             background: white;
             padding: 20px;
@@ -602,6 +768,9 @@
             <div class="menu-item" onclick="showSection('users')">
                 <i class="fas fa-users-cog"></i> <span>Kelola User</span>
             </div>
+            <div class="menu-item" onclick="showSection('inventory-bahan')">
+                <i class="fas fa-boxes"></i> <span>Inventory Bahan</span>
+            </div>
             <div class="menu-item" onclick="showSection('stok')">
                 <i class="fas fa-box"></i> <span>Manajemen Stok</span>
             </div>
@@ -640,36 +809,73 @@
             </div>
         </div>
 
+        <!-- DASHBOARD SECTION -->
         <div id="sec-dashboard" class="section active">
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <h4>Total Omset</h4>
-                    <p id="dashOmset">Rp 0</p>
-                </div>
-                <div class="stat-card blue">
-                    <h4>Total Transaksi</h4>
-                    <p id="dashTransaksi">0</p>
-                </div>
-                <div class="stat-card green">
-                    <h4>Item Terjual</h4>
-                    <p id="dashItems">0</p>
-                </div>
-                <div class="stat-card orange">
-                    <h4>Pesanan Online</h4>
-                    <p id="dashOnline">0</p>
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="card-header">
-                    <h2><i class="fas fa-chart-bar"></i> Grafik Penjualan 7 Hari Terakhir</h2>
-                </div>
-                <div class="chart-container">
-                    <canvas id="salesChart"></canvas>
+            <!-- Header Dashboard -->
+            <div class="card" style="margin-bottom: 20px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:15px">
+                    <div>
+                        <h1 style="font-size:1.5rem;font-weight:700;color:var(--dark);margin:0">📊 Dashboard Thai Tea CST</h1>
+                        <p style="color:#7f8c8d;font-size:0.9rem;margin:5px 0 0">Ringkasan performa bisnis hari ini</p>
+                    </div>
+                    <div style="display:flex;gap:12px;flex-wrap:wrap">
+                        <select id="dateFilter" style="padding:10px 20px;border-radius:50px;border:2px solid var(--light);background:white;font-size:0.9rem" onchange="loadDashboard()">
+                            <option value="today">Hari Ini</option>
+                            <option value="week">Minggu Ini</option>
+                            <option value="month">Bulan Ini</option>
+                            <option value="custom">Kustom</option>
+                        </select>
+                        <button class="btn btn-outline" onclick="window.location.href='index.html'">← Kembali ke Kasir</button>
+                        <button class="btn btn-primary" onclick="window.location.href='index.html'">🧋 Buka Kasir</button>
+                    </div>
                 </div>
             </div>
-            
-            <div class="card">
+
+            <!-- Stats Cards Modern -->
+            <div class="stats-grid-modern">
+                <div class="stat-card-modern tea">
+                    <div class="label">Penjualan Hari Ini</div>
+                    <div class="value" id="dashTodaySales">Rp 0</div>
+                    <div class="change up" id="dashTodayChange">↑ Memuat...</div>
+                </div>
+                <div class="stat-card-modern revenue">
+                    <div class="label">Total Transaksi</div>
+                    <div class="value" id="dashTotalTrans">0</div>
+                    <div class="change up" id="dashTransChange">↑ Memuat...</div>
+                </div>
+                <div class="stat-card-modern order">
+                    <div class="label">Rata-rata/Order</div>
+                    <div class="value" id="dashAvgOrder">Rp 0</div>
+                    <div class="change up" id="dashAvgChange">↑ Memuat...</div>
+                </div>
+                <div class="stat-card-modern">
+                    <div class="label">Produk Terlaris</div>
+                    <div class="value" id="dashBestSeller">-</div>
+                    <div class="change up" id="dashBestSellerCount">Memuat...</div>
+                </div>
+            </div>
+
+            <!-- Charts & Top Products -->
+            <div class="dashboard-grid">
+                <!-- Sales Chart -->
+                <div class="dashboard-card">
+                    <h3>📈 Penjualan 7 Hari Terakhir</h3>
+                    <div class="chart-container" style="height:250px">
+                        <canvas id="salesChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Top Products -->
+                <div class="dashboard-card">
+                    <h3>🏆 Top 5 Produk</h3>
+                    <ul class="top-products" id="topProductsList">
+                        <li style="text-align:center;color:#7f8c8d;padding:20px">Memuat data...</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Recent Transactions -->
+            <div class="card" style="margin-top:20px">
                 <div class="card-header">
                     <h2><i class="fas fa-history"></i> 5 Transaksi Terakhir</h2>
                 </div>
@@ -679,13 +885,14 @@
                             <tr><th>Waktu</th><th>Cabang</th><th>Kasir</th><th>Total</th><th>Metode</th></tr>
                         </thead>
                         <tbody id="tblRecentTrans">
-                            <tr><td colspan="5" style="text-align:center;"><div class="loading"><div class="spinner"></div>Memuat...</div></td></tr>
+                            <tr><td colspan="5" style="text-align:center"><div class="loading"><div class="spinner"></div>Memuat...</div></td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
 
+        <!-- USERS SECTION -->
         <div id="sec-users" class="section">
             <div class="card">
                 <div class="card-header">
@@ -747,10 +954,101 @@
             </div>
         </div>
 
+        <!-- INVENTORY BAHAN BAKU SECTION -->
+        <div id="sec-inventory-bahan" class="section">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-plus-circle"></i> Tambah Bahan Baku</h2>
+                </div>
+                <form id="formBahanBaku" onsubmit="handleAddBahanBaku(event)">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Nama Bahan Baku</label>
+                            <input type="text" id="bbNama" required placeholder="Contoh: Susu UHT, Gula, Teh, dll">
+                        </div>
+                        <div class="form-group">
+                            <label>Satuan</label>
+                            <select id="bbSatuan" required>
+                                <option value="kg">Kilogram (kg)</option>
+                                <option value="liter">Liter</option>
+                                <option value="pcs">Pieces (pcs)</option>
+                                <option value="pack">Pack</option>
+                                <option value="box">Box</option>
+                                <option value="gram">Gram</option>
+                                <option value="ml">Milliliter (ml)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Stok Awal</label>
+                            <input type="number" id="bbStok" required placeholder="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Stok Minimum</label>
+                            <input type="number" id="bbMinStok" required placeholder="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Harga per Satuan (Rp)</label>
+                            <input type="number" id="bbHarga" required placeholder="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Cabang</label>
+                            <select id="bbCabang" required>
+                                <option value="cabang_01">Sport Center Bandara Soetta</option>
+                                <option value="cabang_02">TOD M1, Benda</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Simpan Bahan Baku
+                    </button>
+                </form>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-list-alt"></i> Daftar Bahan Baku</h2>
+                    <div style="display:flex;gap:10px">
+                        <button class="btn btn-info" onclick="exportBahanBakuExcel()">
+                            <i class="fas fa-file-excel"></i> Export Excel
+                        </button>
+                    </div>
+                </div>
+                <div class="form-group" style="max-width: 300px;">
+                    <label>Filter Cabang</label>
+                    <select id="filterBahanCabang" onchange="loadBahanBaku()">
+                        <option value="all">Semua Cabang</option>
+                        <option value="cabang_01">Sport Center Bandara Soetta</option>
+                        <option value="cabang_02">TOD M1, Benda</option>
+                    </select>
+                </div>
+                <div class="table-wrapper">
+                    <table id="tableBahanBaku">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Nama Bahan</th>
+                                <th>Cabang</th>
+                                <th>Stok</th>
+                                <th>Satuan</th>
+                                <th>Min Stok</th>
+                                <th>Status</th>
+                                <th>Harga</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tblBahanBaku">
+                            <tr><td colspan="9" style="text-align:center;"><div class="loading"><div class="spinner"></div>Memuat data...</div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- STOK SECTION -->
         <div id="sec-stok" class="section">
             <div class="card">
                 <div class="card-header">
-                    <h2><i class="fas fa-box-open"></i> Data Stok</h2>
+                    <h2><i class="fas fa-box-open"></i> Data Stok Produk</h2>
                     <button class="btn btn-success" onclick="exportStokExcel()">
                         <i class="fas fa-file-excel"></i> Export Excel
                     </button>
@@ -776,6 +1074,7 @@
             </div>
         </div>
 
+        <!-- TRANSAKSI SECTION -->
         <div id="sec-transaksi" class="section">
             <div class="card">
                 <div class="card-header">
@@ -797,6 +1096,7 @@
             </div>
         </div>
 
+        <!-- ONLINE ORDERS SECTION -->
         <div id="sec-online-orders" class="section">
             <div class="card">
                 <div class="card-header">
@@ -808,6 +1108,7 @@
             </div>
         </div>
 
+        <!-- LAPORAN SECTION -->
         <div id="sec-laporan" class="section">
             <div class="card">
                 <div class="card-header">
@@ -825,7 +1126,11 @@
                     </button>
                     <button class="btn btn-primary" onclick="exportStokExcel()" style="padding: 20px;">
                         <i class="fas fa-box" style="font-size: 2rem; display: block; margin-bottom: 10px;"></i>
-                        Stok
+                        Stok Produk
+                    </button>
+                    <button class="btn btn-warning" onclick="exportBahanBakuExcel()" style="padding: 20px;">
+                        <i class="fas fa-boxes" style="font-size: 2rem; display: block; margin-bottom: 10px;"></i>
+                        Bahan Baku
                     </button>
                 </div>
             </div>
@@ -1006,7 +1311,7 @@
             
             document.querySelectorAll('.menu-item').forEach((el, index) => {
                 el.classList.remove('active');
-                const sections = ['dashboard', 'users', 'stok', 'transaksi', 'online-orders', 'laporan'];
+                const sections = ['dashboard', 'users', 'inventory-bahan', 'stok', 'transaksi', 'online-orders', 'laporan'];
                 if (sections[index] === sectionId) {
                     el.classList.add('active');
                 }
@@ -1015,6 +1320,7 @@
             const titles = {
                 dashboard: 'Dashboard Bisnis',
                 users: 'Kelola User',
+                'inventory-bahan': 'Inventory Bahan Baku',
                 stok: 'Manajemen Stok',
                 transaksi: 'Transaksi',
                 'online-orders': 'Pesanan Online',
@@ -1026,6 +1332,7 @@
             
             if (sectionId === 'dashboard') loadDashboard();
             if (sectionId === 'users') loadUsers();
+            if (sectionId === 'inventory-bahan') loadBahanBaku();
             if (sectionId === 'stok') loadStok();
             if (sectionId === 'transaksi') loadTransaksi();
             if (sectionId === 'online-orders') loadOnlineOrders();
@@ -1050,9 +1357,33 @@
 
         async function loadDashboard() {
             try {
-                const snap = await db.collection('transactions').orderBy('timestamp', 'desc').get();
+                const dateFilter = document.getElementById('dateFilter')?.value || 'today';
+                let startDate, endDate;
+                const now = new Date();
+                
+                if (dateFilter === 'today') {
+                    startDate = new Date(now.setHours(0,0,0,0));
+                    endDate = new Date(now.setHours(23,59,59,999));
+                } else if (dateFilter === 'week') {
+                    const dayOfWeek = now.getDay();
+                    startDate = new Date(now.setDate(now.getDate() - dayOfWeek));
+                    startDate.setHours(0,0,0,0);
+                    endDate = new Date();
+                    endDate.setHours(23,59,59,999);
+                } else if (dateFilter === 'month') {
+                    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                    endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+                }
+                
+                let query = db.collection('transactions').orderBy('timestamp', 'desc');
+                if (startDate && endDate) {
+                    query = query.where('timestamp', '>=', startDate).where('timestamp', '<=', endDate);
+                }
+                
+                const snap = await query.get();
                 
                 let omset = 0, count = 0, itemsSold = 0;
+                const productSales = {};
                 let recentHtml = '';
                 const dailySales = {};
                 
@@ -1062,20 +1393,22 @@
                     count++;
                     
                     if (Array.isArray(d.items)) {
-                        d.items.forEach(i => itemsSold += (i.qty || 0));
+                        d.items.forEach(i => {
+                            itemsSold += (i.qty || 0);
+                            productSales[i.name] = (productSales[i.name] || 0) + (i.qty || 0);
+                        });
                     }
                     
                     if (d.timestamp) {
-                        const dateKey = new Date(d.timestamp.seconds * 1000).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
+                        const dateKey = new Date(d.timestamp.seconds * 1000).toLocaleDateString('id-ID', { weekday: 'short' });
                         dailySales[dateKey] = (dailySales[dateKey] || 0) + (d.total || 0);
                     }
                     
                     if (count <= 5) {
                         const timeStr = d.timestamp ? new Date(d.timestamp.seconds * 1000).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '-';
                         const branchName = branchNames[d.branchId] || d.branchId || '-';
-                        
                         recentHtml += `<tr>
-                            <td>${timeStr}</td>
+                            <td><small>${timeStr}</small></td>
                             <td>${branchName}</td>
                             <td>${d.cashierName || '-'}</td>
                             <td><b>${formatRp(d.total)}</b></td>
@@ -1084,12 +1417,26 @@
                     }
                 });
                 
-                document.getElementById('dashOmset').textContent = formatRp(omset);
-                document.getElementById('dashTransaksi').textContent = count;
-                document.getElementById('dashItems').textContent = itemsSold;
-                document.getElementById('tblRecentTrans').innerHTML = recentHtml || '<tr><td colspan="5" style="text-align:center;">Belum ada transaksi</td></tr>';
+                // Update Stats Cards
+                document.getElementById('dashTodaySales').textContent = formatRp(omset);
+                document.getElementById('dashTotalTrans').textContent = count;
+                document.getElementById('dashAvgOrder').textContent = count > 0 ? formatRp(Math.round(omset / count)) : 'Rp 0';
                 
+                // Best Seller
+                const bestSeller = Object.entries(productSales).sort((a,b) => b[1] - a[1])[0];
+                if (bestSeller) {
+                    document.getElementById('dashBestSeller').textContent = bestSeller[0];
+                    document.getElementById('dashBestSellerCount').textContent = `${bestSeller[1]} terjual`;
+                }
+                
+                // Recent Transactions
+                document.getElementById('tblRecentTrans').innerHTML = recentHtml || '<tr><td colspan="5" style="text-align:center">Belum ada transaksi</td></tr>';
+                
+                // Render Chart
                 renderChart(dailySales);
+                
+                // Render Top Products
+                renderTopProducts(productSales);
                 
             } catch (e) {
                 console.error('Dashboard error:', e);
@@ -1135,6 +1482,26 @@
                     plugins: { legend: { display: false } }
                 }
             });
+        }
+
+        function renderTopProducts(productSales) {
+            const list = document.getElementById('topProductsList');
+            const sorted = Object.entries(productSales).sort((a,b) => b[1] - a[1]).slice(0, 5);
+            
+            if (sorted.length === 0) {
+                list.innerHTML = '<li style="text-align:center;color:#7f8c8d;padding:20px">Belum ada data produk</li>';
+                return;
+            }
+            
+            list.innerHTML = sorted.map((item, index) => `
+                <li>
+                    <div style="display:flex;align-items:center">
+                        <span class="product-rank ${index < 3 ? 'top-3' : ''}">${index + 1}</span>
+                        <span>${item[0]}</span>
+                    </div>
+                    <span style="font-weight:600;color:var(--primary)">${item[1]}x</span>
+                </li>
+            `).join('');
         }
 
         async function handleAddUser(e) {
@@ -1271,6 +1638,160 @@
             } catch (e) {
                 showToast('Gagal hapus user: ' + e.message, 'error');
             }
+        }
+
+        // INVENTORY BAHAN BAKU FUNCTIONS
+        async function handleAddBahanBaku(e) {
+            e.preventDefault();
+            
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+            btn.disabled = true;
+            
+            const bahanBaku = {
+                nama: document.getElementById('bbNama').value.trim(),
+                satuan: document.getElementById('bbSatuan').value,
+                stok: parseInt(document.getElementById('bbStok').value) || 0,
+                minStok: parseInt(document.getElementById('bbMinStok').value) || 0,
+                harga: parseInt(document.getElementById('bbHarga').value) || 0,
+                cabang: document.getElementById('bbCabang').value,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+            
+            try {
+                await db.collection('bahan_baku').add(bahanBaku);
+                showToast('Bahan baku berhasil ditambahkan');
+                document.getElementById('formBahanBaku').reset();
+                loadBahanBaku();
+            } catch (err) {
+                showToast('Gagal menambahkan bahan baku: ' + err.message, 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        async function loadBahanBaku() {
+            const cabang = document.getElementById('filterBahanCabang').value;
+            let query = db.collection('bahan_baku');
+            
+            if (cabang !== 'all') {
+                query = query.where('cabang', '==', cabang);
+            }
+            
+            try {
+                const snap = await query.get();
+                const tbody = document.getElementById('tblBahanBaku');
+                
+                if (snap.empty) {
+                    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">Belum ada data bahan baku</td></tr>';
+                    return;
+                }
+                
+                let html = '', no = 1;
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    const statusClass = d.stok <= d.minStok ? 'badge-danger' : 'badge-success';
+                    const statusText = d.stok <= d.minStok ? 'Stok Habis' : 'Tersedia';
+                    
+                    html += `<tr>
+                        <td>${no++}</td>
+                        <td><b>${d.nama}</b></td>
+                        <td>${branchNames[d.cabang] || d.cabang}</td>
+                        <td style="${d.stok <= d.minStok ? 'color:red;font-weight:bold;' : ''}">${d.stok}</td>
+                        <td>${d.satuan}</td>
+                        <td>${d.minStok}</td>
+                        <td><span class="badge ${statusClass}">${statusText}</span></td>
+                        <td>${formatRp(d.harga)}</td>
+                        <td>
+                            <button class="btn btn-sm btn-warning" onclick="editBahanBaku('${doc.id}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="confirmDeleteBahanBaku('${doc.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>`;
+                });
+                
+                tbody.innerHTML = html;
+                
+            } catch (e) {
+                console.error('Load bahan baku error:', e);
+                showToast('Gagal memuat data bahan baku', 'error');
+            }
+        }
+
+        async function editBahanBaku(id) {
+            const doc = await db.collection('bahan_baku').doc(id).get();
+            const data = doc.data();
+            
+            document.getElementById('bbNama').value = data.nama;
+            document.getElementById('bbSatuan').value = data.satuan;
+            document.getElementById('bbStok').value = data.stok;
+            document.getElementById('bbMinStok').value = data.minStok;
+            document.getElementById('bbHarga').value = data.harga;
+            document.getElementById('bbCabang').value = data.cabang;
+            
+            // Change form submit handler to update
+            const form = document.getElementById('formBahanBaku');
+            form.onsubmit = async (e) => {
+                e.preventDefault();
+                await db.collection('bahan_baku').doc(id).update({
+                    nama: document.getElementById('bbNama').value.trim(),
+                    satuan: document.getElementById('bbSatuan').value,
+                    stok: parseInt(document.getElementById('bbStok').value) || 0,
+                    minStok: parseInt(document.getElementById('bbMinStok').value) || 0,
+                    harga: parseInt(document.getElementById('bbHarga').value) || 0,
+                    cabang: document.getElementById('bbCabang').value,
+                    updatedAt: new Date().toISOString()
+                });
+                showToast('Bahan baku berhasil diupdate');
+                form.onsubmit = handleAddBahanBaku; // Reset to add handler
+                loadBahanBaku();
+            };
+        }
+
+        function confirmDeleteBahanBaku(id) {
+            showConfirm('Hapus bahan baku ini? Tindakan ini tidak dapat dibatalkan.', () => {
+                deleteBahanBaku(id);
+            });
+        }
+
+        async function deleteBahanBaku(id) {
+            try {
+                await db.collection('bahan_baku').doc(id).delete();
+                showToast('Bahan baku dihapus');
+                loadBahanBaku();
+            } catch (e) {
+                showToast('Gagal hapus bahan baku: ' + e.message, 'error');
+            }
+        }
+
+        function exportBahanBakuExcel() {
+            const data = [];
+            db.collection('bahan_baku').get().then(snap => {
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    data.push({
+                        'Nama Bahan': d.nama,
+                        'Cabang': branchNames[d.cabang] || d.cabang,
+                        'Stok': d.stok,
+                        'Satuan': d.satuan,
+                        'Min Stok': d.minStok,
+                        'Harga per Satuan': d.harga,
+                        'Status': d.stok <= d.minStok ? 'Stok Habis' : 'Tersedia'
+                    });
+                });
+                
+                const ws = XLSX.utils.json_to_sheet(data);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Bahan Baku");
+                XLSX.writeFile(wb, `Laporan_Bahan_Baku_${new Date().toISOString().split('T')[0]}.xlsx`);
+                showToast('File Excel berhasil diunduh');
+            });
         }
 
         async function loadStok() {
