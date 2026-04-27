@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- Firebase SDK v8.10.1 Compatibility Mode -->
+    <!-- Firebase SDK v8.10.1 -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -37,14 +37,21 @@
         body {
             background: #f5f6fa;
             min-height: 100vh;
+            overflow-x: hidden;
         }
         
+        /* CRITICAL: Hide all sections by default */
         .section {
-            display: none;
+            display: none !important;
+            opacity: 0;
+            visibility: hidden;
         }
         
+        /* Only show active section */
         .section.active {
-            display: block;
+            display: block !important;
+            opacity: 1;
+            visibility: visible;
         }
         
         /* Login Section */
@@ -698,161 +705,165 @@
 </head>
 <body>
 
-    <!-- Login Section -->
-    <div id="loginSection" class="section login-section active">
-        <div class="login-container">
-            <div class="login-header">
-                <img src="https://i.ibb.co.com/mC3npXRW/Gemini-Generated-Image-8aemtl8aemtl8aem-removebg-preview.png" 
-                     alt="Thai Tea CST" 
-                     class="login-logo">
-                <h1>THAI TEA CST</h1>
-                <p>Sistem Kasir Digital</p>
-            </div>
-            
-            <div id="loginError" class="error-message"></div>
-            
-            <form id="loginForm" onsubmit="handleLogin(event)">
-                <div class="form-group">
-                    <label for="loginEmail"><i class="fas fa-envelope"></i> Email</label>
-                    <input type="email" id="loginEmail" required placeholder="kasir@thaiteacst.com" autocomplete="email">
+    <!-- Login Section - ONLY THIS SHOWS FIRST -->
+    <div id="loginSection" class="section active">
+        <div class="login-section">
+            <div class="login-container">
+                <div class="login-header">
+                    <img src="https://i.ibb.co.com/mC3npXRW/Gemini-Generated-Image-8aemtl8aemtl8aem-removebg-preview.png" 
+                         alt="Thai Tea CST" 
+                         class="login-logo">
+                    <h1>THAI TEA CST</h1>
+                    <p>Sistem Kasir Digital</p>
                 </div>
                 
-                <div class="form-group">
-                    <label for="loginPass"><i class="fas fa-lock"></i> Password</label>
-                    <input type="password" id="loginPass" required placeholder="••••••••" autocomplete="current-password">
+                <div id="loginError" class="error-message"></div>
+                
+                <form id="loginForm" onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label for="loginEmail"><i class="fas fa-envelope"></i> Email</label>
+                        <input type="email" id="loginEmail" required placeholder="kasir@thaiteacst.com" autocomplete="email">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="loginPass"><i class="fas fa-lock"></i> Password</label>
+                        <input type="password" id="loginPass" required placeholder="••••••••" autocomplete="current-password">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" id="loginBtn">
+                        <i class="fas fa-sign-in-alt"></i> Masuk Sistem
+                    </button>
+                </form>
+                
+                <div class="divider">
+                    <span>atau</span>
                 </div>
                 
-                <button type="submit" class="btn btn-primary" id="loginBtn">
-                    <i class="fas fa-sign-in-alt"></i> Masuk Sistem
+                <button class="btn btn-link" onclick="openRegisterModal()">
+                    <i class="fas fa-user-plus"></i> Daftar Kasir Baru
                 </button>
-            </form>
-            
-            <div class="divider">
-                <span>atau</span>
             </div>
-            
-            <button class="btn btn-link" onclick="openRegisterModal()">
-                <i class="fas fa-user-plus"></i> Daftar Kasir Baru
-            </button>
         </div>
     </div>
 
-    <!-- Kasir Section -->
-    <div id="kasirSection" class="section kasir-section">
-        <!-- Header -->
-        <div class="header">
-            <div class="header-top">
-                <div class="brand">
-                    <div class="brand-logo">
-                        <img src="https://i.ibb.co.com/mC3npXRW/Gemini-Generated-Image-8aemtl8aemtl8aem-removebg-preview.png" 
-                             alt="Thai Tea CST">
-                    </div>
-                    <div class="brand-text">
-                        <h1>THAI TEA CST</h1>
-                        <p>Point of Sale</p>
-                    </div>
-                </div>
-                <div class="user-info">
-                    <div class="user-avatar" id="userAvatar">U</div>
-                    <span id="userName" style="font-weight: 600; font-size: 0.9rem;">User</span>
-                    <button class="logout-btn" onclick="confirmLogout()">
-                        <i class="fas fa-sign-out-alt"></i> Logout
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Main Content -->
-        <div class="main-content">
-            <!-- Menu Section -->
-            <div class="menu-section">
-                <h2 class="section-title">
-                    <i class="fas fa-list"></i> Menu
-                </h2>
-                
-                <div class="category-filter">
-                    <button class="cat-btn active" onclick="filterCategory('all')">Semua</button>
-                    <button class="cat-btn" onclick="filterCategory('premium')">Premium</button>
-                    <button class="cat-btn" onclick="filterCategory('original')">Original</button>
-                    <button class="cat-btn" onclick="filterCategory('topping')">Topping</button>
-                </div>
-                
-                <div id="loadingContainer" class="loading">
-                    <div class="spinner"></div>
-                    <p>Memuat Menu...</p>
-                </div>
-                
-                <div class="products-grid" id="productsGrid" style="display: none;">
-                    <!-- Products will be loaded here -->
-                </div>
-            </div>
-
-            <!-- Cart Section -->
-            <div class="cart-section">
-                <h2 class="section-title">
-                    <i class="fas fa-shopping-cart"></i> Keranjang
-                </h2>
-                
-                <div class="customer-input">
-                    <label for="customerName"><i class="fas fa-user"></i> Nama Pembeli</label>
-                    <input type="text" id="customerName" placeholder="Masukkan nama pembeli (wajib)">
-                </div>
-                
-                <div class="cart-items" id="cartItems">
-                    <p style="text-align: center; color: #7f8c8d; padding: 40px 20px;">
-                        <i class="fas fa-shopping-basket" style="font-size: 3rem; opacity: 0.3; display: block; margin-bottom: 10px;"></i>
-                        Keranjang kosong
-                    </p>
-                </div>
-                
-                <div class="cart-summary">
-                    <div class="summary-row">
-                        <span>Subtotal</span>
-                        <span id="subtotal">Rp 0</span>
-                    </div>
-                    <div class="summary-row">
-                        <span>Diskon</span>
-                        <input type="number" id="discount" value="0" oninput="calcTotal()" placeholder="0" 
-                               style="width: 100px; padding: 8px; border: 1px solid #ddd; border-radius: 6px; text-align: right; font-weight: 600;">
-                    </div>
-                    <div class="summary-total">
-                        <span>Total</span>
-                        <span id="total">Rp 0</span>
-                    </div>
-                    
-                    <div style="margin: 15px 0 10px;">
-                        <strong style="display: block; margin-bottom: 10px; color: var(--dark);">Pembayaran</strong>
-                        <div class="payment-method">
-                            <div class="pay-btn active" onclick="selectPay('cash', this)">
-                                <i class="fas fa-money-bill-wave" style="color: var(--success);"></i>
-                                Tunai
-                            </div>
-                            <div class="pay-btn" onclick="selectPay('qris', this)">
-                                <i class="fas fa-qrcode" style="color: #3498DB;"></i>
-                                QRIS
-                            </div>
-                            <div class="pay-btn" onclick="selectPay('transfer', this)">
-                                <i class="fas fa-university" style="color: #9B59B6;"></i>
-                                Transfer
-                            </div>
-                            <div class="pay-btn" onclick="selectPay('ewallet', this)">
-                                <i class="fas fa-wallet" style="color: var(--warning);"></i>
-                                E-Wallet
-                            </div>
+    <!-- Kasir Section - HIDDEN BY DEFAULT -->
+    <div id="kasirSection" class="section">
+        <div class="kasir-section">
+            <!-- Header -->
+            <div class="header">
+                <div class="header-top">
+                    <div class="brand">
+                        <div class="brand-logo">
+                            <img src="https://i.ibb.co.com/mC3npXRW/Gemini-Generated-Image-8aemtl8aemtl8aem-removebg-preview.png" 
+                                 alt="Thai Tea CST">
+                        </div>
+                        <div class="brand-text">
+                            <h1>THAI TEA CST</h1>
+                            <p>Point of Sale</p>
                         </div>
                     </div>
-                    
-                    <button class="checkout-btn" id="checkoutBtn" onclick="checkout()">
-                        <i class="fas fa-check-circle"></i> Bayar Sekarang
-                    </button>
-                    
-                    <div class="action-buttons" id="actionButtons" style="display:none;">
-                        <button class="btn btn-warning" onclick="resetCart()">
-                            <i class="fas fa-redo"></i> Pesanan Baru
+                    <div class="user-info">
+                        <div class="user-avatar" id="userAvatar">U</div>
+                        <span id="userName" style="font-weight: 600; font-size: 0.9rem;">User</span>
+                        <button class="logout-btn" onclick="confirmLogout()">
+                            <i class="fas fa-sign-out-alt"></i> Logout
                         </button>
-                        <button class="btn btn-success" onclick="printStruk()">
-                            <i class="fas fa-print"></i> Cetak Struk
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="main-content">
+                <!-- Menu Section -->
+                <div class="menu-section">
+                    <h2 class="section-title">
+                        <i class="fas fa-list"></i> Menu
+                    </h2>
+                    
+                    <div class="category-filter">
+                        <button class="cat-btn active" onclick="filterCategory('all')">Semua</button>
+                        <button class="cat-btn" onclick="filterCategory('premium')">Premium</button>
+                        <button class="cat-btn" onclick="filterCategory('original')">Original</button>
+                        <button class="cat-btn" onclick="filterCategory('topping')">Topping</button>
+                    </div>
+                    
+                    <div id="loadingContainer" class="loading">
+                        <div class="spinner"></div>
+                        <p>Memuat Menu...</p>
+                    </div>
+                    
+                    <div class="products-grid" id="productsGrid" style="display: none;">
+                        <!-- Products will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Cart Section -->
+                <div class="cart-section">
+                    <h2 class="section-title">
+                        <i class="fas fa-shopping-cart"></i> Keranjang
+                    </h2>
+                    
+                    <div class="customer-input">
+                        <label for="customerName"><i class="fas fa-user"></i> Nama Pembeli</label>
+                        <input type="text" id="customerName" placeholder="Masukkan nama pembeli (wajib)">
+                    </div>
+                    
+                    <div class="cart-items" id="cartItems">
+                        <p style="text-align: center; color: #7f8c8d; padding: 40px 20px;">
+                            <i class="fas fa-shopping-basket" style="font-size: 3rem; opacity: 0.3; display: block; margin-bottom: 10px;"></i>
+                            Keranjang kosong
+                        </p>
+                    </div>
+                    
+                    <div class="cart-summary">
+                        <div class="summary-row">
+                            <span>Subtotal</span>
+                            <span id="subtotal">Rp 0</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Diskon</span>
+                            <input type="number" id="discount" value="0" oninput="calcTotal()" placeholder="0" 
+                                   style="width: 100px; padding: 8px; border: 1px solid #ddd; border-radius: 6px; text-align: right; font-weight: 600;">
+                        </div>
+                        <div class="summary-total">
+                            <span>Total</span>
+                            <span id="total">Rp 0</span>
+                        </div>
+                        
+                        <div style="margin: 15px 0 10px;">
+                            <strong style="display: block; margin-bottom: 10px; color: var(--dark);">Pembayaran</strong>
+                            <div class="payment-method">
+                                <div class="pay-btn active" onclick="selectPay('cash', this)">
+                                    <i class="fas fa-money-bill-wave" style="color: var(--success);"></i>
+                                    Tunai
+                                </div>
+                                <div class="pay-btn" onclick="selectPay('qris', this)">
+                                    <i class="fas fa-qrcode" style="color: #3498DB;"></i>
+                                    QRIS
+                                </div>
+                                <div class="pay-btn" onclick="selectPay('transfer', this)">
+                                    <i class="fas fa-university" style="color: #9B59B6;"></i>
+                                    Transfer
+                                </div>
+                                <div class="pay-btn" onclick="selectPay('ewallet', this)">
+                                    <i class="fas fa-wallet" style="color: var(--warning);"></i>
+                                    E-Wallet
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button class="checkout-btn" id="checkoutBtn" onclick="checkout()">
+                            <i class="fas fa-check-circle"></i> Bayar Sekarang
                         </button>
+                        
+                        <div class="action-buttons" id="actionButtons" style="display:none;">
+                            <button class="btn btn-warning" onclick="resetCart()">
+                                <i class="fas fa-redo"></i> Pesanan Baru
+                            </button>
+                            <button class="btn btn-success" onclick="printStruk()">
+                                <i class="fas fa-print"></i> Cetak Struk
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -917,7 +928,7 @@
 
     <script>
         // ============================================
-        // FIREBASE CONFIGURATION - ISI DENGAN DATA ANDA
+        // FIREBASE CONFIGURATION - BARIS 922-930
         // ============================================
         const firebaseConfig = {
             apiKey: "AIzaSyAWuzMWsOycxq0gjNm5rP3hDVOKuYuKLvA",  // <-- GANTI DENGAN API KEY ANDA
@@ -943,7 +954,6 @@
             console.log('✅ Firebase initialized');
         } catch (error) {
             console.error('❌ Firebase error:', error);
-            alert('Gagal menginisialisasi Firebase. Periksa konfigurasi API Key.');
         }
 
         // Global Variables
@@ -979,23 +989,51 @@
         ];
 
         // ============================================
+        // CRITICAL: SECTION SWITCHING FUNCTIONS
+        // ============================================
+        function showLoginSection() {
+            console.log('Showing login section');
+            document.getElementById('loginSection').classList.add('active');
+            document.getElementById('kasirSection').classList.remove('active');
+            window.scrollTo(0, 0);
+        }
+
+        function showKasirSection() {
+            console.log('Showing kasir section');
+            document.getElementById('loginSection').classList.remove('active');
+            document.getElementById('kasirSection').classList.add('active');
+            window.scrollTo(0, 0);
+        }
+
+        // ============================================
         // INITIALIZATION
         // ============================================
         window.onload = function() {
+            console.log('Page loaded');
+            
             if (!isFirebaseReady) {
                 showCustomModal('Error', 'Gagal menghubungkan ke database. Silakan refresh halaman.', null);
                 return;
             }
             
+            // ALWAYS start with login section
+            showLoginSection();
+            
             // Check if already logged in
             const savedUser = sessionStorage.getItem('currentUser');
             if (savedUser) {
-                const userData = JSON.parse(savedUser);
-                // Validate user data
-                if (userData.uid && userData.branchId) {
-                    showKasirSection(userData);
-                } else {
-                    // Invalid session, clear it
+                try {
+                    const userData = JSON.parse(savedUser);
+                    if (userData.uid && userData.branchId) {
+                        console.log('Found saved user, loading kasir');
+                        showKasirSection();
+                        loadUserDataFromSession(userData);
+                    } else {
+                        console.log('Invalid saved user data');
+                        sessionStorage.removeItem('currentUser');
+                    }
+                } catch (e) {
+                    console.error('Error parsing saved user:', e);
                     sessionStorage.removeItem('currentUser');
                 }
             }
@@ -1003,10 +1041,25 @@
             // Auth state observer
             auth.onAuthStateChanged(user => {
                 if (user) {
+                    console.log('User authenticated:', user.email);
                     loadUserData(user);
                 }
             });
         };
+
+        function loadUserDataFromSession(userData) {
+            currentUser = { 
+                uid: userData.uid, 
+                email: userData.email,
+                name: userData.name 
+            };
+            currentBranch = userData.branchId;
+            
+            document.getElementById('userName').textContent = userData.name || 'Kasir';
+            document.getElementById('userAvatar').textContent = (userData.name || 'K').charAt(0).toUpperCase();
+            
+            loadProducts();
+        }
 
         async function loadUserData(user) {
             try {
@@ -1022,7 +1075,7 @@
                     throw new Error('Akun ini bukan akun kasir');
                 }
                 
-                // Store complete user data in session
+                // Store complete user data
                 const userDataToStore = {
                     uid: user.uid,
                     email: user.email,
@@ -1033,42 +1086,16 @@
                 
                 sessionStorage.setItem('currentUser', JSON.stringify(userDataToStore));
                 
-                showKasirSection(userDataToStore);
+                showKasirSection();
+                loadUserDataFromSession(userDataToStore);
                 
             } catch (error) {
                 console.error('Load user error:', error);
                 showCustomModal('Error', error.message, () => {
                     auth.signOut();
-                    location.reload();
+                    showLoginSection();
                 });
             }
-        }
-
-        function showKasirSection(userData) {
-            // Validate user data before showing kasir
-            if (!userData || !userData.uid || !userData.branchId) {
-                console.error('Invalid user data:', userData);
-                showCustomModal('Error', 'Data user tidak valid. Silakan login ulang.', () => {
-                    auth.signOut();
-                    location.reload();
-                });
-                return;
-            }
-            
-            currentUser = { 
-                uid: userData.uid, 
-                email: userData.email,
-                name: userData.name 
-            };
-            currentBranch = userData.branchId;
-            
-            document.getElementById('loginSection').classList.remove('active');
-            document.getElementById('kasirSection').classList.add('active');
-            
-            document.getElementById('userName').textContent = userData.name || 'Kasir';
-            document.getElementById('userAvatar').textContent = (userData.name || 'K').charAt(0).toUpperCase();
-            
-            loadProducts();
         }
 
         // ============================================
@@ -1111,7 +1138,7 @@
             
             try {
                 await auth.signInWithEmailAndPassword(email, password);
-                // User data will be loaded by onAuthStateChanged
+                // onAuthStateChanged will handle the rest
                 
             } catch (error) {
                 loginAttempts++;
@@ -1209,6 +1236,7 @@
             showCustomModal('Konfirmasi Logout', 'Yakin ingin logout?', () => {
                 auth.signOut().then(() => {
                     sessionStorage.removeItem('currentUser');
+                    showLoginSection();
                     location.reload();
                 }).catch(e => {
                     showCustomModal('Error', 'Gagal logout: ' + e.message, null);
@@ -1302,7 +1330,7 @@
             grid.innerHTML = filtered.map(p => `
                 <div class="product-card">
                     <img src="${p.img}" alt="${p.name}" class="product-img" loading="lazy" 
-                         onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23f8f9fa%22 width=%22100%22 height=%22100%22/><text y=%22.9em%22 font-size=%2280%22 x=%2250%22 text-anchor=%22middle%22>🧋</text></svg>'">
+                         onerror="this.src='image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23f8f9fa%22 width=%22100%22 height=%22100%22/><text y=%22.9em%22 font-size=%2280%22 x=%2250%22 text-anchor=%22middle%22>🧋</text></svg>'">
                     <div class="product-info">
                         <div class="product-name">${p.name}</div>
                         <div class="product-price">${formatRp(p.price)}</div>
@@ -1417,15 +1445,14 @@
         }
 
         // ============================================
-        // CHECKOUT - FIXED
+        // CHECKOUT
         // ============================================
         async function checkout() {
             if (cart.length === 0) return;
             
-            // Validate user is logged in
             if (!currentUser || !currentUser.uid) {
                 showCustomModal('Error', 'Session expired. Silakan login ulang.', () => {
-                    location.reload();
+                    showLoginSection();
                 });
                 return;
             }
@@ -1447,21 +1474,19 @@
                 const discount = parseInt(document.getElementById('discount').value) || 0;
                 const total = Math.max(0, subtotal - discount);
                 
-                // Prepare transaction data with validated fields
                 const transactionData = {
                     items: cart,
                     subtotal: subtotal,
                     discount: discount,
                     total: total,
                     paymentMethod: selectedPayment,
-                    cashierId: currentUser.uid,  // This should never be undefined now
+                    cashierId: currentUser.uid,
                     cashierName: currentUser.name || document.getElementById('userName').textContent,
                     customerName: customerName,
                     branchId: currentBranch || 'unknown',
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 };
                 
-                // Validate all required fields
                 if (!transactionData.cashierId) {
                     throw new Error('Cashier ID tidak valid. Silakan login ulang.');
                 }
@@ -1490,7 +1515,7 @@
         }
 
         // ============================================
-        // PRINT STRUK - RAWBT (OPTIMIZED)
+        // PRINT STRUK
         // ============================================
         function printStruk() {
             if (!lastTransaction) {
@@ -1504,7 +1529,6 @@
             const timeStr = date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
             const branch = branchNames[currentBranch] || currentBranch;
             
-            // Build receipt text - Clean format
             let receipt = '';
             receipt += '       THAI TEA CST\n';
             receipt += '--------------------------------\n';
@@ -1533,7 +1557,6 @@
             receipt += '      Terima Kasih!\n';
             receipt += '   Selamat Menikmati!\n';
             
-            // Clean text - remove non-ASCII characters
             const cleanReceipt = receipt.replace(/[^\x00-\x7F]/g, '').trim();
             
             const isAndroid = /Android/i.test(navigator.userAgent);
@@ -1558,7 +1581,6 @@
                     showCustomModal('Error', 'Gagal mencetak. Pastikan aplikasi RawBT Printer sudah terinstall.', null);
                 }
             } else {
-                // Desktop print
                 const printWindow = window.open('', '_blank', 'width=400,height=600');
                 printWindow.document.write(`
                     <!DOCTYPE html>
