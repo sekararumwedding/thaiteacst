@@ -405,7 +405,7 @@
         .badge-pending { background: #fff8e1; color: #f57f17; }
         
         /* Online Orders Panel */
-        .online-orders-panel {
+        .order-card {
             background: white;
             border-radius: 12px;
             padding: 20px;
@@ -414,14 +414,16 @@
             border-left: 4px solid var(--warning);
         }
         
-        .online-order-header {
+        .order-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--light);
         }
         
-        .online-order-title {
+        .order-title {
             font-weight: 700;
             color: var(--dark);
             display: flex;
@@ -430,15 +432,8 @@
             font-size: 1.1rem;
         }
         
-        .order-card {
-            background: var(--light);
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-        }
-        
         .order-info {
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
         
         .order-info p {
@@ -446,25 +441,40 @@
             font-size: 0.9rem;
         }
         
+        .order-info strong {
+            color: var(--dark);
+        }
+        
         .order-items {
-            margin: 10px 0;
-            padding: 10px;
-            background: white;
-            border-radius: 6px;
+            background: var(--light);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .order-item:last-child {
+            border-bottom: none;
         }
         
         .order-total {
             font-weight: 700;
             color: var(--primary);
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             text-align: right;
-            margin-top: 10px;
+            margin-bottom: 15px;
         }
         
         .order-actions {
             display: flex;
             gap: 10px;
-            margin-top: 15px;
+            flex-wrap: wrap;
         }
         
         /* Custom Modal */
@@ -679,6 +689,13 @@
             .stats-grid {
                 grid-template-columns: 1fr;
             }
+            .order-actions {
+                flex-direction: column;
+            }
+            .order-actions .btn {
+                width: 100%;
+                justify-content: center;
+            }
         }
         
         /* Mobile Menu Toggle */
@@ -806,7 +823,7 @@
                             <tr><th>Waktu</th><th>Cabang</th><th>Kasir</th><th>Total</th><th>Metode</th></tr>
                         </thead>
                         <tbody id="tblRecentTrans">
-                            <tr><td colspan="5" style="text-align:center;">Memuat...</td></tr>
+                            <tr><td colspan="5" style="text-align:center;"><div class="loading"><div class="spinner"></div>Memuat...</div></td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -1112,24 +1129,35 @@
         }
 
         function listenOnlineOrders() {
+            if (onlineOrdersListener) {
+                onlineOrdersListener();
+            }
+            
             onlineOrdersListener = db.collection('orders')
                 .where('status', '==', 'pending')
                 .onSnapshot(snapshot => {
                     const count = snapshot.size;
                     const badge = document.getElementById('onlineOrderBadge');
                     const notifBadge = document.getElementById('notifBadge');
+                    const dashOnline = document.getElementById('dashOnline');
                     
                     if (count > 0) {
                         badge.textContent = count;
                         badge.classList.add('active');
                         notifBadge.textContent = count;
                         notifBadge.classList.add('active');
+                        if (dashOnline) dashOnline.textContent = count;
                     } else {
                         badge.classList.remove('active');
                         notifBadge.classList.remove('active');
+                        if (dashOnline) dashOnline.textContent = '0';
                     }
                     
                     loadOnlineOrders();
+                }, error => {
+                    console.error('Error listening to orders:', error);
+                    document.getElementById('onlineOrdersContainer').innerHTML = 
+                        '<p style="text-align:center;padding:40px;color:var(--danger);">Gagal memuat pesanan: ' + error.message + '</p>';
                 });
         }
 
@@ -1520,7 +1548,7 @@
         }
 
         // ============================================
-        // ONLINE ORDERS
+        // ONLINE ORDERS - FIXED
         // ============================================
         async function loadOnlineOrders() {
             const container = document.getElementById('onlineOrdersContainer');
@@ -1541,26 +1569,38 @@
                     const order = { id: doc.id, ...doc.data() };
                     
                     html += `<div class="order-card">
+                        <div class="order-header">
+                            <div class="order-title">
+                                <i class="fas fa-shopping-bag"></i>
+                                Pesanan #${doc.id.substr(0,8).toUpperCase()}
+                            </div>
+                            <span class="badge badge-pending">Pending</span>
+                        </div>
                         <div class="order-info">
-                            <p><strong>Nama:</strong> ${order.customerName}</p>
-                            <p><strong>No WA:</strong> ${order.customerPhone}</p>
-                            <p><strong>Waktu:</strong> ${new Date(order.createdAt).toLocaleString('id-ID')}</p>
+                            <p><strong><i class="fas fa-user"></i> Nama:</strong> ${order.customerName || '-'}</p>
+                            <p><strong><i class="fab fa-whatsapp"></i> No WA:</strong> ${order.customerPhone || '-'}</p>
+                            <p><strong><i class="fas fa-clock"></i> Waktu:</strong> ${order.createdAt ? new Date(order.createdAt).toLocaleString('id-ID') : '-'}</p>
                         </div>
                         <div class="order-items">
-                            ${order.items.map(item => `
-                                <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
-                                    <span>${item.name} x${item.qty}</span>
-                                    <span>${formatRp(item.price * item.qty)}</span>
+                            ${order.items && order.items.map(item => `
+                                <div class="order-item">
+                                    <span>${item.name} x${item.qty || 1}</span>
+                                    <span>${formatRp((item.price || 0) * (item.qty || 1))}</span>
                                 </div>
-                            `).join('')}
+                            `).join('') || '<p>Tidak ada item</p>'}
                         </div>
-                        <div class="order-total">Total: ${formatRp(order.total)}</div>
+                        <div class="order-total">
+                            Total: ${formatRp(order.total || 0)}
+                        </div>
                         <div class="order-actions">
-                            <button class="btn btn-success btn-sm" onclick="acceptOrder('${order.id}')">
-                                <i class="fas fa-check"></i> Terima
+                            <button class="btn btn-success btn-sm" onclick="acceptOrder('${order.id}', '${order.customerPhone || ''}')">
+                                <i class="fas fa-check"></i> Proses/Selesai
+                            </button>
+                            <button class="btn btn-info btn-sm" onclick="chatWA('${order.customerPhone || ''}', '${order.customerName || ''}')">
+                                <i class="fab fa-whatsapp"></i> Chat WA
                             </button>
                             <button class="btn btn-danger btn-sm" onclick="rejectOrder('${order.id}')">
-                                <i class="fas fa-times"></i> Tolak
+                                <i class="fas fa-times"></i> Tolak/Hapus
                             </button>
                         </div>
                     </div>`;
@@ -1570,25 +1610,37 @@
                 
             } catch (e) {
                 console.error('Load online orders error:', e);
-                container.innerHTML = '<p style="text-align:center;padding:40px;color:var(--danger);">Gagal memuat pesanan</p>';
+                container.innerHTML = `<p style="text-align:center;padding:40px;color:var(--danger);">
+                    <i class="fas fa-exclamation-triangle" style="font-size:3rem;margin-bottom:15px;display:block;"></i>
+                    Gagal memuat pesanan: ${e.message}
+                </p>`;
             }
         }
 
-        async function acceptOrder(orderId) {
+        async function acceptOrder(orderId, customerPhone) {
             try {
                 await db.collection('orders').doc(orderId).update({
                     status: 'accepted',
                     acceptedAt: new Date().toISOString()
                 });
-                showToast('Pesanan diterima');
+                
+                // Send WhatsApp notification
+                if (customerPhone) {
+                    const message = `Halo! Pesanan Anda telah kami terima dan sedang diproses. Terima kasih telah memesan di Thai Tea CST!`;
+                    const waLink = `https://wa.me/${customerPhone}?text=${encodeURIComponent(message)}`;
+                    window.open(waLink, '_blank');
+                }
+                
+                showToast('Pesanan diterima dan status diubah menjadi Selesai');
                 loadOnlineOrders();
+                loadDashboard();
             } catch (e) {
-                showToast('Gagal menerima pesanan', 'error');
+                showToast('Gagal menerima pesanan: ' + e.message, 'error');
             }
         }
 
         async function rejectOrder(orderId) {
-            showConfirm('Tolak pesanan ini?', async () => {
+            showConfirm('Tolak pesanan ini? Pesanan akan dihapus.', async () => {
                 try {
                     await db.collection('orders').doc(orderId).update({
                         status: 'rejected',
@@ -1596,10 +1648,22 @@
                     });
                     showToast('Pesanan ditolak');
                     loadOnlineOrders();
+                    loadDashboard();
                 } catch (e) {
-                    showToast('Gagal menolak pesanan', 'error');
+                    showToast('Gagal menolak pesanan: ' + e.message, 'error');
                 }
             });
+        }
+
+        function chatWA(phone, name) {
+            if (!phone) {
+                showConfirm('Nomor WhatsApp tidak tersedia', null);
+                return;
+            }
+            
+            const message = `Halo ${name}, ada yang bisa kami bantu terkait pesanan Anda di Thai Tea CST?`;
+            const waLink = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+            window.open(waLink, '_blank');
         }
 
         function showNotifications() {
