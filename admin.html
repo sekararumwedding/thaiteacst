@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="CST SYSTEM - Admin Dashboard">
     <meta name="theme-color" content="#E67E22">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧋</text></svg>">
+    <link rel="icon" href="image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧋</text></svg>">
     <title>Admin Dashboard - CST SYSTEM</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Firebase SDK - MUST be loaded before any code -->
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -17,7 +17,7 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <!-- SheetJS for Excel Export -->
+    <!-- SheetJS -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     
     <style>
@@ -34,20 +34,9 @@
             --sidebar-width: 260px;
         }
         
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', system-ui, sans-serif;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background: #f5f6fa; display: flex; min-height: 100vh; }
         
-        body {
-            background: #f5f6fa;
-            display: flex;
-            min-height: 100vh;
-        }
-        
-        /* Sidebar */
         .sidebar {
             width: var(--sidebar-width);
             background: var(--darker);
@@ -82,15 +71,9 @@
             font-weight: 700;
         }
         
-        .sidebar-header p {
-            font-size: 0.85rem;
-            opacity: 0.8;
-        }
+        .sidebar-header p { font-size: 0.85rem; opacity: 0.8; }
         
-        .menu {
-            padding: 20px 0;
-            flex: 1;
-        }
+        .menu { padding: 20px 0; flex: 1; }
         
         .menu-item {
             padding: 15px 25px;
@@ -110,13 +93,9 @@
             border-left-color: var(--primary);
         }
         
-        .menu-item i {
-            width: 20px;
-        }
+        .menu-item i { width: 20px; }
         
-        .notification-icon {
-            position: relative;
-        }
+        .notification-icon { position: relative; }
         
         .notification-badge {
             position: absolute;
@@ -134,25 +113,15 @@
             font-weight: 700;
         }
         
-        .notification-badge.active {
-            display: flex;
-        }
+        .notification-badge.active { display: flex; }
         
         .user-info {
             padding: 20px;
             background: rgba(0,0,0,0.3);
         }
         
-        .user-info strong {
-            display: block;
-            margin-bottom: 4px;
-            font-size: 0.95rem;
-        }
-        
-        .user-info small {
-            color: #b0b0b0;
-            font-size: 0.8rem;
-        }
+        .user-info strong { display: block; margin-bottom: 4px; font-size: 0.95rem; }
+        .user-info small { color: #b0b0b0; font-size: 0.8rem; }
         
         .logout-btn {
             width: 100%;
@@ -167,11 +136,8 @@
             transition: 0.3s;
         }
         
-        .logout-btn:hover {
-            background: #c0392b;
-        }
+        .logout-btn:hover { background: #c0392b; }
         
-        /* Main Content */
         .main {
             margin-left: var(--sidebar-width);
             flex: 1;
@@ -191,17 +157,9 @@
             font-weight: 700;
         }
         
-        .breadcrumb {
-            color: #7f8c8d;
-            font-size: 0.9rem;
-            margin-top: 5px;
-        }
+        .breadcrumb { color: #7f8c8d; font-size: 0.9rem; margin-top: 5px; }
         
-        .header-actions {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
+        .header-actions { display: flex; gap: 15px; align-items: center; }
         
         .icon-btn {
             width: 45px;
@@ -224,22 +182,14 @@
             transform: translateY(-2px);
         }
         
-        /* Section */
-        .section {
-            display: none;
-        }
-        
-        .section.active {
-            display: block;
-            animation: fadeIn 0.3s;
-        }
+        .section { display: none; }
+        .section.active { display: block; animation: fadeIn 0.3s; }
         
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
         
-        /* Cards */
         .card {
             background: white;
             border-radius: 12px;
@@ -265,11 +215,8 @@
             gap: 10px;
         }
         
-        .card-header h2 i {
-            color: var(--primary);
-        }
+        .card-header h2 i { color: var(--primary); }
         
-        /* Stats Grid */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -302,7 +249,6 @@
             color: var(--dark);
         }
         
-        /* Buttons */
         .btn {
             padding: 10px 18px;
             border: none;
@@ -327,7 +273,6 @@
         .btn:active { transform: scale(0.98); }
         .btn-sm { padding: 6px 12px; font-size: 0.85rem; }
         
-        /* Forms */
         .form-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -335,9 +280,7 @@
             margin-bottom: 20px;
         }
         
-        .form-group {
-            margin-bottom: 15px;
-        }
+        .form-group { margin-bottom: 15px; }
         
         .form-group label {
             display: block;
@@ -361,11 +304,7 @@
             outline: none;
         }
         
-        /* Table */
-        .table-wrapper {
-            overflow-x: auto;
-            margin-top: 15px;
-        }
+        .table-wrapper { overflow-x: auto; margin-top: 15px; }
         
         table {
             width: 100%;
@@ -387,9 +326,7 @@
             white-space: nowrap;
         }
         
-        tr:hover {
-            background: #fcfcfc;
-        }
+        tr:hover { background: #fcfcfc; }
         
         .badge {
             padding: 5px 12px;
@@ -404,7 +341,6 @@
         .badge-warning { background: #fff3cd; color: #856404; }
         .badge-pending { background: #fff8e1; color: #f57f17; }
         
-        /* Online Orders Panel */
         .order-card {
             background: white;
             border-radius: 12px;
@@ -432,18 +368,9 @@
             font-size: 1.1rem;
         }
         
-        .order-info {
-            margin-bottom: 15px;
-        }
-        
-        .order-info p {
-            margin-bottom: 5px;
-            font-size: 0.9rem;
-        }
-        
-        .order-info strong {
-            color: var(--dark);
-        }
+        .order-info { margin-bottom: 15px; }
+        .order-info p { margin-bottom: 5px; font-size: 0.9rem; }
+        .order-info strong { color: var(--dark); }
         
         .order-items {
             background: var(--light);
@@ -459,9 +386,7 @@
             border-bottom: 1px solid #ddd;
         }
         
-        .order-item:last-child {
-            border-bottom: none;
-        }
+        .order-item:last-child { border-bottom: none; }
         
         .order-total {
             font-weight: 700;
@@ -477,7 +402,6 @@
             flex-wrap: wrap;
         }
         
-        /* Custom Modal */
         .modal {
             display: none;
             position: fixed;
@@ -493,9 +417,7 @@
             backdrop-filter: blur(4px);
         }
         
-        .modal.active {
-            display: flex;
-        }
+        .modal.active { display: flex; }
         
         .modal-content {
             background: white;
@@ -550,25 +472,11 @@
             max-width: 150px;
         }
         
-        .modal-btn-primary {
-            background: var(--primary);
-            color: white;
-        }
+        .modal-btn-primary { background: var(--primary); color: white; }
+        .modal-btn-primary:hover { background: var(--primary-dark); }
+        .modal-btn-secondary { background: var(--light); color: var(--dark); }
+        .modal-btn-secondary:hover { background: #d5dbdb; }
         
-        .modal-btn-primary:hover {
-            background: var(--primary-dark);
-        }
-        
-        .modal-btn-secondary {
-            background: var(--light);
-            color: var(--dark);
-        }
-        
-        .modal-btn-secondary:hover {
-            background: #d5dbdb;
-        }
-        
-        /* Toast Notifications */
         .toast-container {
             position: fixed;
             top: 20px;
@@ -609,20 +517,9 @@
             font-size: 1.2rem;
         }
         
-        .toast-content {
-            flex: 1;
-        }
-        
-        .toast-title {
-            font-weight: 700;
-            color: var(--dark);
-            margin-bottom: 3px;
-        }
-        
-        .toast-message {
-            font-size: 0.9rem;
-            color: #7f8c8d;
-        }
+        .toast-content { flex: 1; }
+        .toast-title { font-weight: 700; color: var(--dark); margin-bottom: 3px; }
+        .toast-message { font-size: 0.9rem; color: #7f8c8d; }
         
         .toast-close {
             background: none;
@@ -633,14 +530,12 @@
             padding: 0 5px;
         }
         
-        /* Chart */
         .chart-container {
             position: relative;
             height: 300px;
             margin: 20px 0;
         }
         
-        /* Loading */
         .loading {
             text-align: center;
             padding: 40px;
@@ -662,43 +557,6 @@
             100% { transform: rotate(360deg); }
         }
         
-        /* Responsive */
-        @media (max-width: 768px) {
-            .sidebar { 
-                width: 70px; 
-            }
-            .sidebar-header h2, 
-            .sidebar-header p, 
-            .menu-item span, 
-            .user-info strong, 
-            .user-info small { 
-                display: none; 
-            }
-            .main { 
-                margin-left: 70px; 
-                padding: 15px; 
-            }
-            .form-grid { 
-                grid-template-columns: 1fr; 
-            }
-            .header-top {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 15px;
-            }
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-            .order-actions {
-                flex-direction: column;
-            }
-            .order-actions .btn {
-                width: 100%;
-                justify-content: center;
-            }
-        }
-        
-        /* Mobile Menu Toggle */
         .mobile-menu-toggle {
             display: none;
             position: fixed;
@@ -717,23 +575,23 @@
         }
         
         @media (max-width: 768px) {
-            .mobile-menu-toggle {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
+            .sidebar { width: 70px; }
+            .sidebar-header h2, .sidebar-header p, .menu-item span, .user-info strong, .user-info small { display: none; }
+            .main { margin-left: 70px; padding: 15px; }
+            .form-grid { grid-template-columns: 1fr; }
+            .header-top { flex-direction: column; align-items: flex-start; gap: 15px; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .order-actions { flex-direction: column; }
+            .order-actions .btn { width: 100%; justify-content: center; }
+            .mobile-menu-toggle { display: flex; align-items: center; justify-content: center; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <img src="https://i.ibb.co.com/mC3npXRW/Gemini-Generated-Image-8aemtl8aemtl8aem-removebg-preview.png" 
-                 alt="CST SYSTEM" 
-                 class="sidebar-logo"
-                 loading="lazy">
+            <img src="https://i.ibb.co.com/mC3npXRW/Gemini-Generated-Image-8aemtl8aemtl8aem-removebg-preview.png" alt="CST SYSTEM" class="sidebar-logo" loading="lazy">
             <h2>CST SYSTEM</h2>
             <p>Admin Dashboard</p>
         </div>
@@ -768,7 +626,6 @@
         </div>
     </div>
 
-    <!-- Main Content -->
     <div class="main">
         <div class="header-top">
             <div>
@@ -783,7 +640,6 @@
             </div>
         </div>
 
-        <!-- DASHBOARD SECTION -->
         <div id="sec-dashboard" class="section active">
             <div class="stats-grid">
                 <div class="stat-card">
@@ -830,7 +686,6 @@
             </div>
         </div>
 
-        <!-- KELOLA USER SECTION -->
         <div id="sec-users" class="section">
             <div class="card">
                 <div class="card-header">
@@ -892,7 +747,6 @@
             </div>
         </div>
 
-        <!-- MANAJEMEN STOK SECTION -->
         <div id="sec-stok" class="section">
             <div class="card">
                 <div class="card-header">
@@ -922,7 +776,6 @@
             </div>
         </div>
 
-        <!-- TRANSAKSI SECTION -->
         <div id="sec-transaksi" class="section">
             <div class="card">
                 <div class="card-header">
@@ -944,7 +797,6 @@
             </div>
         </div>
 
-        <!-- PESANAN ONLINE SECTION -->
         <div id="sec-online-orders" class="section">
             <div class="card">
                 <div class="card-header">
@@ -956,7 +808,6 @@
             </div>
         </div>
 
-        <!-- LAPORAN SECTION -->
         <div id="sec-laporan" class="section">
             <div class="card">
                 <div class="card-header">
@@ -981,21 +832,15 @@
         </div>
     </div>
 
-    <!-- Mobile Menu Toggle -->
     <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
         <i class="fas fa-bars"></i>
     </button>
 
-    <!-- Toast Container -->
     <div class="toast-container" id="toastContainer"></div>
 
-    <!-- Custom Confirm Modal -->
     <div class="modal" id="confirmModal">
         <div class="modal-content">
-            <img src="https://i.ibb.co.com/mC3npXRW/Gemini-Generated-Image-8aemtl8aemtl8aem-removebg-preview.png" 
-                 alt="CST SYSTEM" 
-                 class="modal-logo"
-                 loading="lazy">
+            <img src="https://i.ibb.co.com/mC3npXRW/Gemini-Generated-Image-8aemtl8aemtl8aem-removebg-preview.png" alt="CST SYSTEM" class="modal-logo" loading="lazy">
             <h2 class="modal-title">CST SYSTEM</h2>
             <p class="modal-message" id="confirmMessage">Apakah Anda yakin?</p>
             <div class="modal-buttons">
@@ -1005,12 +850,35 @@
         </div>
     </div>
 
+    <div class="modal" id="editRoleModal">
+        <div class="modal-content">
+            <img src="https://i.ibb.co.com/mC3npXRW/Gemini-Generated-Image-8aemtl8aemtl8aem-removebg-preview.png" alt="CST SYSTEM" class="modal-logo" loading="lazy">
+            <h2 class="modal-title">Edit Role User</h2>
+            <div class="form-group" style="text-align: left; margin: 20px 0;">
+                <label>Role / Jabatan</label>
+                <select id="editUserRole" onchange="toggleEditBranchSelect()">
+                    <option value="cashier">Kasir (Operator)</option>
+                    <option value="admin">Admin</option>
+                    <option value="super_admin">Super Admin</option>
+                </select>
+            </div>
+            <div class="form-group" id="editGrpCabang" style="text-align: left;">
+                <label>Cabang</label>
+                <select id="editUserCabang">
+                    <option value="cabang_01">Sport Center Bandara Soetta</option>
+                    <option value="cabang_02">TOD M1, Benda</option>
+                </select>
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-secondary" onclick="closeEditRoleModal()">Batal</button>
+                <button class="modal-btn modal-btn-primary" onclick="saveRoleChange()">Simpan</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // ============================================
-        // FIREBASE CONFIGURATION
-        // ============================================
         const firebaseConfig = {
-            apiKey: "AIzaSyAWuzMWsOycxq0gjNm5rP3hDVOKuYuKLvA",  // <-- GANTI DENGAN API KEY ANDA
+            apiKey: "AIzaSyAWuzMWsOycxq0gjNm5rP3hDVOKuYuKLvA",
             authDomain: "thai-tea-cst-ac9db.firebaseapp.com",
             projectId: "thai-tea-cst-ac9db",
             storageBucket: "thai-tea-cst-ac9db.firebasestorage.app",
@@ -1019,7 +887,6 @@
             measurementId: "G-DJFC6NYVD1"
         };
 
-        // Initialize Firebase
         let db, auth;
         let isFirebaseReady = false;
         
@@ -1035,39 +902,22 @@
             console.error('❌ Firebase error:', error);
         }
 
-        // Global Variables
         let currentUser = null;
         let allTransaksi = [];
         let chartInstance = null;
         let confirmCallback = null;
         let onlineOrdersListener = null;
+        let editingUserId = null;
         
-        const branchNames = { 
-            cabang_01: 'Sport Center Bandara Soetta', 
-            cabang_02: 'TOD M1, Benda' 
-        };
-        
+        const branchNames = { cabang_01: 'Sport Center Bandara Soetta', cabang_02: 'TOD M1, Benda' };
         const productNames = {
-            prem_thai: 'Premium Thai Tea', 
-            prem_matcha: 'Premium Matcha', 
-            prem_choco: 'Premium Chocolate',
-            orig_thai: 'Thai Tea', 
-            orig_matcha: 'Matcha', 
-            orig_choco: 'Chocolate',
-            top_cream: 'Cream Cheese', 
-            top_cheese: 'Cheese Parut', 
-            top_bubble: 'Bubble'
+            prem_thai: 'Premium Thai Tea', prem_matcha: 'Premium Matcha', prem_choco: 'Premium Chocolate',
+            orig_thai: 'Thai Tea', orig_matcha: 'Matcha', orig_choco: 'Chocolate',
+            top_cream: 'Cream Cheese', top_cheese: 'Cheese Parut', top_bubble: 'Bubble'
         };
         
-        const formatRp = n => new Intl.NumberFormat('id-ID', { 
-            style: 'currency', 
-            currency: 'IDR', 
-            minimumFractionDigits: 0 
-        }).format(n || 0);
+        const formatRp = n => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n || 0);
 
-        // ============================================
-        // INITIALIZATION
-        // ============================================
         window.onload = async function() {
             if (!isFirebaseReady) {
                 showConfirm('Gagal menghubungkan ke database. Silakan refresh halaman.', null);
@@ -1096,11 +946,8 @@
                     currentUser = user;
                     document.getElementById('adminName').textContent = data.name || 'Admin';
                     
-                    // Setup real-time notifications
                     setupRealtimeNotifications();
                     listenOnlineOrders();
-                    
-                    // Load initial data
                     loadDashboard();
                     
                 } catch (err) {
@@ -1110,22 +957,16 @@
             });
         };
 
-        // ============================================
-        // REAL-TIME NOTIFICATIONS
-        // ============================================
         function setupRealtimeNotifications() {
-            db.collection('transactions')
-                .orderBy('timestamp', 'desc')
-                .limit(1)
-                .onSnapshot(snapshot => {
-                    snapshot.docChanges().forEach(change => {
-                        if (change.type === 'added') {
-                            const data = change.doc.data();
-                            showToast('Transaksi Baru', `Transaksi baru senilai ${formatRp(data.total)}`);
-                            loadDashboard();
-                        }
-                    });
+            db.collection('transactions').orderBy('timestamp', 'desc').limit(1).onSnapshot(snapshot => {
+                snapshot.docChanges().forEach(change => {
+                    if (change.type === 'added') {
+                        const data = change.doc.data();
+                        showToast('Transaksi Baru', `Transaksi baru senilai ${formatRp(data.total)}`);
+                        loadDashboard();
+                    }
                 });
+            });
         }
 
         function listenOnlineOrders() {
@@ -1133,37 +974,32 @@
                 onlineOrdersListener();
             }
             
-            onlineOrdersListener = db.collection('orders')
-                .where('status', '==', 'pending')
-                .onSnapshot(snapshot => {
-                    const count = snapshot.size;
-                    const badge = document.getElementById('onlineOrderBadge');
-                    const notifBadge = document.getElementById('notifBadge');
-                    const dashOnline = document.getElementById('dashOnline');
-                    
-                    if (count > 0) {
-                        badge.textContent = count;
-                        badge.classList.add('active');
-                        notifBadge.textContent = count;
-                        notifBadge.classList.add('active');
-                        if (dashOnline) dashOnline.textContent = count;
-                    } else {
-                        badge.classList.remove('active');
-                        notifBadge.classList.remove('active');
-                        if (dashOnline) dashOnline.textContent = '0';
-                    }
-                    
-                    loadOnlineOrders();
-                }, error => {
-                    console.error('Error listening to orders:', error);
-                    document.getElementById('onlineOrdersContainer').innerHTML = 
-                        '<p style="text-align:center;padding:40px;color:var(--danger);">Gagal memuat pesanan: ' + error.message + '</p>';
-                });
+            onlineOrdersListener = db.collection('orders').orderBy('createdAt', 'desc').onSnapshot(snapshot => {
+                const count = snapshot.size;
+                const badge = document.getElementById('onlineOrderBadge');
+                const notifBadge = document.getElementById('notifBadge');
+                const dashOnline = document.getElementById('dashOnline');
+                
+                if (count > 0) {
+                    badge.textContent = count;
+                    badge.classList.add('active');
+                    notifBadge.textContent = count;
+                    notifBadge.classList.add('active');
+                    if (dashOnline) dashOnline.textContent = count;
+                } else {
+                    badge.classList.remove('active');
+                    notifBadge.classList.remove('active');
+                    if (dashOnline) dashOnline.textContent = '0';
+                }
+                
+                loadOnlineOrders();
+            }, error => {
+                console.error('Error listening to orders:', error);
+                document.getElementById('onlineOrdersContainer').innerHTML = 
+                    '<p style="text-align:center;padding:40px;color:var(--danger);">Koneksi database bermasalah, silakan cek koneksi internet atau indeks Firebase.</p>';
+            });
         }
 
-        // ============================================
-        // NAVIGATION
-        // ============================================
         function showSection(sectionId) {
             document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
             document.getElementById('sec-' + sectionId).classList.add('active');
@@ -1201,14 +1037,17 @@
             grp.style.display = (role === 'cashier') ? 'block' : 'none';
         }
 
+        function toggleEditBranchSelect() {
+            const role = document.getElementById('editUserRole').value;
+            const grp = document.getElementById('editGrpCabang');
+            grp.style.display = (role === 'cashier') ? 'block' : 'none';
+        }
+
         function toggleMobileMenu() {
             const sidebar = document.getElementById('sidebar');
             sidebar.style.width = sidebar.style.width === '260px' ? '70px' : '260px';
         }
 
-        // ============================================
-        // DASHBOARD FUNCTIONS
-        // ============================================
         async function loadDashboard() {
             try {
                 const snap = await db.collection('transactions').orderBy('timestamp', 'desc').get();
@@ -1227,21 +1066,12 @@
                     }
                     
                     if (d.timestamp) {
-                        const dateKey = new Date(d.timestamp.seconds * 1000).toLocaleDateString('id-ID', { 
-                            day: '2-digit', 
-                            month: 'short' 
-                        });
+                        const dateKey = new Date(d.timestamp.seconds * 1000).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
                         dailySales[dateKey] = (dailySales[dateKey] || 0) + (d.total || 0);
                     }
                     
                     if (count <= 5) {
-                        const timeStr = d.timestamp ? new Date(d.timestamp.seconds * 1000).toLocaleString('id-ID', { 
-                            day: 'numeric', 
-                            month: 'short', 
-                            hour: '2-digit', 
-                            minute: '2-digit' 
-                        }) : '-';
-                        
+                        const timeStr = d.timestamp ? new Date(d.timestamp.seconds * 1000).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '-';
                         const branchName = branchNames[d.branchId] || d.branchId || '-';
                         
                         recentHtml += `<tr>
@@ -1302,16 +1132,11 @@
                             }
                         }
                     },
-                    plugins: {
-                        legend: { display: false }
-                    }
+                    plugins: { legend: { display: false } }
                 }
             });
         }
 
-        // ============================================
-        // USER MANAGEMENT
-        // ============================================
         async function handleAddUser(e) {
             e.preventDefault();
             
@@ -1346,8 +1171,7 @@
                 loadUsers();
                 
             } catch (err) {
-                const errorMsg = err.code === 'auth/email-already-in-use' ? 
-                    'Email sudah terdaftar!' : 'Gagal: ' + err.message;
+                const errorMsg = err.code === 'auth/email-already-in-use' ? 'Email sudah terdaftar!' : 'Gagal: ' + err.message;
                 showConfirm(errorMsg, null);
             } finally {
                 btn.innerHTML = originalText;
@@ -1369,10 +1193,8 @@
                 snap.forEach(doc => {
                     const d = doc.data();
                     const isCurrentUser = doc.id === currentUser.uid;
-                    const roleBadge = d.role === 'cashier' ? 'badge-info' : 
-                                     (d.role === 'super_admin' ? 'badge-danger' : 'badge-warning');
-                    const roleName = d.role === 'cashier' ? 'Kasir' : 
-                                    (d.role === 'super_admin' ? 'Super Admin' : 'Admin');
+                    const roleBadge = d.role === 'cashier' ? 'badge-info' : (d.role === 'super_admin' ? 'badge-danger' : 'badge-warning');
+                    const roleName = d.role === 'cashier' ? 'Kasir' : (d.role === 'super_admin' ? 'Super Admin' : 'Admin');
                     
                     html += `<tr>
                         <td>${no++}</td>
@@ -1382,6 +1204,9 @@
                         <td>${branchNames[d.branchId] || d.branchId || '-'}</td>
                         <td><span class="badge ${d.active ? 'badge-success' : 'badge-danger'}">${d.active ? 'Aktif' : 'Nonaktif'}</span></td>
                         <td>${!isCurrentUser ? `
+                            <button class="btn btn-sm btn-warning" onclick="openEditRoleModal('${doc.id}', '${d.role}', '${d.branchId || ''}')">
+                                <i class="fas fa-edit"></i> Edit Role
+                            </button>
                             <button class="btn btn-sm btn-danger" onclick="confirmDeleteUser('${doc.id}')">
                                 <i class="fas fa-trash"></i>
                             </button>
@@ -1395,6 +1220,40 @@
             } catch (e) {
                 console.error('Load users error:', e);
                 showToast('Gagal memuat data user', 'error');
+            }
+        }
+
+        function openEditRoleModal(userId, currentRole, currentBranch) {
+            editingUserId = userId;
+            document.getElementById('editUserRole').value = currentRole;
+            document.getElementById('editUserCabang').value = currentBranch;
+            toggleEditBranchSelect();
+            document.getElementById('editRoleModal').classList.add('active');
+        }
+
+        function closeEditRoleModal() {
+            document.getElementById('editRoleModal').classList.remove('active');
+            editingUserId = null;
+        }
+
+        async function saveRoleChange() {
+            if (!editingUserId) return;
+            
+            const role = document.getElementById('editUserRole').value;
+            const cabang = role === 'cashier' ? document.getElementById('editUserCabang').value : 'all';
+            
+            try {
+                await db.collection('users').doc(editingUserId).update({
+                    role: role,
+                    branchId: cabang
+                });
+                
+                showToast('Role user berhasil diubah');
+                closeEditRoleModal();
+                loadUsers();
+                
+            } catch (e) {
+                showToast('Gagal mengubah role: ' + e.message, 'error');
             }
         }
 
@@ -1414,9 +1273,6 @@
             }
         }
 
-        // ============================================
-        // STOCK MANAGEMENT
-        // ============================================
         async function loadStok() {
             const cabang = document.getElementById('filterStokCabang').value;
             let query = db.collection('inventory');
@@ -1445,9 +1301,7 @@
                         <td>${branchNames[d.branchId] || d.branchId}</td>
                         <td style="${d.stock < 10 ? 'color:red;font-weight:bold;' : ''}">${d.stock}</td>
                         <td>
-                            <input type="number" class="stock-input" id="stock-${doc.id}" 
-                                   value="${d.stock}"
-                                   style="width:80px;padding:6px;border:1px solid #ccc;border-radius:4px;">
+                            <input type="number" class="stock-input" id="stock-${doc.id}" value="${d.stock}" style="width:80px;padding:6px;border:1px solid #ccc;border-radius:4px;">
                             <button class="btn btn-sm btn-success" onclick="updateStock('${doc.id}')">
                                 <i class="fas fa-save"></i>
                             </button>
@@ -1480,15 +1334,9 @@
             }
         }
 
-        // ============================================
-        // TRANSACTIONS
-        // ============================================
         async function loadTransaksi() {
             try {
-                const snap = await db.collection('transactions')
-                    .orderBy('timestamp', 'desc')
-                    .limit(200)
-                    .get();
+                const snap = await db.collection('transactions').orderBy('timestamp', 'desc').limit(200).get();
                 
                 allTransaksi = [];
                 snap.forEach(doc => allTransaksi.push({ id: doc.id, ...doc.data() }));
@@ -1547,26 +1395,23 @@
             }
         }
 
-        // ============================================
-        // ONLINE ORDERS - FIXED
-        // ============================================
         async function loadOnlineOrders() {
             const container = document.getElementById('onlineOrdersContainer');
             
             try {
-                const snap = await db.collection('orders')
-                    .where('status', '==', 'pending')
-                    .orderBy('createdAt', 'desc')
-                    .get();
+                const snap = await db.collection('orders').orderBy('createdAt', 'desc').get();
                 
                 if (snap.empty) {
-                    container.innerHTML = '<p style="text-align:center;padding:40px;color:#7f8c8d;">Tidak ada pesanan online pending</p>';
+                    container.innerHTML = '<p style="text-align:center;padding:40px;color:#7f8c8d;">Tidak ada pesanan online</p>';
                     return;
                 }
                 
                 let html = '';
                 snap.forEach(doc => {
                     const order = { id: doc.id, ...doc.data() };
+                    const status = order.status || 'pending';
+                    const statusBadge = status === 'pending' ? 'badge-pending' : (status === 'accepted' ? 'badge-success' : 'badge-danger');
+                    const statusText = status === 'pending' ? 'Pending' : (status === 'accepted' ? 'Diterima' : 'Ditolak');
                     
                     html += `<div class="order-card">
                         <div class="order-header">
@@ -1574,7 +1419,7 @@
                                 <i class="fas fa-shopping-bag"></i>
                                 Pesanan #${doc.id.substr(0,8).toUpperCase()}
                             </div>
-                            <span class="badge badge-pending">Pending</span>
+                            <span class="badge ${statusBadge}">${statusText}</span>
                         </div>
                         <div class="order-info">
                             <p><strong><i class="fas fa-user"></i> Nama:</strong> ${order.customerName || '-'}</p>
@@ -1593,15 +1438,17 @@
                             Total: ${formatRp(order.total || 0)}
                         </div>
                         <div class="order-actions">
-                            <button class="btn btn-success btn-sm" onclick="acceptOrder('${order.id}', '${order.customerPhone || ''}')">
-                                <i class="fas fa-check"></i> Proses/Selesai
-                            </button>
-                            <button class="btn btn-info btn-sm" onclick="chatWA('${order.customerPhone || ''}', '${order.customerName || ''}')">
-                                <i class="fab fa-whatsapp"></i> Chat WA
-                            </button>
-                            <button class="btn btn-danger btn-sm" onclick="rejectOrder('${order.id}')">
-                                <i class="fas fa-times"></i> Tolak/Hapus
-                            </button>
+                            ${status === 'pending' ? `
+                                <button class="btn btn-success btn-sm" onclick="acceptOrder('${order.id}', '${order.customerPhone || ''}')">
+                                    <i class="fas fa-check"></i> Proses/Selesai
+                                </button>
+                                <button class="btn btn-info btn-sm" onclick="chatWA('${order.customerPhone || ''}', '${order.customerName || ''}')">
+                                    <i class="fab fa-whatsapp"></i> Chat WA
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="rejectOrder('${order.id}')">
+                                    <i class="fas fa-times"></i> Tolak/Hapus
+                                </button>
+                            ` : '<p style="color:#7f8c8d;">Pesanan sudah diproses</p>'}
                         </div>
                     </div>`;
                 });
@@ -1612,7 +1459,7 @@
                 console.error('Load online orders error:', e);
                 container.innerHTML = `<p style="text-align:center;padding:40px;color:var(--danger);">
                     <i class="fas fa-exclamation-triangle" style="font-size:3rem;margin-bottom:15px;display:block;"></i>
-                    Gagal memuat pesanan: ${e.message}
+                    Koneksi database bermasalah, silakan cek koneksi internet atau indeks Firebase.
                 </p>`;
             }
         }
@@ -1624,7 +1471,6 @@
                     acceptedAt: new Date().toISOString()
                 });
                 
-                // Send WhatsApp notification
                 if (customerPhone) {
                     const message = `Halo! Pesanan Anda telah kami terima dan sedang diproses. Terima kasih telah memesan di Thai Tea CST!`;
                     const waLink = `https://wa.me/${customerPhone}?text=${encodeURIComponent(message)}`;
@@ -1670,9 +1516,6 @@
             showSection('online-orders');
         }
 
-        // ============================================
-        // EXPORT FUNCTIONS
-        // ============================================
         function exportUsersExcel() {
             const data = [];
             db.collection('users').get().then(snap => {
@@ -1738,9 +1581,6 @@
             showToast('File Excel berhasil diunduh');
         }
 
-        // ============================================
-        // CUSTOM MODAL & TOAST
-        // ============================================
         function showConfirm(message, callback) {
             document.getElementById('confirmMessage').textContent = message;
             document.getElementById('confirmModal').classList.add('active');
@@ -1798,7 +1638,6 @@
             }, 3000);
         }
 
-        // Close modal when clicking outside
         window.onclick = function(event) {
             if (event.target.classList.contains('modal')) {
                 event.target.classList.remove('active');
