@@ -1499,79 +1499,72 @@
 
         function printStruk() {
             if (!lastTransaction) return;
+            
             const date = new Date();
             const dateStr = date.toLocaleDateString('id-ID');
             const timeStr = date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            const width = 32; // Lebar kertas thermal 58mm (32 karakter)
             
-            // Helper function untuk center text (32 karakter width)
-            const centerText = (text, width = 32) => {
-                const padding = Math.floor((width - text.length) / 2);
-                return ' '.repeat(padding) + text;
+            // Fungsi untuk membuat teks rata tengah
+            const centerText = (text, w = width) => {
+                const spaces = Math.floor((w - text.length) / 2);
+                return ' '.repeat(spaces) + text;
             };
             
-            // Helper function untuk format item (kiri-kanan)
-            const formatItemLine = (name, price, width = 32) => {
-                const nameLength = Math.min(name.length, 18); // Max 18 char untuk nama
-                const priceStr = price.toString();
-                const spaces = width - nameLength - priceStr.length;
-                return name.substring(0, 18).padEnd(18, ' ') + priceStr.padStart(spaces > 0 ? spaces : 1, ' ');
+            // Fungsi untuk format item satu baris (Nama di kiri, Total di kanan)
+            const formatItemLine = (name, qty, subtotal, w = width) => {
+                const itemLine = `${name} ${qty}x ${subtotal}`;
+                if (itemLine.length <= w) {
+                    return itemLine.padEnd(w, ' ');
+                }
+                // Jika terlalu panjang, potong nama item
+                const maxNameLength = w - ` ${qty}x ${subtotal}`.length;
+                if (maxNameLength < 5) return `${qty}x ${subtotal}`.padStart(w, ' ');
+                return `${name.substring(0, maxNameLength - 3)}... ${qty}x ${subtotal}`.padEnd(w, ' ');
             };
             
-            // Helper function untuk format payment (kiri-kanan dengan alignment)
-            const formatPaymentLine = (label, amount, width = 32) => {
-                const labelStr = label + ':';
+            // Fungsi untuk format pembayaran (Label kiri, Angka kanan sejajar)
+            const formatPaymentLine = (label, amount, w = width) => {
+                const labelWithColon = label + ':';
                 const amountStr = amount.toString();
-                const spaces = width - labelStr.length - amountStr.length;
-                return labelStr.padEnd(labelStr.length + (spaces > 0 ? spaces : 1), ' ') + amountStr;
+                const spaces = w - labelWithColon.length - amountStr.length;
+                return labelWithColon + ' '.repeat(Math.max(1, spaces)) + amountStr;
             };
             
             let text = '';
             
-            // HEADER - Centered
+            // HEADER - Rata Tengah
             text += centerText('THAI TEA CST') + '\n';
             text += '--------------------------------\n';
             text += `Pelanggan: ${lastTransaction.customerName}\n`;
             text += `${dateStr} ${timeStr}\n`;
             text += '--------------------------------\n';
             
-            // ITEMS - Name left, Price right
+            // ITEMS - Satu baris per item, subtotal rata kanan
             lastTransaction.items.forEach(item => {
-                const name = item.name.length > 18 ? item.name.substring(0, 15) + '...' : item.name;
-                const price = formatRp(item.price * item.qty);
-                const qtyLine = `${item.qty}x ${formatRp(item.price)}`;
-                
-                text += formatItemLine(name, price) + '\n';
-                text += `  ${qtyLine}\n`;
+                const subtotalStr = formatRp(item.price * item.qty);
+                text += formatItemLine(item.name, item.qty, subtotalStr) + '\n';
             });
             
             text += '--------------------------------\n';
             
-            // PAYMENT SECTION - Labels left, amounts right aligned
-            const subtotal = lastTransaction.items.reduce((s, i) => s + (i.price * i.qty), 0);
+            // PEMBAYARAN - Label rata kiri, Angka rata kanan sejajar
             const totalStr = formatRp(lastTransaction.total);
             const bayarStr = formatRp(lastTransaction.uangDiterima || lastTransaction.total);
             const kembaliStr = formatRp(lastTransaction.kembalian || 0);
             
-            if (subtotal !== lastTransaction.total) {
-                const diskonStr = formatRp(subtotal - lastTransaction.total);
-                text += formatPaymentLine('Subtotal', formatRp(subtotal)) + '\n';
-                text += formatPaymentLine('Diskon', '-' + diskonStr) + '\n';
-            } else {
-                text += formatPaymentLine('Total', totalStr) + '\n';
-            }
-            
+            text += formatPaymentLine('Total', totalStr) + '\n';
             text += '================================\n';
-            text += formatPaymentLine('TOTAL', totalStr) + '\n';
             text += formatPaymentLine('BAYAR', bayarStr) + '\n';
             text += formatPaymentLine('KEMBALI', kembaliStr) + '\n';
             text += '================================\n\n';
             
-            // FOOTER - Centered (3 lines)
+            // FOOTER - Rata Tengah (3 baris terpisah)
             text += centerText('Pesanan Kembali:') + '\n';
             text += centerText('+62 822-9999-7227') + '\n';
             text += centerText('TERIMA KASIH') + '\n';
             
-            // Clean non-ASCII characters
+            // Bersihkan karakter aneh sebelum encode
             const cleanText = text.replace(/[^\x00-\x7F]/g, '').trim();
             const b64 = btoa(cleanText);
             
