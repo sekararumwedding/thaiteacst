@@ -1267,6 +1267,7 @@
             document.getElementById('loginSection').classList.remove('active'); 
             document.getElementById('kasirSection').classList.add('active'); 
             document.getElementById('onlineOrdersSection').classList.remove('active');
+            
             if(currentUser) {
                 document.getElementById('userAvatar').textContent = currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'U';
             }
@@ -1275,8 +1276,10 @@
             } else {
                 document.getElementById('desktopCart').style.display = 'block';
             }
+        
+            // ✅ TAMBAHKAN BARIS INI:
+            setupWebOrderListener();
         }
-
         function showOnlineOrders() {
             document.getElementById('loginSection').classList.remove('active'); 
             document.getElementById('kasirSection').classList.remove('active'); 
@@ -1301,7 +1304,9 @@
                 showKasirSection();
                 loadProducts();
                 setupOnlineOrdersListener();
-                setupCashierOrderListener();
+                
+                // ✅ TAMBAHKAN BARIS INI JUGA:
+                setupWebOrderListener();
             } catch (err) {
                 document.getElementById('loginError').textContent = err.message;
                 document.getElementById('loginError').style.display = 'block';
@@ -2001,6 +2006,59 @@
                     });
                 }, error => {
                     console.error('Error listening to cashier orders:', error);
+                });
+        }
+        // ==========================================
+        // 🔔 NOTIFIKASI PESANAN WEBSITE UNTUK KASIR
+        // ==========================================
+        function setupWebOrderListener() {
+            // Hapus listener lama agar tidak dobel
+            if (window.webOrderListener) window.webOrderListener();
+        
+            // ⚠️ PENTING: Ganti dengan nama collection yang dipakai website/admin
+            // Biasanya: 'orders' atau 'penjualan_online'
+            const collectionName = 'orders'; 
+        
+            window.webOrderListener = db.collection(collectionName)
+                .where('status', '==', 'pending')
+                .orderBy('createdAt', 'desc')
+                .onSnapshot(snapshot => {
+                    console.log(`📡 Snapshot: ${snapshot.size} pesanan pending`);
+        
+                    snapshot.docChanges().forEach(change => {
+                        if (change.type === 'added' && currentUser) {
+                            const data = change.doc.data();
+                            console.log('🆕 Pesanan website baru:', data);
+        
+                            const customerName = data.customerName || data.nama || 'Pelanggan';
+                            const items = data.items ? data.items.map(i => i.name || i.item || i.menu).join(', ') : 'Item';
+                            const total = data.total ? formatRp(data.total) : '-';
+        
+                            // 🔊 Mainkan suara
+                            const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+                            audio.play().catch(e => console.log('⚠️ Audio diblokir:', e));
+        
+                            // 🪟 Tampilkan popup notifikasi
+                            setTimeout(() => {
+                                if(confirm(`🔔 PESANAN WEBSITE BARU!\n\n👤 Nama: ${customerName}\n🥤 Item: ${items}\n💰 Total: ${total}\n\nKlik OK untuk proses & cetak struk?`)) {
+                                    // Update status jadi 'processing'
+                                    db.collection(collectionName).doc(change.doc.id).update({
+                                        status: 'processing',
+                                        processedBy: currentUser.name || 'Kasir',
+                                        processedAt: new Date()
+                                    }).then(() => {
+                                        console.log('✅ Status diupdate ke processing');
+                                        showCustomModal('Pesanan Diterima', `Pesanan ${customerName} sedang dibuat.`);
+                                    }).catch(err => console.error('❌ Gagal update status:', err));
+                                }
+                            }, 300);
+                        }
+                    });
+                }, error => {
+                    console.error('❌ Error listener pesanan:', error);
+                    if (error.code === 'failed-precondition') {
+                        console.log('🔗 Index belum aktif. Klik link di console untuk buat index.');
+                    }
                 });
         }
     </script>
