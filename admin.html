@@ -642,6 +642,308 @@
             if (event.target.classList.contains('modal')) event.target.classList.remove('active');
             if (event.target.id === 'customModalOverlay') closeCustomModal();
         };
+
+        // User Management Functions
+        window.handleAddUser = async function(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+            btn.disabled = true;
+            const nama = document.getElementById('uNama').value.trim(), email = document.getElementById('uEmail').value.trim(), pass = document.getElementById('uPass').value, role = document.getElementById('uRole').value;
+            const cabang = role === 'cashier' ? document.getElementById('uCabang').value : 'all';
+            try {
+                const cred = await auth.createUserWithEmailAndPassword(email, pass);
+                await db.collection('users').doc(cred.user.uid).set({ name: nama, email: email, branchId: cabang, role: role, active: true, createdAt: new Date().toISOString() });
+                await cred.user.delete();
+                showToast('User berhasil ditambahkan');
+                document.getElementById('formUser').reset();
+                toggleBranchSelect();
+                loadUsers();
+            } catch (err) { alert(err.code === 'auth/email-already-in-use' ? 'Email sudah terdaftar!' : 'Gagal: ' + err.message); }
+            finally { btn.innerHTML = originalText; btn.disabled = false; }
+        };
+
+        window.loadUsers = async function() {
+            try {
+                const snap = await db.collection('users').get();
+                const tbody = document.getElementById('tblUsers');
+                if (snap.empty) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Belum ada user</td></tr>'; return; }
+                let html = '', no = 1;
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    const isCurrentUser = doc.id === currentUser.uid;
+                    const roleBadge = d.role === 'cashier' ? 'badge-info' : (d.role === 'super_admin' ? 'badge-danger' : 'badge-warning');
+                    const roleName = d.role === 'cashier' ? 'Kasir' : (d.role === 'super_admin' ? 'Super Admin' : 'Admin');
+                    html += `<tr><td>${no++}</td><td><b>${d.name}</b></td><td>${d.email}</td><td><span class="badge ${roleBadge}">${roleName}</span></td><td>${branchNames[d.branchId] || d.branchId || '-'}</td><td><span class="badge ${d.active ? 'badge-success' : 'badge-danger'}">${d.active ? 'Aktif' : 'Nonaktif'}</span></td><td>${!isCurrentUser ? `<button class="btn btn-sm btn-warning" onclick="alert('Fitur edit user')"><i class="fas fa-edit"></i></button> <button class="btn btn-sm btn-danger" onclick="confirmDeleteUser('${doc.id}')"><i class="fas fa-trash"></i></button>` : '<small>Akun Saya</small>'}</td></tr>`;
+                });
+                tbody.innerHTML = html;
+            } catch (e) { showToast('Gagal memuat data user', 'error'); }
+        };
+
+        window.confirmDeleteUser = function(id) {
+            showCustomModal('Hapus user ini? Tindakan ini tidak dapat dibatalkan.', function() {
+                db.collection('users').doc(id).delete().then(() => {
+                    showToast('User dihapus');
+                    loadUsers();
+                });
+            });
+        };
+
+        window.exportUsersExcel = function() {
+            const data = [];
+            db.collection('users').get().then(snap => {
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    data.push({'Nama': d.name, 'Email': d.email, 'Role': d.role, 'Cabang': branchNames[d.branchId] || d.branchId, 'Status': d.active ? 'Aktif' : 'Nonaktif'});
+                });
+                const ws = XLSX.utils.json_to_sheet(data);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Users");
+                XLSX.writeFile(wb, `Laporan_Users_${new Date().toISOString().split('T')[0]}.xlsx`);
+                showToast('File Excel berhasil diunduh');
+            });
+        };
+
+        // Bahan Baku Functions
+        window.handleAddBahanBaku = async function(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+            btn.disabled = true;
+            const bahanBaku = {
+                nama: document.getElementById('bbNama').value.trim(),
+                satuan: document.getElementById('bbSatuan').value,
+                stok: parseInt(document.getElementById('bbStok').value) || 0,
+                minStok: parseInt(document.getElementById('bbMinStok').value) || 0,
+                harga: parseInt(document.getElementById('bbHarga').value) || 0,
+                cabang: document.getElementById('bbCabang').value,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+            try {
+                await db.collection('bahan_baku').add(bahanBaku);
+                showToast('Bahan baku berhasil ditambahkan');
+                document.getElementById('formBahanBaku').reset();
+                loadBahanBaku();
+            } catch (err) {
+                showToast('Gagal menambahkan bahan baku: ' + err.message, 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        };
+
+        window.loadBahanBaku = async function() {
+            const cabang = document.getElementById('filterBahanCabang').value;
+            let query = db.collection('bahan_baku');
+            if (cabang !== 'all') query = query.where('cabang', '==', cabang);
+            try {
+                const snap = await query.get();
+                const tbody = document.getElementById('tblBahanBaku');
+                if (snap.empty) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">Belum ada data bahan baku</td></tr>'; return; }
+                let html = '', no = 1;
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    const statusClass = d.stok <= d.minStok ? 'badge-danger' : 'badge-success';
+                    const statusText = d.stok <= d.minStok ? 'Stok Habis' : 'Tersedia';
+                    html += `<tr><td>${no++}</td><td><b>${d.nama}</b></td><td>${branchNames[d.cabang] || d.cabang}</td><td style="${d.stok <= d.minStok ? 'color:red;font-weight:bold;' : ''}">${d.stok}</td><td>${d.satuan}</td><td>${d.minStok}</td><td><span class="badge ${statusClass}">${statusText}</span></td><td>${formatRp(d.harga)}</td><td><button class="btn btn-sm btn-danger" onclick="confirmDeleteBahanBaku('${doc.id}')"><i class="fas fa-trash"></i></button></td></tr>`;
+                });
+                tbody.innerHTML = html;
+            } catch (e) {
+                showToast('Gagal memuat data bahan baku', 'error');
+            }
+        };
+
+        window.confirmDeleteBahanBaku = function(id) {
+            showCustomModal('Hapus bahan baku ini? Tindakan ini tidak dapat dibatalkan.', function() {
+                db.collection('bahan_baku').doc(id).delete().then(() => {
+                    showToast('Bahan baku dihapus');
+                    loadBahanBaku();
+                });
+            });
+        };
+
+        window.exportBahanBakuExcel = function() {
+            const data = [];
+            db.collection('bahan_baku').get().then(snap => {
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    data.push({'Nama Bahan': d.nama, 'Cabang': branchNames[d.cabang] || d.cabang, 'Stok': d.stok, 'Satuan': d.satuan, 'Min Stok': d.minStok, 'Harga per Satuan': d.harga, 'Status': d.stok <= d.minStok ? 'Stok Habis' : 'Tersedia'});
+                });
+                const ws = XLSX.utils.json_to_sheet(data);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Bahan Baku");
+                XLSX.writeFile(wb, `Laporan_Bahan_Baku_${new Date().toISOString().split('T')[0]}.xlsx`);
+                showToast('File Excel berhasil diunduh');
+            });
+        };
+
+        // Stok Functions
+        window.loadStok = async function() {
+            const cabang = document.getElementById('filterStokCabang').value;
+            let query = db.collection('inventory');
+            if (cabang !== 'all') query = query.where('branchId', '==', cabang);
+            try {
+                const snap = await query.get();
+                const tbody = document.getElementById('tblStok');
+                if (snap.empty) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Belum ada data</td></tr>'; return; }
+                let html = '', no = 1;
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    const name = productNames[d.productId] || d.productId;
+                    html += `<tr><td>${no++}</td><td>${name}</td><td>${branchNames[d.branchId] || d.branchId}</td><td style="${d.stock < 10 ? 'color:red;font-weight:bold;' : ''}">${d.stock}</td><td><input type="number" id="stock-${doc.id}" value="${d.stock}" style="width:80px;padding:6px;border:1px solid #ccc;border-radius:4px;"> <button class="btn btn-sm btn-success" onclick="updateStock('${doc.id}')"><i class="fas fa-save"></i></button></td></tr>`;
+                });
+                tbody.innerHTML = html;
+            } catch (e) {
+                showToast('Gagal memuat data stok', 'error');
+            }
+        };
+
+        window.updateStock = async function(id) {
+            const val = parseInt(document.getElementById('stock-' + id).value);
+            if (isNaN(val) || val < 0) { alert('Jumlah tidak valid'); return; }
+            try {
+                await db.collection('inventory').doc(id).update({ stock: val });
+                showToast('Stok diupdate');
+                loadStok();
+            } catch (e) {
+                showToast('Gagal update stok: ' + e.message, 'error');
+            }
+        };
+
+        window.exportStokExcel = function() {
+            const data = [];
+            db.collection('inventory').get().then(snap => {
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    data.push({'Produk': productNames[d.productId] || d.productId, 'Cabang': branchNames[d.branchId] || d.branchId, 'Stok': d.stock});
+                });
+                const ws = XLSX.utils.json_to_sheet(data);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Stok");
+                XLSX.writeFile(wb, `Laporan_Stok_${new Date().toISOString().split('T')[0]}.xlsx`);
+                showToast('File Excel berhasil diunduh');
+            });
+        };
+
+        // Transaksi Functions
+        window.loadTransaksi = async function() {
+            try {
+                const snap = await db.collection('transactions').orderBy('timestamp', 'desc').limit(200).get();
+                allTransaksi = [];
+                snap.forEach(doc => allTransaksi.push({ id: doc.id, ...doc.data() }));
+                renderTransaksi(allTransaksi);
+            } catch (e) {
+                showToast('Gagal memuat transaksi', 'error');
+            }
+        };
+
+        function renderTransaksi(data) {
+            const tbody = document.getElementById('tblTransaksi');
+            if (!data.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Tidak ada data</td></tr>'; return; }
+            let html = '';
+            data.forEach(d => {
+                const timeStr = d.timestamp ? new Date(d.timestamp.seconds * 1000).toLocaleString('id-ID') : '-';
+                html += `<tr><td><small>${timeStr}</small></td><td>${branchNames[d.branchId] || d.branchId || '-'}</td><td>${d.cashierName || '-'}</td><td>${Array.isArray(d.items) ? d.items.map(i => i.name).join(', ') : '-'}</td><td><b>${formatRp(d.total)}</b></td><td><span class="badge badge-info">${d.paymentMethod}</span></td><td><button class="btn btn-sm btn-danger" onclick="confirmDeleteTransaction('${d.id}')"><i class="fas fa-trash"></i></button></td></tr>`;
+            });
+            tbody.innerHTML = html;
+        }
+
+        window.confirmDeleteTransaction = function(id) {
+            showCustomModal('Hapus transaksi ini? Tindakan ini tidak dapat dibatalkan.', function() {
+                db.collection('transactions').doc(id).delete().then(() => {
+                    showToast('Transaksi dihapus');
+                    loadTransaksi();
+                    loadDashboard();
+                });
+            });
+        };
+
+        window.exportTransaksiExcel = function() {
+            if (!allTransaksi.length) { alert('Tidak ada data untuk diexport'); return; }
+            const data = allTransaksi.map(t => ({'Tanggal': t.timestamp ? new Date(t.timestamp.seconds * 1000).toLocaleString('id-ID') : '-', 'ID': t.id, 'Cabang': branchNames[t.branchId] || t.branchId, 'Kasir': t.cashierName || '-', 'Items': Array.isArray(t.items) ? t.items.map(i => `${i.name} (x${i.qty})`).join(', ') : '-', 'Total': t.total || 0, 'Metode': t.paymentMethod || '-'}));
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Transaksi");
+            XLSX.writeFile(wb, `Laporan_Transaksi_${new Date().toISOString().split('T')[0]}.xlsx`);
+            showToast('File Excel berhasil diunduh');
+        };
+
+        // Online Sales Functions
+        window.handleAddOnlineSale = async function(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+            btn.disabled = true;
+            const sale = {
+                platform: document.getElementById('osPlatform').value,
+                orderNo: document.getElementById('osOrderNo').value.trim(),
+                item: document.getElementById('osItem').value.trim(),
+                price: parseInt(document.getElementById('osPrice').value) || 0,
+                timestamp: new Date(document.getElementById('osTime').value),
+                createdAt: new Date().toISOString()
+            };
+            try {
+                await db.collection('online_sales').add(sale);
+                showToast('Penjualan online berhasil ditambahkan');
+                document.getElementById('formOnlineSale').reset();
+                loadOnlineSales();
+            } catch (err) {
+                showToast('Gagal menyimpan: ' + err.message, 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        };
+
+        window.loadOnlineSales = async function() {
+            try {
+                const snap = await db.collection('online_sales').orderBy('timestamp', 'desc').get();
+                const tbody = document.getElementById('tblOnlineSales');
+                if (snap.empty) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Belum ada data penjualan online</td></tr>'; return; }
+                let html = '';
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    const timeStr = d.timestamp ? new Date(d.timestamp.toDate()).toLocaleString('id-ID') : '-';
+                    let badgeClass = 'badge-info';
+                    if (d.platform === 'GoFood') badgeClass = 'badge-gofood';
+                    else if (d.platform === 'ShopeeFood') badgeClass = 'badge-shopee';
+                    else if (d.platform === 'GrabFood') badgeClass = 'badge-grab';
+                    html += `<tr><td><small>${timeStr}</small></td><td><span class="badge ${badgeClass}">${d.platform}</span></td><td>${d.orderNo}</td><td>${d.item}</td><td><b>${formatRp(d.price)}</b></td><td><button class="btn btn-sm btn-danger" onclick="confirmDeleteOnlineSale('${doc.id}')"><i class="fas fa-trash"></i></button></td></tr>`;
+                });
+                tbody.innerHTML = html;
+            } catch (e) {
+                showToast('Gagal memuat data penjualan online', 'error');
+            }
+        };
+
+        window.confirmDeleteOnlineSale = function(id) {
+            showCustomModal('Hapus data penjualan ini?', function() {
+                db.collection('online_sales').doc(id).delete().then(() => {
+                    showToast('Data penjualan dihapus');
+                    loadOnlineSales();
+                });
+            });
+        };
+
+        window.exportOnlineSalesExcel = function() {
+            const data = [];
+            db.collection('online_sales').get().then(snap => {
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    const timeStr = d.timestamp ? new Date(d.timestamp.toDate()).toLocaleString('id-ID') : '-';
+                    data.push({'Waktu': timeStr, 'Platform': d.platform, 'No Order': d.orderNo, 'Item': d.item, 'Harga': d.price});
+                });
+                const ws = XLSX.utils.json_to_sheet(data);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Penjualan Online");
+                XLSX.writeFile(wb, `Laporan_Online_Sales_${new Date().toISOString().split('T')[0]}.xlsx`);
+                showToast('File Excel berhasil diunduh');
+            });
+        };
     </script>
 </body>
 </html>
