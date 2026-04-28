@@ -466,6 +466,35 @@
         };
         const formatRp = n => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n || 0);
 
+        // ==========================================
+        // GLOBAL FUNCTIONS - MUST BE DEFINED FIRST
+        // ==========================================
+        
+        // Navigation Function
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+            document.getElementById('sec-' + sectionId).classList.add('active');
+            document.querySelectorAll('.menu-item').forEach((el, index) => {
+                el.classList.remove('active');
+                const sections = ['dashboard', 'users', 'inventory-bahan', 'stok', 'transaksi', 'online-sales', 'online-orders', 'laporan'];
+                if (sections[index] === sectionId) el.classList.add('active');
+            });
+            const titles = { 
+                dashboard: 'Dashboard Bisnis', users: 'Kelola User', 'inventory-bahan': 'Inventory Bahan Baku', 
+                stok: 'Manajemen Stok', transaksi: 'Transaksi', 'online-sales': 'Penjualan Online', 
+                'online-orders': 'Pesanan Masuk', laporan: 'Laporan' 
+            };
+            document.getElementById('pageTitle').textContent = titles[sectionId];
+            document.getElementById('breadcrumb').textContent = titles[sectionId];
+            if (sectionId === 'dashboard') loadDashboard();
+            if (sectionId === 'users') loadUsers();
+            if (sectionId === 'inventory-bahan') loadBahanBaku();
+            if (sectionId === 'stok') loadStok();
+            if (sectionId === 'transaksi') loadTransaksi();
+            if (sectionId === 'online-sales') loadOnlineSales();
+            if (sectionId === 'online-orders') loadOnlineOrders();
+        }
+
         // Custom Modal Functions
         function showCustomModal(message, callback) {
             document.getElementById('customModalMessage').textContent = message;
@@ -478,19 +507,14 @@
             customModalCallback = null;
         }
 
-        document.getElementById('customModalCancelBtn').onclick = function() {
-            closeCustomModal();
-        };
-
-        document.getElementById('customModalConfirmBtn').onclick = function() {
-            if (customModalCallback) {
-                customModalCallback();
-            }
-            closeCustomModal();
-        };
+        function closeEditStockModal() {
+            document.getElementById('editStockModalOverlay').classList.remove('active');
+            editingStockId = null;
+            isAddStock = false;
+        }
 
         // Edit Stock Modal Functions
-        window.openEditStockModal = function(docId, nama, stok, satuan, minStok, cabang) {
+        function openEditStockModal(docId, nama, stok, satuan, minStok, cabang) {
             editingStockId = docId;
             isAddStock = false;
             document.getElementById('editStockModalTitle').textContent = 'Edit Stok Bahan Baku';
@@ -532,9 +556,9 @@
             
             document.getElementById('editStockSaveBtn').textContent = 'Simpan Perubahan';
             document.getElementById('editStockModalOverlay').classList.add('active');
-        };
+        }
 
-        window.openAddStockModal = function() {
+        function openAddStockModal() {
             editingStockId = null;
             isAddStock = true;
             document.getElementById('editStockModalTitle').textContent = 'Tambah Stok Bahan Baku';
@@ -574,9 +598,9 @@
             
             document.getElementById('editStockSaveBtn').textContent = 'Tambah Stok';
             document.getElementById('editStockModalOverlay').classList.add('active');
-        };
+        }
 
-        window.onAddStockSelectChange = function() {
+        function onAddStockSelectChange() {
             const selectEl = document.getElementById('addStockSelect');
             const infoDiv = document.getElementById('addStockInfo');
             
@@ -591,31 +615,25 @@
             } else {
                 infoDiv.style.display = 'none';
             }
-        };
+        }
 
-        window.quickAddStock = function(value) {
+        function quickAddStock(value) {
             const input = document.getElementById('editStokInput');
             const newVal = Math.max(0, parseInt(input.value || 0) + value);
             input.value = newVal;
             updateStockDisplay();
-        };
+        }
 
-        window.updateStockDisplay = function() {
+        function updateStockDisplay() {
             const input = document.getElementById('editStokInput');
             const display = document.getElementById('currentStockDisplay');
             if (input && display) {
                 const satuan = allBahanBakuData.find(b => b.id === editingStockId)?.satuan || '';
                 display.textContent = `${input.value} ${satuan}`;
             }
-        };
+        }
 
-        window.closeEditStockModal = function() {
-            document.getElementById('editStockModalOverlay').classList.remove('active');
-            editingStockId = null;
-            isAddStock = false;
-        };
-
-        window.saveStockChanges = async function() {
+        async function saveStockChanges() {
             if (!editingStockId) {
                 showToast('Pilih bahan baku terlebih dahulu', 'error');
                 return;
@@ -660,38 +678,31 @@
             } catch (e) {
                 showToast('Gagal mengupdate stok: ' + e.message, 'error');
             }
-        };
+        }
 
-        // Global Functions
-        window.showSection = function(sectionId) {
-            document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
-            document.getElementById('sec-' + sectionId).classList.add('active');
-            document.querySelectorAll('.menu-item').forEach((el, index) => {
-                el.classList.remove('active');
-                const sections = ['dashboard', 'users', 'inventory-bahan', 'stok', 'transaksi', 'online-sales', 'online-orders', 'laporan'];
-                if (sections[index] === sectionId) el.classList.add('active');
-            });
-            const titles = { 
-                dashboard: 'Dashboard Bisnis', users: 'Kelola User', 'inventory-bahan': 'Inventory Bahan Baku', 
-                stok: 'Manajemen Stok', transaksi: 'Transaksi', 'online-sales': 'Penjualan Online', 
-                'online-orders': 'Pesanan Masuk', laporan: 'Laporan' 
-            };
-            document.getElementById('pageTitle').textContent = titles[sectionId];
-            document.getElementById('breadcrumb').textContent = titles[sectionId];
-            if (sectionId === 'dashboard') loadDashboard();
-            if (sectionId === 'users') loadUsers();
-            if (sectionId === 'inventory-bahan') loadBahanBaku();
-            if (sectionId === 'stok') loadStok();
-            if (sectionId === 'transaksi') loadTransaksi();
-            if (sectionId === 'online-sales') loadOnlineSales();
-            if (sectionId === 'online-orders') loadOnlineOrders();
-        };
-
-        window.toggleBranchSelect = function() {
+        // Toggle Branch Select
+        function toggleBranchSelect() {
             document.getElementById('grpCabang').style.display = (document.getElementById('uRole').value === 'cashier') ? 'block' : 'none';
-        };
+        }
 
-        window.loadDashboard = async function() {
+        // Toast Notification
+        function showToast(title, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.style.borderLeftColor = type === 'error' ? 'var(--danger)' : 'var(--success)';
+            toast.innerHTML = `<div class="toast-icon" style="background:${type === 'error' ? 'var(--danger)' : 'var(--success)'}"><i class="fas fa-${type === 'error' ? 'exclamation' : 'check'}"></i></div><div class="toast-content"><div class="toast-title">${type === 'error' ? 'Error' : 'Sukses'}</div><div class="toast-message">${title}</div></div><button class="toast-close" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.style.animation = 'slideInRight 0.3s ease reverse';
+                    setTimeout(() => toast.remove(), 300);
+                }
+            }, 3000);
+        }
+
+        // Load Dashboard
+        async function loadDashboard() {
             try {
                 const dateFilter = document.getElementById('dateFilter')?.value || 'today';
                 let startDate, endDate;
@@ -727,7 +738,7 @@
                 renderChart(dailySales);
                 renderTopProducts(productSales);
             } catch (e) { console.error('Dashboard error:', e); showToast('Gagal memuat dashboard', 'error'); }
-        };
+        }
 
         function renderChart(data) {
             const ctx = document.getElementById('salesChart');
@@ -737,9 +748,9 @@
             if (chartInstance) chartInstance.destroy();
             chartInstance = new Chart(ctx, {
                 type: 'bar',
-                 {
+                data: {
                     labels: labels.length ? labels : ['Tidak ada data'],
-                    datasets: [{ label: 'Omset',  values.length ? values : [0], backgroundColor: '#E67E22', borderRadius: 6 }]
+                    datasets: [{ label: 'Omset', data: values.length ? values : [0], backgroundColor: '#E67E22', borderRadius: 6 }]
                 },
                 options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { callback: function(value) { return 'Rp ' + (value/1000) + 'k'; } } } }, plugins: { legend: { display: false } } }
             });
@@ -751,42 +762,6 @@
             if (sorted.length === 0) { list.innerHTML = '<li style="text-align:center;color:#7f8c8d;padding:20px">Belum ada data produk</li>'; return; }
             list.innerHTML = sorted.map((item, index) => `<li><div style="display:flex;align-items:center"><span class="product-rank ${index < 3 ? 'top-3' : ''}">${index + 1}</span><span>${item[0]}</span></div><span style="font-weight:600;color:var(--primary)">${item[1]}x</span></li>`).join('');
         }
-
-        // Auth State Observer
-        auth.onAuthStateChanged(async user => {
-            if (!user) { window.location.href = 'index.html'; return; }
-            try {
-                const doc = await db.collection('users').doc(user.uid).get();
-                const data = doc.data();
-                if (!data || !['admin', 'super_admin'].includes(data.role)) {
-                    alert('Akses Ditolak!');
-                    window.location.href = 'index.html';
-                    return;
-                }
-                currentUser = user;
-                document.getElementById('adminName').textContent = data.name || 'Admin';
-                listenOnlineOrders();
-                loadDashboard();
-            } catch (err) {
-                console.error('Auth error:', err);
-            }
-        });
-
-        // Toast Notification
-        window.showToast = function(title, type = 'success') {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.style.borderLeftColor = type === 'error' ? 'var(--danger)' : 'var(--success)';
-            toast.innerHTML = `<div class="toast-icon" style="background:${type === 'error' ? 'var(--danger)' : 'var(--success)'}"><i class="fas fa-${type === 'error' ? 'exclamation' : 'check'}"></i></div><div class="toast-content"><div class="toast-title">${type === 'error' ? 'Error' : 'Sukses'}</div><div class="toast-message">${title}</div></div><button class="toast-close" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>`;
-            container.appendChild(toast);
-            setTimeout(() => {
-                if (toast.parentElement) {
-                    toast.style.animation = 'slideInRight 0.3s ease reverse';
-                    setTimeout(() => toast.remove(), 300);
-                }
-            }, 3000);
-        };
 
         // Listen to Online Orders
         function listenOnlineOrders() {
@@ -801,7 +776,7 @@
         }
 
         // Load Online Orders
-        window.loadOnlineOrders = async function() {
+        async function loadOnlineOrders() {
             const container = document.getElementById('onlineOrdersContainer');
             try {
                 const snap = await db.collection('orders').orderBy('createdAt', 'desc').get();
@@ -837,10 +812,10 @@
             } catch (e) {
                 container.innerHTML = `<p style="text-align:center;padding:40px;color:var(--danger);">Koneksi database bermasalah.</p>`;
             }
-        };
+        }
 
-        // Accept Order - HANYA ubah status, TIDAK buka WA
-        window.acceptOrder = async function(orderId) {
+        // Accept Order
+        async function acceptOrder(orderId) {
             try {
                 await db.collection('orders').doc(orderId).update({
                     status: 'accepted',
@@ -852,10 +827,10 @@
             } catch (e) {
                 showToast('Gagal menyelesaikan pesanan: ' + e.message, 'error');
             }
-        };
+        }
 
-        // Reject Order dengan Custom Modal
-        window.rejectOrder = async function(orderId) {
+        // Reject Order
+        async function rejectOrder(orderId) {
             showCustomModal('Tolak pesanan ini? Pesanan akan dihapus.', async function() {
                 try {
                     await db.collection('orders').doc(orderId).update({
@@ -869,16 +844,16 @@
                     showToast('Gagal menolak pesanan: ' + e.message, 'error');
                 }
             });
-        };
+        }
 
         // Chat WhatsApp
-        window.chatWA = function(phone, name) {
+        function chatWA(phone, name) {
             if (!phone) { alert('Nomor WhatsApp tidak tersedia'); return; }
             window.open(`https://wa.me/${phone}?text=${encodeURIComponent(`Halo ${name}, ada yang bisa kami bantu terkait pesanan Anda di Thai Tea CST?`)}`, '_blank');
-        };
+        }
 
-        // Logout dengan Custom Modal
-        window.confirmLogout = function() {
+        // Logout
+        function confirmLogout() {
             showCustomModal('Yakin ingin logout?', function() {
                 auth.signOut().then(() => {
                     window.location.href = 'index.html';
@@ -886,17 +861,15 @@
                     alert('Gagal logout: ' + e.message);
                 });
             });
-        };
+        }
 
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            if (event.target.classList.contains('modal')) event.target.classList.remove('active');
-            if (event.target.id === 'customModalOverlay') closeCustomModal();
-            if (event.target.id === 'editStockModalOverlay') closeEditStockModal();
-        };
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').classList.remove('active');
+            confirmCallback = null;
+        }
 
-        // User Management Functions
-        window.handleAddUser = async function(e) {
+        // User Management
+        async function handleAddUser(e) {
             e.preventDefault();
             const btn = e.target.querySelector('button[type="submit"]');
             const originalText = btn.innerHTML;
@@ -914,9 +887,9 @@
                 loadUsers();
             } catch (err) { alert(err.code === 'auth/email-already-in-use' ? 'Email sudah terdaftar!' : 'Gagal: ' + err.message); }
             finally { btn.innerHTML = originalText; btn.disabled = false; }
-        };
+        }
 
-        window.loadUsers = async function() {
+        async function loadUsers() {
             try {
                 const snap = await db.collection('users').get();
                 const tbody = document.getElementById('tblUsers');
@@ -931,18 +904,18 @@
                 });
                 tbody.innerHTML = html;
             } catch (e) { showToast('Gagal memuat data user', 'error'); }
-        };
+        }
 
-        window.confirmDeleteUser = function(id) {
+        function confirmDeleteUser(id) {
             showCustomModal('Hapus user ini? Tindakan ini tidak dapat dibatalkan.', function() {
                 db.collection('users').doc(id).delete().then(() => {
                     showToast('User dihapus');
                     loadUsers();
                 });
             });
-        };
+        }
 
-        window.exportUsersExcel = function() {
+        function exportUsersExcel() {
             const data = [];
             db.collection('users').get().then(snap => {
                 snap.forEach(doc => {
@@ -955,10 +928,10 @@
                 XLSX.writeFile(wb, `Laporan_Users_${new Date().toISOString().split('T')[0]}.xlsx`);
                 showToast('File Excel berhasil diunduh');
             });
-        };
+        }
 
         // Bahan Baku Functions
-        window.handleAddBahanBaku = async function(e) {
+        async function handleAddBahanBaku(e) {
             e.preventDefault();
             const btn = e.target.querySelector('button[type="submit"]');
             const originalText = btn.innerHTML;
@@ -985,9 +958,9 @@
                 btn.innerHTML = originalText;
                 btn.disabled = false;
             }
-        };
+        }
 
-        window.loadBahanBaku = async function() {
+        async function loadBahanBaku() {
             const cabang = document.getElementById('filterBahanCabang').value;
             let query = db.collection('bahan_baku');
             if (cabang !== 'all') query = query.where('cabang', '==', cabang);
@@ -1033,18 +1006,18 @@
             } catch (e) {
                 showToast('Gagal memuat data bahan baku', 'error');
             }
-        };
+        }
 
-        window.confirmDeleteBahanBaku = function(id) {
+        function confirmDeleteBahanBaku(id) {
             showCustomModal('Hapus bahan baku ini? Tindakan ini tidak dapat dibatalkan.', function() {
                 db.collection('bahan_baku').doc(id).delete().then(() => {
                     showToast('Bahan baku dihapus');
                     loadBahanBaku();
                 });
             });
-        };
+        }
 
-        window.exportBahanBakuExcel = function() {
+        function exportBahanBakuExcel() {
             const data = [];
             db.collection('bahan_baku').get().then(snap => {
                 snap.forEach(doc => {
@@ -1060,10 +1033,10 @@
                 XLSX.writeFile(wb, `Laporan_Bahan_Baku_${new Date().toISOString().split('T')[0]}.xlsx`);
                 showToast('File Excel berhasil diunduh');
             });
-        };
+        }
 
         // Stok Functions
-        window.loadStok = async function() {
+        async function loadStok() {
             const cabang = document.getElementById('filterStokCabang').value;
             let query = db.collection('inventory');
             if (cabang !== 'all') query = query.where('branchId', '==', cabang);
@@ -1081,9 +1054,9 @@
             } catch (e) {
                 showToast('Gagal memuat data stok', 'error');
             }
-        };
+        }
 
-        window.updateStock = async function(id) {
+        async function updateStock(id) {
             const val = parseInt(document.getElementById('stock-' + id).value);
             if (isNaN(val) || val < 0) { alert('Jumlah tidak valid'); return; }
             try {
@@ -1093,9 +1066,9 @@
             } catch (e) {
                 showToast('Gagal update stok: ' + e.message, 'error');
             }
-        };
+        }
 
-        window.exportStokExcel = function() {
+        function exportStokExcel() {
             const data = [];
             db.collection('inventory').get().then(snap => {
                 snap.forEach(doc => {
@@ -1108,10 +1081,10 @@
                 XLSX.writeFile(wb, `Laporan_Stok_${new Date().toISOString().split('T')[0]}.xlsx`);
                 showToast('File Excel berhasil diunduh');
             });
-        };
+        }
 
         // Transaksi Functions
-        window.loadTransaksi = async function() {
+        async function loadTransaksi() {
             try {
                 const snap = await db.collection('transactions').orderBy('timestamp', 'desc').limit(200).get();
                 allTransaksi = [];
@@ -1120,7 +1093,7 @@
             } catch (e) {
                 showToast('Gagal memuat transaksi', 'error');
             }
-        };
+        }
 
         function renderTransaksi(data) {
             const tbody = document.getElementById('tblTransaksi');
@@ -1133,7 +1106,7 @@
             tbody.innerHTML = html;
         }
 
-        window.confirmDeleteTransaction = function(id) {
+        function confirmDeleteTransaction(id) {
             showCustomModal('Hapus transaksi ini? Tindakan ini tidak dapat dibatalkan.', function() {
                 db.collection('transactions').doc(id).delete().then(() => {
                     showToast('Transaksi dihapus');
@@ -1141,9 +1114,9 @@
                     loadDashboard();
                 });
             });
-        };
+        }
 
-        window.exportTransaksiExcel = function() {
+        function exportTransaksiExcel() {
             if (!allTransaksi.length) { alert('Tidak ada data untuk diexport'); return; }
             const data = allTransaksi.map(t => ({'Tanggal': t.timestamp ? new Date(t.timestamp.seconds * 1000).toLocaleString('id-ID') : '-', 'ID': t.id, 'Cabang': branchNames[t.branchId] || t.branchId, 'Kasir': t.cashierName || '-', 'Items': Array.isArray(t.items) ? t.items.map(i => `${i.name} (x${i.qty})`).join(', ') : '-', 'Total': t.total || 0, 'Metode': t.paymentMethod || '-'}));
             const ws = XLSX.utils.json_to_sheet(data);
@@ -1151,10 +1124,10 @@
             XLSX.utils.book_append_sheet(wb, ws, "Transaksi");
             XLSX.writeFile(wb, `Laporan_Transaksi_${new Date().toISOString().split('T')[0]}.xlsx`);
             showToast('File Excel berhasil diunduh');
-        };
+        }
 
         // Online Sales Functions
-        window.handleAddOnlineSale = async function(e) {
+        async function handleAddOnlineSale(e) {
             e.preventDefault();
             const btn = e.target.querySelector('button[type="submit"]');
             const originalText = btn.innerHTML;
@@ -1179,9 +1152,9 @@
                 btn.innerHTML = originalText;
                 btn.disabled = false;
             }
-        };
+        }
 
-        window.loadOnlineSales = async function() {
+        async function loadOnlineSales() {
             try {
                 const snap = await db.collection('online_sales').orderBy('timestamp', 'desc').get();
                 const tbody = document.getElementById('tblOnlineSales');
@@ -1200,18 +1173,18 @@
             } catch (e) {
                 showToast('Gagal memuat data penjualan online', 'error');
             }
-        };
+        }
 
-        window.confirmDeleteOnlineSale = function(id) {
+        function confirmDeleteOnlineSale(id) {
             showCustomModal('Hapus data penjualan ini?', function() {
                 db.collection('online_sales').doc(id).delete().then(() => {
                     showToast('Data penjualan dihapus');
                     loadOnlineSales();
                 });
             });
-        };
+        }
 
-        window.exportOnlineSalesExcel = function() {
+        function exportOnlineSalesExcel() {
             const data = [];
             db.collection('online_sales').get().then(snap => {
                 snap.forEach(doc => {
@@ -1225,6 +1198,33 @@
                 XLSX.writeFile(wb, `Laporan_Online_Sales_${new Date().toISOString().split('T')[0]}.xlsx`);
                 showToast('File Excel berhasil diunduh');
             });
+        }
+
+        // Auth State Observer
+        auth.onAuthStateChanged(async user => {
+            if (!user) { window.location.href = 'index.html'; return; }
+            try {
+                const doc = await db.collection('users').doc(user.uid).get();
+                const data = doc.data();
+                if (!data || !['admin', 'super_admin'].includes(data.role)) {
+                    alert('Akses Ditolak!');
+                    window.location.href = 'index.html';
+                    return;
+                }
+                currentUser = user;
+                document.getElementById('adminName').textContent = data.name || 'Admin';
+                listenOnlineOrders();
+                loadDashboard();
+            } catch (err) {
+                console.error('Auth error:', err);
+            }
+        });
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) event.target.classList.remove('active');
+            if (event.target.id === 'customModalOverlay') closeCustomModal();
+            if (event.target.id === 'editStockModalOverlay') closeEditStockModal();
         };
     </script>
 </body>
