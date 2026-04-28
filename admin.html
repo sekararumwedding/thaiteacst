@@ -6,7 +6,7 @@
     <meta name="description" content="CST SYSTEM - Admin Dashboard">
     <meta name="theme-color" content="#E67E22">
     <title>Admin Dashboard - CST SYSTEM</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧋</text></svg>">
+    <link rel="icon" href="image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧋</text></svg>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -126,7 +126,6 @@
             align-items: center;
             justify-content: center;
             backdrop-filter: blur(4px);
-            pointer-events: none; /* Overlay captures clicks only if needed, but children need pointer-events: auto */
         }
         .custom-modal-overlay.active { display: flex; }
         .custom-modal {
@@ -138,7 +137,7 @@
             text-align: center;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             animation: modalSlideIn 0.3s ease;
-            pointer-events: auto; /* Crucial: Allow clicks on modal content */
+            pointer-events: auto;
         }
         @keyframes modalSlideIn {
             from { transform: translateY(-50px); opacity: 0; }
@@ -420,7 +419,6 @@
                 Apakah Anda yakin?
             </div>
             <div class="custom-modal-buttons">
-                <!-- FIXED: Added onclick handlers directly -->
                 <button class="custom-modal-btn custom-modal-btn-secondary" onclick="closeCustomModal()">Batal</button>
                 <button class="custom-modal-btn custom-modal-btn-primary" onclick="confirmAction()">Oke</button>
             </div>
@@ -470,10 +468,10 @@
         const formatRp = n => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n || 0);
 
         // ==========================================
-        // GLOBAL FUNCTIONS - DEFINED FIRST
+        // ALL GLOBAL FUNCTIONS MUST BE ATTACHED TO WINDOW OBJECT
         // ==========================================
         
-        // Navigation Function
+        // Navigation Function - FIXED
         window.showSection = function(sectionId) {
             document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
             document.getElementById('sec-' + sectionId).classList.add('active');
@@ -515,7 +513,7 @@
             customModalCallback = null;
         };
 
-        // FIXED: Function to handle the "Oke" button click
+        // Function to handle the "Oke" button click
         window.confirmAction = function() {
             if (customModalCallback) {
                 customModalCallback();
