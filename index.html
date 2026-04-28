@@ -25,6 +25,9 @@
             --warning: #F39C12;
             --light: #ECF0F1;
             --white: #ffffff;
+            --gofood: #00AA13;
+            --shopee: #EE4D2D;
+            --grab: #00B14F;
         }
         
         * { 
@@ -503,6 +506,24 @@
             color: var(--primary);
         }
         
+        .pay-btn[data-payment="gofood"].active {
+            border-color: var(--gofood);
+            background: #e8f5e9;
+            color: var(--gofood);
+        }
+        
+        .pay-btn[data-payment="shopeefood"].active {
+            border-color: var(--shopee);
+            background: #fff3e0;
+            color: var(--shopee);
+        }
+        
+        .pay-btn[data-payment="grabfood"].active {
+            border-color: var(--grab);
+            background: #e8f5e9;
+            color: var(--grab);
+        }
+        
         .pay-btn i {
             display: block;
             font-size: 1.2rem;
@@ -598,6 +619,7 @@
         .status-pending { background: #fff3cd; color: #856404; }
         .status-completed { background: #d4edda; color: #155724; }
         .status-cancelled { background: #f8d7da; color: #721c24; }
+        .status-processing { background: #d1ecf1; color: #0c5460; }
         
         .order-info {
             margin-bottom: 12px;
@@ -969,17 +991,29 @@
                     <i class="fas fa-credit-card"></i> Metode Pembayaran
                 </div>
                 <div class="payment-method">
-                    <div class="pay-btn active" onclick="selectPayment('cash', this)">
+                    <div class="pay-btn active" data-payment="cash" onclick="selectPayment('cash', this)">
                         <i class="fas fa-money-bill-wave"></i>
                         Cash
                     </div>
-                    <div class="pay-btn" onclick="selectPayment('transfer', this)">
+                    <div class="pay-btn" data-payment="transfer" onclick="selectPayment('transfer', this)">
                         <i class="fas fa-university"></i>
                         Transfer
                     </div>
-                    <div class="pay-btn" onclick="selectPayment('qris', this)">
+                    <div class="pay-btn" data-payment="qris" onclick="selectPayment('qris', this)">
                         <i class="fas fa-qrcode"></i>
                         QRIS
+                    </div>
+                    <div class="pay-btn" data-payment="gofood" onclick="selectPayment('gofood', this)">
+                        <i class="fas fa-motorcycle"></i>
+                        GoFood
+                    </div>
+                    <div class="pay-btn" data-payment="shopeefood" onclick="selectPayment('shopeefood', this)">
+                        <i class="fas fa-shopping-bag"></i>
+                        ShopeeFood
+                    </div>
+                    <div class="pay-btn" data-payment="grabfood" onclick="selectPayment('grabfood', this)">
+                        <i class="fas fa-bike"></i>
+                        GrabFood
                     </div>
                 </div>
                 
@@ -1027,17 +1061,29 @@
                     <i class="fas fa-credit-card"></i> Metode Pembayaran
                 </div>
                 <div class="payment-method">
-                    <div class="pay-btn active" onclick="selectPayment('cash', this)">
+                    <div class="pay-btn active" data-payment="cash" onclick="selectPayment('cash', this)">
                         <i class="fas fa-money-bill-wave"></i>
                         Cash
                     </div>
-                    <div class="pay-btn" onclick="selectPayment('transfer', this)">
+                    <div class="pay-btn" data-payment="transfer" onclick="selectPayment('transfer', this)">
                         <i class="fas fa-university"></i>
                         Transfer
                     </div>
-                    <div class="pay-btn" onclick="selectPayment('qris', this)">
+                    <div class="pay-btn" data-payment="qris" onclick="selectPayment('qris', this)">
                         <i class="fas fa-qrcode"></i>
                         QRIS
+                    </div>
+                    <div class="pay-btn" data-payment="gofood" onclick="selectPayment('gofood', this)">
+                        <i class="fas fa-motorcycle"></i>
+                        GoFood
+                    </div>
+                    <div class="pay-btn" data-payment="shopeefood" onclick="selectPayment('shopeefood', this)">
+                        <i class="fas fa-shopping-bag"></i>
+                        ShopeeFood
+                    </div>
+                    <div class="pay-btn" data-payment="grabfood" onclick="selectPayment('grabfood', this)">
+                        <i class="fas fa-bike"></i>
+                        GrabFood
                     </div>
                 </div>
                 
@@ -1176,6 +1222,9 @@
         let uangDiterima = 0;
         let kembalian = 0;
         const isMobile = window.innerWidth <= 768;
+        let onlineOrdersListener = null;
+        let pendingOrdersCount = 0;
+        let cashierOrderListener = null;
 
         const branchNames = { cabang_01: 'Sport Center Bandara Soetta', cabang_02: 'TOD M1, Benda' };
         const formatRp = n => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n || 0);
@@ -1203,6 +1252,7 @@
                     showKasirSection();
                     loadProducts();
                     setupOnlineOrdersListener();
+                    setupCashierOrderListener();
                 }
             }
         };
@@ -1251,6 +1301,7 @@
                 showKasirSection();
                 loadProducts();
                 setupOnlineOrdersListener();
+                setupCashierOrderListener();
             } catch (err) {
                 document.getElementById('loginError').textContent = err.message;
                 document.getElementById('loginError').style.display = 'block';
@@ -1261,6 +1312,8 @@
             showCustomModal('Konfirmasi', 'Yakin ingin logout?', () => {
                 auth.signOut(); 
                 sessionStorage.removeItem('currentUser'); 
+                if (onlineOrdersListener) onlineOrdersListener();
+                if (cashierOrderListener) cashierOrderListener();
                 showLoginSection();
             });
         }
@@ -1286,7 +1339,7 @@
             const list = cat === 'all' ? products : products.filter(p => p.cat === cat);
             grid.innerHTML = list.map(p => `
                 <div class="product-card">
-                    <img src="${p.img}" class="product-img" loading="lazy" onerror="this.src='image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23f8f9fa%22 width=%22100%22 height=%22100%22/><text y=%22.9em%22 font-size=%2280%22 x=%2250%22 text-anchor=%22middle%22>🧋</text></svg>'">
+                    <img src="${p.img}" class="product-img" loading="lazy" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23f8f9fa%22 width=%22100%22 height=%22100%22/><text y=%22.9em%22 font-size=%2280%22 x=%2250%22 text-anchor=%22middle%22>🧋</text></svg>'">
                     <div class="product-info">
                         <div class="product-name">${p.name}</div>
                         <div class="product-price">${formatRp(p.price)}</div>
@@ -1363,7 +1416,6 @@
             document.getElementById('subtotalDesktop').textContent = formatRp(sub);
             document.getElementById('totalDesktop').textContent = formatRp(total);
             
-            // Recalculate change if uang diterima already entered
             calculateChange(isMobile ? 'mobile' : 'desktop');
         }
 
@@ -1372,7 +1424,6 @@
             document.querySelectorAll('.pay-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             
-            // Show/hide uang diterima input based on payment method
             const uangInputGroup = document.getElementById('paymentInputGroup');
             const uangInputGroupMobile = document.getElementById('paymentInputGroupMobile');
             const uangInputDesktop = document.getElementById('uangDiterimaDesktop');
@@ -1381,10 +1432,15 @@
             if (method === 'cash') {
                 if (uangInputGroup) uangInputGroup.style.display = 'block';
                 if (uangInputGroupMobile) uangInputGroupMobile.style.display = 'block';
-                if (uangInputDesktop) uangInputDesktop.readOnly = false;
-                if (uangInputMobile) uangInputMobile.readOnly = false;
+                if (uangInputDesktop) {
+                    uangInputDesktop.readOnly = false;
+                    uangInputDesktop.value = '';
+                }
+                if (uangInputMobile) {
+                    uangInputMobile.readOnly = false;
+                    uangInputMobile.value = '';
+                }
             } else {
-                // For non-cash payments, set uang diterima = total automatically
                 const totalMobile = parseFloat(document.getElementById('totalMobile').textContent.replace(/[^0-9]/g, '')) || 0;
                 const totalDesktop = parseFloat(document.getElementById('totalDesktop').textContent.replace(/[^0-9]/g, '')) || 0;
                 
@@ -1410,13 +1466,13 @@
             if (context === 'mobile') {
                 const uangInput = document.getElementById('uangDiterimaMobile');
                 const kembalianInput = document.getElementById('kembalianMobile');
-                uangDiterima = parseFloat(uangInput.value) || 0;
+                uangDiterima = parseFloat(uangInput.value) || totalMobile;
                 kembalian = Math.max(0, uangDiterima - totalMobile);
                 kembalianInput.value = formatRp(kembalian);
             } else {
                 const uangInput = document.getElementById('uangDiterimaDesktop');
                 const kembalianInput = document.getElementById('kembalianDesktop');
-                uangDiterima = parseFloat(uangInput.value) || 0;
+                uangDiterima = parseFloat(uangInput.value) || totalDesktop;
                 kembalian = Math.max(0, uangDiterima - totalDesktop);
                 kembalianInput.value = formatRp(kembalian);
             }
@@ -1450,7 +1506,6 @@
             const disc = isMobile ? discMobile : discDesktop;
             const total = Math.max(0, sub - disc);
             
-            // Get uang diterima and kembalian
             if (selectedPaymentMethod === 'cash') {
                 if (uangDiterima < total) {
                     showCustomModal('Perhatian', 'Uang yang diterima kurang!', null);
@@ -1503,24 +1558,20 @@
             const date = new Date();
             const dateStr = date.toLocaleDateString('id-ID');
             const timeStr = date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-            const width = 32; // Lebar kertas thermal 58mm = 32 karakter
+            const width = 32;
             
-            // Format Rupiah konsisten
             const formatRp = (n) => 'Rp' + new Intl.NumberFormat('id-ID').format(n);
             
-            // 1. FUNGSI CENTER (Rata Tengah)
             const center = (text, w = width) => {
                 const padding = Math.floor((w - text.length) / 2);
                 return ' '.repeat(Math.max(0, padding)) + text;
             };
             
-            // 2. FUNGSI ITEM: [Nama] [SPASI] [Qty]x [Harga] -> Harga mentok kanan
             const formatItem = (name, qty, priceStr, w = width) => {
                 const qtyText = `${qty}x `;
                 const rightPart = qtyText + priceStr;
                 let spacesCount = w - name.length - rightPart.length;
                 
-                // Jika nama terlalu panjang, potong dengan ...
                 if (spacesCount < 1) {
                     const maxNameLen = w - rightPart.length - 3;
                     const shortName = name.substring(0, Math.max(0, maxNameLen)) + '...';
@@ -1530,7 +1581,6 @@
                 return name + ' '.repeat(spacesCount) + rightPart;
             };
             
-            // 3. FUNGSI PAYMENT: [Label:] [SPASI] [Rp...] -> Angka mentok kanan & sejajar
             const formatPayment = (label, amountStr, w = width) => {
                 const labelWithColon = label + ':';
                 const spacesCount = w - labelWithColon.length - amountStr.length;
@@ -1539,11 +1589,10 @@
             
             let strukText = '';
             
-            // === HEADER (Bold + Normal Size, Center) ===
-            strukText += '\x1B\x40'; // Initialize printer
-            strukText += '\x1B\x45\x01'; // Bold ON
+            strukText += '\x1B\x40';
+            strukText += '\x1B\x45\x01';
             strukText += center('THAI TEA CST') + '\n';
-            strukText += '\x1B\x45\x00'; // Bold OFF
+            strukText += '\x1B\x45\x00';
             strukText += center(branchNames[currentBranch] || '') + '\n\n';
             
             strukText += '--------------------------------\n';
@@ -1551,7 +1600,6 @@
             strukText += `${dateStr} ${timeStr}\n`;
             strukText += '--------------------------------\n';
             
-            // === ITEMS (Kiri-Kanan) ===
             lastTransaction.items.forEach(item => {
                 const subtotal = formatRp(item.price * item.qty);
                 strukText += formatItem(item.name, item.qty, subtotal) + '\n';
@@ -1559,7 +1607,6 @@
             
             strukText += '--------------------------------\n';
             
-            // === PEMBAYARAN (Label kiri, Angka kanan sejajar) ===
             const totalStr = formatRp(lastTransaction.total);
             const bayarStr = formatRp(lastTransaction.uangDiterima || lastTransaction.total);
             const kembaliStr = formatRp(lastTransaction.kembalian || 0);
@@ -1570,27 +1617,21 @@
             strukText += formatPayment('KEMBALI', kembaliStr) + '\n';
             strukText += '================================\n\n';
             
-            // === FOOTER (Center - 3 baris terpisah) ===
             strukText += center('Pesanan Kembali:') + '\n';
             strukText += center('+62 822-9999-7227') + '\n';
             strukText += center('TERIMA KASIH') + '\n\n';
-            strukText += '\x1B\x64\x02'; // Cut paper (if supported)
+            strukText += '\x1B\x64\x02';
             
-            // === PROSES CETAK ===
-            // Bersihkan karakter aneh (anti-â) - tapi pertahankan ESC/POS commands
             const cleanText = strukText.replace(/[^\x00-\x7F\x1B]/g, (char) => {
-                // Keep ESC character (\x1B) and ASCII
                 return char;
             }).trim();
             
             const b64 = btoa(cleanText);
             
             if (/Android/i.test(navigator.userAgent)) {
-                // RawBT untuk Android
                 window.location.href = `rawbt:base64,${b64}`;
             } else {
-                // Print dialog untuk PC (tanpa ESC/POS untuk preview yang lebih baik)
-                const previewText = strukText.replace(/\x1B\[[0-9;]*[A-Za-z]/g, ''); // Remove ESC/POS commands
+                const previewText = strukText.replace(/\x1B\[[0-9;]*[A-Za-z]/g, '');
                 const printWindow = window.open('', '_blank', 'width=400,height=600');
                 printWindow.document.write(`
                     <!DOCTYPE html><html><head><title>Struk</title>
@@ -1608,6 +1649,7 @@
                 printWindow.document.close();
             }
         }
+
         function openReportModal() {
             document.getElementById('reportModal').classList.add('active');
             document.getElementById('branchFilter').value = currentBranch;
@@ -1701,18 +1743,14 @@
         }
 
         // ============================================
-        // ONLINE ORDERS MANAGEMENT
+        // ONLINE ORDERS MANAGEMENT (ADMIN VIEW)
         // ============================================
-        let onlineOrdersListener = null;
-        let pendingOrdersCount = 0;
-
         function setupOnlineOrdersListener() {
             if (onlineOrdersListener) {
                 onlineOrdersListener();
             }
             
-            // Listen for pending orders
-            onlineOrdersListener = db.collection('orders')
+            onlineOrdersListener = db.collection('penjualan_online')
                 .where('status', '==', 'pending')
                 .orderBy('createdAt', 'desc')
                 .onSnapshot((snapshot) => {
@@ -1741,8 +1779,7 @@
             listEl.innerHTML = '';
             
             try {
-                // Get all orders (pending, completed, cancelled)
-                const snap = await db.collection('orders')
+                const snap = await db.collection('penjualan_online')
                     .orderBy('createdAt', 'desc')
                     .get();
                 
@@ -1771,9 +1808,11 @@
             card.id = `order-${orderId}`;
             
             const statusClass = order.status === 'pending' ? 'status-pending' : 
-                               order.status === 'completed' ? 'status-completed' : 'status-cancelled';
+                               order.status === 'completed' ? 'status-completed' : 
+                               order.status === 'processing' ? 'status-processing' : 'status-cancelled';
             const statusText = order.status === 'pending' ? 'Menunggu' : 
-                              order.status === 'completed' ? 'Selesai' : 'Dibatalkan';
+                              order.status === 'completed' ? 'Selesai' : 
+                              order.status === 'processing' ? 'Diproses' : 'Dibatalkan';
             
             let itemsHtml = '';
             if (order.items && order.items.length > 0) {
@@ -1806,7 +1845,7 @@
                 actionsHtml = `
                     <div class="order-actions">
                         <button class="order-action-btn" style="background:var(--light); color:var(--dark); cursor:not-allowed;" disabled>
-                            <i class="fas fa-${order.status === 'completed' ? 'check' : 'times'}"></i> ${statusText}
+                            <i class="fas fa-${order.status === 'completed' ? 'check' : order.status === 'processing' ? 'clock' : 'times'}"></i> ${statusText}
                         </button>
                     </div>
                 `;
@@ -1842,13 +1881,12 @@
                 return;
             }
             
-            // Format phone number for WhatsApp
             let phone = customerPhone.replace(/\D/g, '');
             if (phone.startsWith('0')) {
                 phone = '62' + phone.substring(1);
             }
             
-            const message = `Halo ${customerName}, pesanan Thai Tea CST Anda sudah kami terima dan sedang diproses. Mohon ditunggu ya! `;
+            const message = `Halo ${customerName}, pesanan Thai Tea CST Anda sudah kami terima dan sedang diproses. Mohon ditunggu ya!`;
             const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
             
             window.open(waUrl, '_blank');
@@ -1857,21 +1895,16 @@
         }
 
         async function completeOrder(orderId) {
-            showCustomModal('Konfirmasi Selesai', 'Pesanan ini akan ditandai sebagai selesai. Stok akan dikurangi dan struk akan dicetak. Lanjutkan?', async () => {
+            showCustomModal('Konfirmasi Selesai', 'Pesanan ini akan ditandai sebagai selesai. Struk akan dicetak. Lanjutkan?', async () => {
                 try {
-                    const orderDoc = await db.collection('orders').doc(orderId).get();
+                    const orderDoc = await db.collection('penjualan_online').doc(orderId).get();
                     const orderData = orderDoc.data();
                     
-                    // Update order status
-                    await db.collection('orders').doc(orderId).update({
+                    await db.collection('penjualan_online').doc(orderId).update({
                         status: 'completed',
                         completedAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
                     
-                    // If order has items, we can optionally deduct stock here
-                    // For now, just mark as completed
-                    
-                    // Add to transactions for printing
                     const transactionData = {
                         items: orderData.items || [],
                         subtotal: orderData.subtotal || orderData.total,
@@ -1881,8 +1914,8 @@
                         cashierId: currentUser.uid,
                         cashierName: currentUser.name,
                         branchId: orderData.branchId || currentBranch,
-                        paymentMethod: orderData.paymentMethod || selectedPaymentMethod,
-                        uangDiterima: orderData.total, // Assume paid in full for online orders
+                        paymentMethod: orderData.paymentMethod || 'cash',
+                        uangDiterima: orderData.total,
                         kembalian: 0,
                         orderType: 'online',
                         orderId: orderId,
@@ -1891,7 +1924,6 @@
                     
                     await db.collection('transactions').add(transactionData);
                     
-                    // Set as last transaction for printing
                     lastTransaction = {
                         id: orderId,
                         items: orderData.items || [],
@@ -1899,13 +1931,11 @@
                         customerName: orderData.customerName,
                         uangDiterima: orderData.total,
                         kembalian: 0,
-                        paymentMethod: orderData.paymentMethod || selectedPaymentMethod
+                        paymentMethod: orderData.paymentMethod || 'cash'
                     };
                     
-                    // Print struk
                     printStruk();
                     
-                    // Reload orders
                     loadOnlineOrders();
                     
                     showCustomModal('Berhasil', 'Pesanan selesai! Struk telah dicetak.', null);
@@ -1920,7 +1950,7 @@
         async function cancelOrder(orderId) {
             showCustomModal('Konfirmasi Batalkan', 'Apakah Anda yakin ingin membatalkan pesanan ini? Tindakan ini tidak dapat dibatalkan.', async () => {
                 try {
-                    await db.collection('orders').doc(orderId).update({
+                    await db.collection('penjualan_online').doc(orderId).update({
                         status: 'cancelled',
                         cancelledAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
@@ -1934,33 +1964,45 @@
                 }
             });
         }
-        // Baris 1942-1965 (yang sudah diperbaiki)
-        const onlineOrdersListenerCashier = db.collection('penjualan_online')  // ← UBAH DISINI
-            .where('status', '==', 'pending')
-            .orderBy('createdAt', 'desc')
-            .onSnapshot(snapshot => {
-                snapshot.docChanges().forEach(change => {
-                    if (change.type === 'added') {
-                        const data = change.doc.data();
-                        const customerName = data.customerName || 'Pelanggan';
-                        const items = data.items ? data.items.map(i => i.name).join(', ') : 'Item';
-                        
-                        // Mainkan Suara Notifikasi
-                        const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
-                        audio.play();
-                        
-                        // Tampilkan Notifikasi ke Kasir
-                        if(confirm(`🔔 PESANAN BARU MASUK!\n\nNama: ${customerName}\nItem: ${items}\n\nApakah Anda ingin mulai memproses pesanan ini?`)) {
-                            // Update status
-                            db.collection('penjualan_online').doc(change.doc.id).update({  // ← UBAH DISINI JUGA
-                                status: 'processing',
-                                processedBy: currentUser ? currentUser.name : 'Kasir',
-                                processedAt: new Date()
-                            });
+
+        // ============================================
+        // CASHIER NOTIFICATION LISTENER
+        // ============================================
+        function setupCashierOrderListener() {
+            if (cashierOrderListener) {
+                cashierOrderListener();
+            }
+            
+            if (!currentUser) return;
+            
+            cashierOrderListener = db.collection('penjualan_online')
+                .where('status', '==', 'pending')
+                .orderBy('createdAt', 'desc')
+                .onSnapshot(snapshot => {
+                    snapshot.docChanges().forEach(change => {
+                        if (change.type === 'added' && currentUser) {
+                            const data = change.doc.data();
+                            const customerName = data.customerName || 'Pelanggan';
+                            const items = data.items ? data.items.map(i => i.name).join(', ') : 'Item';
+                            
+                            const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+                            audio.play().catch(e => console.log('Audio play error:', e));
+                            
+                            setTimeout(() => {
+                                if(confirm(`🔔 PESANAN BARU MASUK!\n\nNama: ${customerName}\nItem: ${items}\n\nProses pesanan ini?`)) {
+                                    db.collection('penjualan_online').doc(change.doc.id).update({
+                                        status: 'processing',
+                                        processedBy: currentUser.name || 'Kasir',
+                                        processedAt: new Date()
+                                    });
+                                }
+                            }, 500);
                         }
-                    }
+                    });
+                }, error => {
+                    console.error('Error listening to cashier orders:', error);
                 });
-            });
+        }
     </script>
 </body>
 </html>
