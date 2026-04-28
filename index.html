@@ -2012,55 +2012,92 @@
         // 🔔 NOTIFIKASI PESANAN WEBSITE UNTUK KASIR
         // ==========================================
         function setupWebOrderListener() {
-            // Hapus listener lama agar tidak dobel
             if (window.webOrderListener) window.webOrderListener();
         
-            // ⚠️ PENTING: Ganti dengan nama collection yang dipakai website/admin
-            // Biasanya: 'orders' atau 'penjualan_online'
             const collectionName = 'orders'; 
         
+            // Dengarkan SEMUA pesanan (tanpa filter status)
             window.webOrderListener = db.collection(collectionName)
-                .where('status', '==', 'pending')
                 .orderBy('createdAt', 'desc')
+                .limit(10) // Ambil 10 pesanan terakhir
                 .onSnapshot(snapshot => {
-                    console.log(`📡 Snapshot: ${snapshot.size} pesanan pending`);
+                    console.log(`📡 Total pesanan: ${snapshot.size}`);
         
                     snapshot.docChanges().forEach(change => {
-                        if (change.type === 'added' && currentUser) {
+                        // Deteksi pesanan baru (added) ATAU pesanan yang baru di-update
+                        if (change.type === 'added') {
                             const data = change.doc.data();
-                            console.log('🆕 Pesanan website baru:', data);
+                            console.log('🆕 Pesanan baru terdeteksi:', data);
         
                             const customerName = data.customerName || data.nama || 'Pelanggan';
-                            const items = data.items ? data.items.map(i => i.name || i.item || i.menu).join(', ') : 'Item';
+                            const items = data.items ? data.items.map(i => i.name || i.item).join(', ') : 'Item';
                             const total = data.total ? formatRp(data.total) : '-';
+                            const status = data.status || 'unknown';
         
-                            // 🔊 Mainkan suara
+                            // Mainkan suara
                             const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
-                            audio.play().catch(e => console.log('⚠️ Audio diblokir:', e));
+                            audio.play().catch(e => console.log('Audio error:', e));
         
-                            // 🪟 Tampilkan popup notifikasi
+                            // Tampilkan notifikasi
                             setTimeout(() => {
-                                if(confirm(`🔔 PESANAN WEBSITE BARU!\n\n👤 Nama: ${customerName}\n🥤 Item: ${items}\n💰 Total: ${total}\n\nKlik OK untuk proses & cetak struk?`)) {
-                                    // Update status jadi 'processing'
-                                    db.collection(collectionName).doc(change.doc.id).update({
-                                        status: 'processing',
-                                        processedBy: currentUser.name || 'Kasir',
-                                        processedAt: new Date()
-                                    }).then(() => {
-                                        console.log('✅ Status diupdate ke processing');
-                                        showCustomModal('Pesanan Diterima', `Pesanan ${customerName} sedang dibuat.`);
-                                    }).catch(err => console.error('❌ Gagal update status:', err));
+                                const prosesSekarang = confirm(
+                                    `🔔 PESANAN BARU!\n\n` +
+                                    `👤 Nama: ${customerName}\n` +
+                                    `🥤 Item: ${items}\n` +
+                                    `💰 Total: ${total}\n` +
+                                    `📊 Status: ${status}\n\n` +
+                                    `Klik OK untuk proses & cetak struk?`
+                                );
+        
+                                if (prosesSekarang) {
+                                    // Update status jika masih pending
+                                    if (status === 'pending') {
+                                        db.collection(collectionName).doc(change.doc.id).update({
+                                            status: 'processing',
+                                            processedBy: currentUser.name || 'Kasir',
+                                            processedAt: new Date()
+                                        });
+                                    }
+                                    
+                                    // Cetak struk (opsional)
+                                    showCustomModal('Pesanan Diterima', `Pesanan ${customerName} sedang dibuat.`);
                                 }
                             }, 300);
                         }
                     });
                 }, error => {
-                    console.error('❌ Error listener pesanan:', error);
-                    if (error.code === 'failed-precondition') {
-                        console.log('🔗 Index belum aktif. Klik link di console untuk buat index.');
-                    }
+                    console.error('❌ Error listener:', error);
                 });
         }
+        // Fungsi debug - jalankan di console browser
+        async function debugOrders() {
+            console.log('🔍 Checking orders collection...');
+            
+            const snap = await db.collection('orders').limit(5).get();
+            
+            if (snap.empty) {
+                console.log('❌ Collection kosong');
+                return;
+            }
+            
+            snap.forEach(doc => {
+                const data = doc.data();
+                console.log(`\n📦 Order ID: ${doc.id}`);
+                console.log('Status:', data.status);
+                console.log('Customer:', data.customerName || data.nama);
+                console.log('Created:', data.createdAt ? data.createdAt.toDate() : 'N/A');
+                console.log('Data:', data);
+            });
+        }
+        
+        // Cara pakai: Buka console browser, ketik: debugOrders()
+        // Di fungsi handleAddOrder atau sejenisnya di admin.html
+        await db.collection('orders').add({
+            // ... data pesanan lainnya ...
+            status: 'pending',  // ← PENTING: Set status awal
+            createdAt: new Date(),
+            // ...
+        });
     </script>
 </body>
 </html>
