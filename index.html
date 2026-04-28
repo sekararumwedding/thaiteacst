@@ -1556,19 +1556,31 @@
 
         // B. Listener untuk Pesanan dari Website (collection: orders)
         function setupWebOrderNotifications() {
-            if (!currentUser) return;
+            if (!currentUser) {
+                console.log('⚠️ User belum login');
+                return;
+            }
             
             console.log('🔔 Setup web order notifications...');
             
+            // Listen untuk SEMUA pesanan baru (tanpa filter status)
             db.collection('orders')
-                .where('status', '==', 'pending')
                 .orderBy('createdAt', 'desc')
+                .limit(10)
                 .onSnapshot(snapshot => {
-                    console.log(`📥 Web orders: ${snapshot.size} pending`);
+                    console.log(`📥 Orders snapshot: ${snapshot.size} dokumen`);
                     
                     snapshot.docChanges().forEach(change => {
+                        console.log(`📝 Change type: ${change.type}`);
+                        
+                        // Hanya trigger untuk dokumen yang BARU DITAMBAHKAN
                         if (change.type === 'added') {
                             const data = change.doc.data();
+                            console.log('🆕 Pesanan baru:', data);
+                            
+                            const status = data.status || 'unknown';
+                            console.log('Status pesanan:', status);
+                            
                             playNotificationSound();
                             
                             const customerName = data.customerName || data.nama || 'Pelanggan';
@@ -1576,24 +1588,26 @@
                             const total = data.total ? formatRp(data.total) : '-';
                             
                             setTimeout(() => {
-                                if(confirm(`🔔 PESANAN WEBSITE BARU!\n\n👤 ${customerName}\n🥤 ${items}\n💰 ${total}\n\nProses pesanan ini?`)) {
-                                    db.collection('orders').doc(change.doc.id).update({
-                                        status: 'processing',
-                                        processedBy: currentUser.name || 'Kasir',
-                                        processedAt: new Date()
-                                    });
+                                const msg = `🔔 PESANAN WEBSITE BARU!\n\n👤 ${customerName}\n🥤 ${items}\n💰 ${total}\n📊 Status: ${status}\n\nProses pesanan ini?`;
+                                
+                                if(confirm(msg)) {
+                                    // Update status ke processing jika belum
+                                    if (status !== 'accepted' && status !== 'processing') {
+                                        db.collection('orders').doc(change.doc.id).update({
+                                            status: 'processing',
+                                            processedBy: currentUser.name || 'Kasir',
+                                            processedAt: new Date()
+                                        });
+                                    }
                                     showCustomModal('Pesanan Diterima', `Pesanan ${customerName} sedang dibuat.`);
                                 }
                             }, 500);
                         }
                     });
                 }, error => {
-                    if (error.code !== 'permission-denied') {
-                        console.error('Web order listener error:', error);
-                    }
+                    console.error('❌ Web order listener error:', error);
                 });
         }
-
         // C. Listener untuk Pesanan Online (GoFood/ShopeeFood/GrabFood)
         function setupOnlineOrderNotifications() {
             if (!currentUser) return;
