@@ -105,7 +105,7 @@
             font-size: 0.85rem; 
         }
         
-        /* Header - Compact Mobile */
+        /* Header */
         .header {
             background: var(--primary);
             color: white;
@@ -251,7 +251,7 @@
             border-color: var(--primary); 
         }
         
-        /* Products Grid - TWO COLUMNS MOBILE */
+        /* Products Grid */
         .products-grid { 
             display: grid; 
             grid-template-columns: repeat(2, 1fr); 
@@ -342,7 +342,7 @@
             font-weight: 700;
         }
         
-        /* Cart Modal - Slide Up */
+        /* Cart Modal */
         .cart-modal {
             display: none;
             position: fixed;
@@ -568,139 +568,6 @@
             cursor: pointer; 
         }
         
-        /* Online Orders Page */
-        .online-orders-container {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 15px;
-        }
-        
-        .order-card {
-            background: white;
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            border-left: 4px solid var(--warning);
-        }
-        
-        .order-card.completed {
-            border-left-color: var(--success);
-            opacity: 0.7;
-        }
-        
-        .order-card.cancelled {
-            border-left-color: var(--danger);
-            opacity: 0.6;
-        }
-        
-        .order-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid var(--light);
-        }
-        
-        .order-id {
-            font-weight: 700;
-            color: var(--dark);
-            font-size: 0.9rem;
-        }
-        
-        .order-status {
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 700;
-        }
-        
-        .status-pending { background: #fff3cd; color: #856404; }
-        .status-completed { background: #d4edda; color: #155724; }
-        .status-cancelled { background: #f8d7da; color: #721c24; }
-        .status-processing { background: #d1ecf1; color: #0c5460; }
-        
-        .order-info {
-            margin-bottom: 12px;
-        }
-        
-        .order-info p {
-            font-size: 0.85rem;
-            margin-bottom: 5px;
-            color: var(--dark);
-        }
-        
-        .order-info strong {
-            color: var(--primary);
-        }
-        
-        .order-items {
-            background: #f8f9fa;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 12px;
-        }
-        
-        .order-item-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 5px 0;
-            font-size: 0.85rem;
-            border-bottom: 1px solid #e0e0e0;
-        }
-        
-        .order-item-row:last-child {
-            border-bottom: none;
-        }
-        
-        .order-total {
-            font-weight: 800;
-            color: var(--primary);
-            font-size: 1rem;
-            text-align: right;
-            margin-bottom: 12px;
-        }
-        
-        .order-actions {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-        }
-        
-        .order-action-btn {
-            padding: 10px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 700;
-            font-size: 0.8rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-            transition: 0.3s;
-        }
-        
-        .order-action-btn:active {
-            transform: scale(0.95);
-        }
-        
-        .btn-confirm {
-            background: #25D366;
-            color: white;
-        }
-        
-        .btn-complete {
-            background: var(--success);
-            color: white;
-        }
-        
-        .btn-cancel {
-            background: var(--danger);
-            color: white;
-        }
-        
         /* Modals */
         .modal { 
             display: none; 
@@ -851,17 +718,9 @@
             }
             
             .cart-modal { display: none !important; }
-            
-            .order-actions {
-                grid-template-columns: repeat(3, 1fr);
-            }
-            
-            .payment-method {
-                grid-template-columns: repeat(3, 1fr);
-            }
         }
         
-        /* Mobile Specific */
+        /* Mobile */
         @media (max-width: 600px) {
             .header { padding: 8px 10px; }
             .brand-logo { width: 32px; height: 32px; }
@@ -885,10 +744,6 @@
             .section-title { font-size: 1rem; margin-bottom: 10px; }
             .category-filter { gap: 6px; margin-bottom: 10px; }
             .cat-btn { padding: 6px 14px; font-size: 0.8rem; }
-            
-            .order-actions {
-                grid-template-columns: 1fr;
-            }
             
             .payment-method {
                 grid-template-columns: repeat(2, 1fr);
@@ -938,11 +793,6 @@
                     </div>
                 </div>
                 <div class="header-actions">
-                    <button class="action-btn" onclick="showOnlineOrders()" id="onlineOrderBtn">
-                        <i class="fas fa-bell"></i>
-                        <span class="notification-badge" id="orderNotificationBadge" style="display:none;">0</span>
-                        <span>Pesanan</span>
-                    </button>
                     <button class="action-btn" onclick="openReportModal()">
                         <i class="fas fa-chart-bar"></i> <span>Laporan</span>
                     </button>
@@ -1017,7 +867,6 @@
                     </div>
                 </div>
                 
-                <!-- Payment Input Fields -->
                 <div class="payment-input-group" id="paymentInputGroup">
                     <label for="uangDiterimaDesktop"><i class="fas fa-money-bill"></i> Uang Diterima</label>
                     <input type="number" id="uangDiterimaDesktop" placeholder="Masukkan jumlah uang" oninput="calculateChange('desktop')">
@@ -1087,7 +936,6 @@
                     </div>
                 </div>
                 
-                <!-- Payment Input Fields (Mobile) -->
                 <div class="payment-input-group" id="paymentInputGroupMobile">
                     <label for="uangDiterimaMobile"><i class="fas fa-money-bill"></i> Uang Diterima</label>
                     <input type="number" id="uangDiterimaMobile" placeholder="Masukkan jumlah uang" oninput="calculateChange('mobile')">
@@ -1100,38 +948,6 @@
                 
                 <button class="checkout-btn" onclick="checkout()">Bayar Sekarang</button>
             </div>
-        </div>
-    </div>
-
-    <!-- Online Orders Page -->
-    <div id="onlineOrdersSection" class="section">
-        <div class="header">
-            <div class="header-top">
-                <div class="brand">
-                    <div class="brand-logo">
-                        <img src="https://i.ibb.co.com/mC3npXRW/Gemini-Generated-Image-8aemtl8aemtl8aem-removebg-preview.png" alt="Logo">
-                    </div>
-                    <div class="brand-text">
-                        <h1>THAI TEA CST</h1>
-                        <p>Manajemen Pesanan Online</p>
-                    </div>
-                </div>
-                <div class="header-actions">
-                    <button class="action-btn" onclick="showKasirFromOrders()">
-                        <i class="fas fa-arrow-left"></i> <span>Kembali</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-        <div class="online-orders-container">
-            <div class="section-title">
-                <i class="fas fa-list-alt"></i> Daftar Pesanan Online
-            </div>
-            <div id="onlineOrdersLoading" class="loading">
-                <div class="spinner"></div>
-                <p>Memuat Pesanan...</p>
-            </div>
-            <div id="onlineOrdersList"></div>
         </div>
     </div>
 
@@ -1222,9 +1038,6 @@
         let uangDiterima = 0;
         let kembalian = 0;
         const isMobile = window.innerWidth <= 768;
-        let onlineOrdersListener = null;
-        let pendingOrdersCount = 0;
-        let cashierOrderListener = null;
 
         const branchNames = { cabang_01: 'Sport Center Bandara Soetta', cabang_02: 'TOD M1, Benda' };
         const formatRp = n => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n || 0);
@@ -1251,8 +1064,6 @@
                     currentBranch = userData.branchId;
                     showKasirSection();
                     loadProducts();
-                    setupOnlineOrdersListener();
-                    setupCashierOrderListener();
                 }
             }
         };
@@ -1260,14 +1071,11 @@
         function showLoginSection() { 
             document.getElementById('loginSection').classList.add('active'); 
             document.getElementById('kasirSection').classList.remove('active'); 
-            document.getElementById('onlineOrdersSection').classList.remove('active');
         }
         
         function showKasirSection() { 
             document.getElementById('loginSection').classList.remove('active'); 
             document.getElementById('kasirSection').classList.add('active'); 
-            document.getElementById('onlineOrdersSection').classList.remove('active');
-            
             if(currentUser) {
                 document.getElementById('userAvatar').textContent = currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'U';
             }
@@ -1276,19 +1084,6 @@
             } else {
                 document.getElementById('desktopCart').style.display = 'block';
             }
-        
-            // ✅ TAMBAHKAN BARIS INI:
-            setupWebOrderListener();
-        }
-        function showOnlineOrders() {
-            document.getElementById('loginSection').classList.remove('active'); 
-            document.getElementById('kasirSection').classList.remove('active'); 
-            document.getElementById('onlineOrdersSection').classList.add('active');
-            loadOnlineOrders();
-        }
-
-        function showKasirFromOrders() {
-            showKasirSection();
         }
 
         async function handleLogin(e) {
@@ -1303,10 +1098,6 @@
                 sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
                 showKasirSection();
                 loadProducts();
-                setupOnlineOrdersListener();
-                
-                // ✅ TAMBAHKAN BARIS INI JUGA:
-                setupWebOrderListener();
             } catch (err) {
                 document.getElementById('loginError').textContent = err.message;
                 document.getElementById('loginError').style.display = 'block';
@@ -1317,8 +1108,6 @@
             showCustomModal('Konfirmasi', 'Yakin ingin logout?', () => {
                 auth.signOut(); 
                 sessionStorage.removeItem('currentUser'); 
-                if (onlineOrdersListener) onlineOrdersListener();
-                if (cashierOrderListener) cashierOrderListener();
                 showLoginSection();
             });
         }
@@ -1565,7 +1354,7 @@
             const timeStr = date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
             const width = 32;
             
-            const formatRp = (n) => 'Rp' + new Intl.NumberFormat('id-ID').format(n);
+            const formatRpStruk = (n) => 'Rp' + new Intl.NumberFormat('id-ID').format(n);
             
             const center = (text, w = width) => {
                 const padding = Math.floor((w - text.length) / 2);
@@ -1606,15 +1395,15 @@
             strukText += '--------------------------------\n';
             
             lastTransaction.items.forEach(item => {
-                const subtotal = formatRp(item.price * item.qty);
+                const subtotal = formatRpStruk(item.price * item.qty);
                 strukText += formatItem(item.name, item.qty, subtotal) + '\n';
             });
             
             strukText += '--------------------------------\n';
             
-            const totalStr = formatRp(lastTransaction.total);
-            const bayarStr = formatRp(lastTransaction.uangDiterima || lastTransaction.total);
-            const kembaliStr = formatRp(lastTransaction.kembalian || 0);
+            const totalStr = formatRpStruk(lastTransaction.total);
+            const bayarStr = formatRpStruk(lastTransaction.uangDiterima || lastTransaction.total);
+            const kembaliStr = formatRpStruk(lastTransaction.kembalian || 0);
             
             strukText += formatPayment('Total', totalStr) + '\n';
             strukText += '================================\n';
@@ -1746,358 +1535,6 @@
                 event.target.classList.remove('active');
             }
         }
-
-        // ============================================
-        // ONLINE ORDERS MANAGEMENT (ADMIN VIEW)
-        // ============================================
-        function setupOnlineOrdersListener() {
-            if (onlineOrdersListener) {
-                onlineOrdersListener();
-            }
-            
-            onlineOrdersListener = db.collection('penjualan_online')
-                .where('status', '==', 'pending')
-                .orderBy('createdAt', 'desc')
-                .onSnapshot((snapshot) => {
-                    pendingOrdersCount = snapshot.size;
-                    updateOrderNotificationBadge();
-                }, (error) => {
-                    console.error('Error listening to orders:', error);
-                });
-        }
-
-        function updateOrderNotificationBadge() {
-            const badge = document.getElementById('orderNotificationBadge');
-            if (pendingOrdersCount > 0) {
-                badge.textContent = pendingOrdersCount;
-                badge.style.display = 'flex';
-            } else {
-                badge.style.display = 'none';
-            }
-        }
-
-        async function loadOnlineOrders() {
-            const loadingEl = document.getElementById('onlineOrdersLoading');
-            const listEl = document.getElementById('onlineOrdersList');
-            
-            loadingEl.style.display = 'block';
-            listEl.innerHTML = '';
-            
-            try {
-                const snap = await db.collection('penjualan_online')
-                    .orderBy('createdAt', 'desc')
-                    .get();
-                
-                loadingEl.style.display = 'none';
-                
-                if (snap.empty) {
-                    listEl.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>Belum ada pesanan online</p></div>';
-                    return;
-                }
-                
-                snap.forEach(doc => {
-                    const order = doc.data();
-                    const orderEl = createOrderCard(doc.id, order);
-                    listEl.appendChild(orderEl);
-                });
-                
-            } catch (error) {
-                console.error('Error loading orders:', error);
-                loadingEl.innerHTML = '<p style="color:var(--danger);">Gagal memuat pesanan. Silakan coba lagi.</p>';
-            }
-        }
-
-        function createOrderCard(orderId, order) {
-            const card = document.createElement('div');
-            card.className = `order-card ${order.status === 'completed' ? 'completed' : order.status === 'cancelled' ? 'cancelled' : ''}`;
-            card.id = `order-${orderId}`;
-            
-            const statusClass = order.status === 'pending' ? 'status-pending' : 
-                               order.status === 'completed' ? 'status-completed' : 
-                               order.status === 'processing' ? 'status-processing' : 'status-cancelled';
-            const statusText = order.status === 'pending' ? 'Menunggu' : 
-                              order.status === 'completed' ? 'Selesai' : 
-                              order.status === 'processing' ? 'Diproses' : 'Dibatalkan';
-            
-            let itemsHtml = '';
-            if (order.items && order.items.length > 0) {
-                order.items.forEach(item => {
-                    itemsHtml += `
-                        <div class="order-item-row">
-                            <span>${item.name} x${item.qty}</span>
-                            <span>${formatRp(item.price * item.qty)}</span>
-                        </div>
-                    `;
-                });
-            }
-            
-            let actionsHtml = '';
-            if (order.status === 'pending') {
-                actionsHtml = `
-                    <div class="order-actions">
-                        <button class="order-action-btn btn-confirm" onclick="confirmOrder('${orderId}', '${order.customerPhone || ''}', '${order.customerName || ''}')">
-                            <i class="fab fa-whatsapp"></i> Konfirmasi
-                        </button>
-                        <button class="order-action-btn btn-complete" onclick="completeOrder('${orderId}')">
-                            <i class="fas fa-check"></i> Selesai
-                        </button>
-                        <button class="order-action-btn btn-cancel" onclick="cancelOrder('${orderId}')">
-                            <i class="fas fa-times"></i> Batalkan
-                        </button>
-                    </div>
-                `;
-            } else {
-                actionsHtml = `
-                    <div class="order-actions">
-                        <button class="order-action-btn" style="background:var(--light); color:var(--dark); cursor:not-allowed;" disabled>
-                            <i class="fas fa-${order.status === 'completed' ? 'check' : order.status === 'processing' ? 'clock' : 'times'}"></i> ${statusText}
-                        </button>
-                    </div>
-                `;
-            }
-            
-            card.innerHTML = `
-                <div class="order-header">
-                    <span class="order-id">#${orderId.substring(0, 8).toUpperCase()}</span>
-                    <span class="order-status ${statusClass}">${statusText}</span>
-                </div>
-                <div class="order-info">
-                    <p><strong><i class="fas fa-user"></i> Nama:</strong> ${order.customerName || '-'}</p>
-                    <p><strong><i class="fab fa-whatsapp"></i> No WA:</strong> ${order.customerPhone || '-'}</p>
-                    <p><strong><i class="fas fa-clock"></i> Waktu:</strong> ${order.createdAt ? new Date(order.createdAt).toLocaleString('id-ID') : '-'}</p>
-                    <p><strong><i class="fas fa-store"></i> Cabang:</strong> ${branchNames[order.branchId] || order.branchId || '-'}</p>
-                    ${order.paymentMethod ? `<p><strong><i class="fas fa-credit-card"></i> Pembayaran:</strong> ${order.paymentMethod.toUpperCase()}</p>` : ''}
-                </div>
-                <div class="order-items">
-                    ${itemsHtml || '<p style="text-align:center; color:#999;">Tidak ada item</p>'}
-                </div>
-                <div class="order-total">
-                    Total: ${formatRp(order.total || 0)}
-                </div>
-                ${actionsHtml}
-            `;
-            
-            return card;
-        }
-
-        async function confirmOrder(orderId, customerPhone, customerName) {
-            if (!customerPhone) {
-                showCustomModal('Error', 'Nomor WhatsApp tidak tersedia untuk pesanan ini.', null);
-                return;
-            }
-            
-            let phone = customerPhone.replace(/\D/g, '');
-            if (phone.startsWith('0')) {
-                phone = '62' + phone.substring(1);
-            }
-            
-            const message = `Halo ${customerName}, pesanan Thai Tea CST Anda sudah kami terima dan sedang diproses. Mohon ditunggu ya!`;
-            const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-            
-            window.open(waUrl, '_blank');
-            
-            showCustomModal('Berhasil', 'WhatsApp dibuka untuk konfirmasi pesanan.', null);
-        }
-
-        async function completeOrder(orderId) {
-            showCustomModal('Konfirmasi Selesai', 'Pesanan ini akan ditandai sebagai selesai. Struk akan dicetak. Lanjutkan?', async () => {
-                try {
-                    const orderDoc = await db.collection('penjualan_online').doc(orderId).get();
-                    const orderData = orderDoc.data();
-                    
-                    await db.collection('penjualan_online').doc(orderId).update({
-                        status: 'completed',
-                        completedAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                    
-                    const transactionData = {
-                        items: orderData.items || [],
-                        subtotal: orderData.subtotal || orderData.total,
-                        discount: orderData.discount || 0,
-                        total: orderData.total,
-                        customerName: orderData.customerName,
-                        cashierId: currentUser.uid,
-                        cashierName: currentUser.name,
-                        branchId: orderData.branchId || currentBranch,
-                        paymentMethod: orderData.paymentMethod || 'cash',
-                        uangDiterima: orderData.total,
-                        kembalian: 0,
-                        orderType: 'online',
-                        orderId: orderId,
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                    };
-                    
-                    await db.collection('transactions').add(transactionData);
-                    
-                    lastTransaction = {
-                        id: orderId,
-                        items: orderData.items || [],
-                        total: orderData.total,
-                        customerName: orderData.customerName,
-                        uangDiterima: orderData.total,
-                        kembalian: 0,
-                        paymentMethod: orderData.paymentMethod || 'cash'
-                    };
-                    
-                    printStruk();
-                    
-                    loadOnlineOrders();
-                    
-                    showCustomModal('Berhasil', 'Pesanan selesai! Struk telah dicetak.', null);
-                    
-                } catch (error) {
-                    console.error('Error completing order:', error);
-                    showCustomModal('Error', 'Gagal menyelesaikan pesanan: ' + error.message, null);
-                }
-            });
-        }
-
-        async function cancelOrder(orderId) {
-            showCustomModal('Konfirmasi Batalkan', 'Apakah Anda yakin ingin membatalkan pesanan ini? Tindakan ini tidak dapat dibatalkan.', async () => {
-                try {
-                    await db.collection('penjualan_online').doc(orderId).update({
-                        status: 'cancelled',
-                        cancelledAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                    
-                    loadOnlineOrders();
-                    showCustomModal('Berhasil', 'Pesanan telah dibatalkan.', null);
-                    
-                } catch (error) {
-                    console.error('Error cancelling order:', error);
-                    showCustomModal('Error', 'Gagal membatalkan pesanan: ' + error.message, null);
-                }
-            });
-        }
-
-        // ============================================
-        // CASHIER NOTIFICATION LISTENER
-        // ============================================
-        function setupCashierOrderListener() {
-            if (cashierOrderListener) {
-                cashierOrderListener();
-            }
-            
-            if (!currentUser) return;
-            
-            cashierOrderListener = db.collection('penjualan_online')
-                .where('status', '==', 'pending')
-                .orderBy('createdAt', 'desc')
-                .onSnapshot(snapshot => {
-                    snapshot.docChanges().forEach(change => {
-                        if (change.type === 'added' && currentUser) {
-                            const data = change.doc.data();
-                            const customerName = data.customerName || 'Pelanggan';
-                            const items = data.items ? data.items.map(i => i.name).join(', ') : 'Item';
-                            
-                            const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
-                            audio.play().catch(e => console.log('Audio play error:', e));
-                            
-                            setTimeout(() => {
-                                if(confirm(`🔔 PESANAN BARU MASUK!\n\nNama: ${customerName}\nItem: ${items}\n\nProses pesanan ini?`)) {
-                                    db.collection('penjualan_online').doc(change.doc.id).update({
-                                        status: 'processing',
-                                        processedBy: currentUser.name || 'Kasir',
-                                        processedAt: new Date()
-                                    });
-                                }
-                            }, 500);
-                        }
-                    });
-                }, error => {
-                    console.error('Error listening to cashier orders:', error);
-                });
-        }
-        // ==========================================
-        // 🔔 NOTIFIKASI PESANAN WEBSITE UNTUK KASIR
-        // ==========================================
-        function setupWebOrderListener() {
-            if (window.webOrderListener) window.webOrderListener();
-        
-            const collectionName = 'orders'; 
-        
-            // Dengarkan SEMUA pesanan (tanpa filter status)
-            window.webOrderListener = db.collection(collectionName)
-                .orderBy('createdAt', 'desc')
-                .limit(10) // Ambil 10 pesanan terakhir
-                .onSnapshot(snapshot => {
-                    console.log(`📡 Total pesanan: ${snapshot.size}`);
-        
-                    snapshot.docChanges().forEach(change => {
-                        // Deteksi pesanan baru (added) ATAU pesanan yang baru di-update
-                        if (change.type === 'added') {
-                            const data = change.doc.data();
-                            console.log('🆕 Pesanan baru terdeteksi:', data);
-        
-                            const customerName = data.customerName || data.nama || 'Pelanggan';
-                            const items = data.items ? data.items.map(i => i.name || i.item).join(', ') : 'Item';
-                            const total = data.total ? formatRp(data.total) : '-';
-                            const status = data.status || 'unknown';
-        
-                            // Mainkan suara
-                            const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
-                            audio.play().catch(e => console.log('Audio error:', e));
-        
-                            // Tampilkan notifikasi
-                            setTimeout(() => {
-                                const prosesSekarang = confirm(
-                                    `🔔 PESANAN BARU!\n\n` +
-                                    `👤 Nama: ${customerName}\n` +
-                                    `🥤 Item: ${items}\n` +
-                                    `💰 Total: ${total}\n` +
-                                    `📊 Status: ${status}\n\n` +
-                                    `Klik OK untuk proses & cetak struk?`
-                                );
-        
-                                if (prosesSekarang) {
-                                    // Update status jika masih pending
-                                    if (status === 'pending') {
-                                        db.collection(collectionName).doc(change.doc.id).update({
-                                            status: 'processing',
-                                            processedBy: currentUser.name || 'Kasir',
-                                            processedAt: new Date()
-                                        });
-                                    }
-                                    
-                                    // Cetak struk (opsional)
-                                    showCustomModal('Pesanan Diterima', `Pesanan ${customerName} sedang dibuat.`);
-                                }
-                            }, 300);
-                        }
-                    });
-                }, error => {
-                    console.error('❌ Error listener:', error);
-                });
-        }
-        // Fungsi debug - jalankan di console browser
-        async function debugOrders() {
-            console.log('🔍 Checking orders collection...');
-            
-            const snap = await db.collection('orders').limit(5).get();
-            
-            if (snap.empty) {
-                console.log('❌ Collection kosong');
-                return;
-            }
-            
-            snap.forEach(doc => {
-                const data = doc.data();
-                console.log(`\n📦 Order ID: ${doc.id}`);
-                console.log('Status:', data.status);
-                console.log('Customer:', data.customerName || data.nama);
-                console.log('Created:', data.createdAt ? data.createdAt.toDate() : 'N/A');
-                console.log('Data:', data);
-            });
-        }
-        
-        // Cara pakai: Buka console browser, ketik: debugOrders()
-        // Di fungsi handleAddOrder atau sejenisnya di admin.html
-        await db.collection('orders').add({
-            // ... data pesanan lainnya ...
-            status: 'pending',  // ← PENTING: Set status awal
-            createdAt: new Date(),
-            // ...
-        });
     </script>
 </body>
 </html>
