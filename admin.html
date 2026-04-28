@@ -954,14 +954,18 @@
             const originalText = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
             btn.disabled = true;
+            
+            // ✅ PERUBAHAN: Tambahkan status: 'pending'
             const sale = {
                 platform: document.getElementById('osPlatform').value,
                 orderNo: document.getElementById('osOrderNo').value.trim(),
                 item: document.getElementById('osItem').value.trim(),
                 price: parseInt(document.getElementById('osPrice').value) || 0,
                 timestamp: new Date(document.getElementById('osTime').value),
-                createdAt: new Date().toISOString()
+                createdAt: new Date().toISOString(),
+                status: 'pending' // <--- TAMBAHKAN BARIS INI
             };
+            
             try {
                 await db.collection('online_sales').add(sale);
                 window.showToast('Penjualan online berhasil ditambahkan');
