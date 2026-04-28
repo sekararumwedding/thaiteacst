@@ -1556,52 +1556,31 @@
 
         // B. Listener untuk Pesanan dari Website (collection: orders)
         function setupWebOrderNotifications() {
-            if (!currentUser) {
-                console.log('⚠️ User belum login');
-                return;
-            }
+            if (!currentUser) return;
             
             console.log('🔔 Setup web order notifications...');
             
-            // Listen untuk SEMUA pesanan baru (tanpa filter status)
             db.collection('orders')
                 .orderBy('createdAt', 'desc')
                 .limit(10)
                 .onSnapshot(snapshot => {
-                    console.log(`📥 Orders snapshot: ${snapshot.size} dokumen`);
-                    
                     snapshot.docChanges().forEach(change => {
-                        console.log(`📝 Change type: ${change.type}`);
-                        
-                        // Hanya trigger untuk dokumen yang BARU DITAMBAHKAN
                         if (change.type === 'added') {
                             const data = change.doc.data();
-                            console.log('🆕 Pesanan baru:', data);
-                            
-                            const status = data.status || 'unknown';
-                            console.log('Status pesanan:', status);
-                            
                             playNotificationSound();
                             
                             const customerName = data.customerName || data.nama || 'Pelanggan';
-                            const items = data.items ? data.items.map(i => i.name || i.item).join(', ') : 'Item';
+                            const items = data.items ? data.items.map(i => i.name).join(', ') : 'Item';
                             const total = data.total ? formatRp(data.total) : '-';
+                            const status = data.status || 'unknown';
                             
                             setTimeout(() => {
-                                // Ganti confirm() dengan modal custom
                                 showCustomModal(
                                     '🔔 PESANAN WEBSITE BARU!', 
                                     `👤 ${customerName}\n🥤 ${items}\n💰 ${total}\n📊 Status: ${status}`,
                                     function() {
-                                        // Callback jika klik OK
-                                        if (status !== 'accepted' && status !== 'processing') {
-                                            db.collection('orders').doc(change.doc.id).update({
-                                                status: 'processing',
-                                                processedBy: currentUser.name || 'Kasir',
-                                                processedAt: new Date()
-                                            });
-                                        }
-                                        showCustomModal('Pesanan Diterima', `Pesanan ${customerName} sedang dibuat.`);
+                                        // ✅ TAMBAHKAN INI: Auto add to cart & print
+                                        addOnlineOrderToCart(data, change.doc.id, 'orders');
                                     }
                                 );
                             }, 500);
@@ -1617,12 +1596,10 @@
             
             console.log('🔔 Setup online order notifications...');
             
-            db.collection('penjualan_online')
-                .where('status', '==', 'pending')
+            db.collection('online_sales')
                 .orderBy('createdAt', 'desc')
+                .limit(10)
                 .onSnapshot(snapshot => {
-                    console.log(`📥 Online orders: ${snapshot.size} pending`);
-                    
                     snapshot.docChanges().forEach(change => {
                         if (change.type === 'added') {
                             const data = change.doc.data();
@@ -1630,26 +1607,25 @@
                             
                             const platform = data.platform || 'Online';
                             const orderNo = data.orderNo || data.noOrder || '-';
-                            const item = data.item || data.items?.[0]?.name || 'Item';
+                            const item = data.item || 'Item';
                             const price = data.price || data.total ? formatRp(data.price || data.total) : '-';
                             
                             setTimeout(() => {
-                                if(confirm(`🔔 PESANAN ${platform.toUpperCase()} BARU!\n\n📦 No: ${orderNo}\n🥤 ${item}\n💰 ${price}\n\nProses pesanan ini?`)) {
-                                    db.collection('penjualan_online').doc(change.doc.id).update({
-                                        status: 'processing',
-                                        processedBy: currentUser.name || 'Kasir',
-                                        processedAt: new Date()
-                                    });
-                                    showCustomModal('Pesanan Diterima', `Pesanan ${platform} ${orderNo} sedang dibuat.`);
-                                }
+                                showCustomModal(
+                                    `🔔 PESANAN ${platform.toUpperCase()} BARU!`, 
+                                    `📦 No: ${orderNo}\n🥤 ${item}\n💰 ${price}`,
+                                    function() {
+                                        // ✅ TAMBAHKAN INI: Auto add to cart & print
+                                        addOnlineOrderToCart(data, change.doc.id, 'online_sales');
+                                    }
+                                );
                             }, 500);
                         }
                     });
                 }, error => {
-                    if (error.code !== 'permission-denied') {
-                        console.error('Online order listener error:', error);
-                    }
+                    console.error('❌ Online order listener error:', error);
                 });
+        }
         }
 
         // D. Initialize Notifications saat login berhasil
@@ -1679,6 +1655,140 @@
                 }, 1000);
             }
         };
+        // ==========================================
+        // 🛒 FUNGSI AUTO-ADD PESANAN ONLINE KE KERANJANG
+        // ==========================================
+        
+        function addOnlineOrderToCart(orderData, orderId, collectionName) {
+            console.log('🛒 Adding order to cart:', orderData);
+            
+            let itemsToAdd = [];
+            let customerName = orderData.customerName || orderData.nama || 'Pelanggan Online';
+            
+            // Handle format data dari collection 'orders' (website)
+            if (orderData.items && Array.isArray(orderData.items)) {
+                itemsToAdd = orderData.items.map(item => ({
+                    id: item.id || item.name,
+                    name: item.name,
+                    price: item.price,
+                    qty: item.qty || 1,
+                    cat: item.cat || 'online',
+                    img: item.img || ''
+                }));
+            } 
+            // Handle format data dari collection 'online_sales' (GoFood/Shopee/Grab)
+            else if (orderData.item) {
+                itemsToAdd.push({
+                    id: orderData.orderNo || 'online_' + Date.now(),
+                    name: orderData.item,
+                    price: orderData.price || orderData.total || 0,
+                    qty: 1,
+                    cat: 'online',
+                    img: ''
+                });
+            }
+            
+            if (itemsToAdd.length === 0) {
+                console.error('❌ Tidak ada item untuk ditambahkan');
+                return;
+            }
+            
+            // Tambahkan ke keranjang
+            itemsToAdd.forEach(item => {
+                const exist = cart.find(c => c.id === item.id);
+                if (exist) {
+                    exist.qty += item.qty;
+                } else {
+                    cart.push(item);
+                }
+            });
+            
+            // Update tampilan keranjang
+            renderCart();
+            updateCartBadge();
+            
+            // Auto-fill nama pembeli
+            const desktopInput = document.getElementById('customerNameDesktop');
+            const mobileInput = document.getElementById('customerNameMobile');
+            if (desktopInput) desktopInput.value = customerName;
+            if (mobileInput) mobileInput.value = customerName;
+            
+            console.log('✅ Pesanan masuk keranjang. Total items:', cart.length);
+            
+            // Potong stok
+            reduceStockForOnlineOrder(itemsToAdd);
+            
+            // Print struk otomatis
+            lastTransaction = {
+                id: orderId,
+                items: itemsToAdd,
+                total: orderData.total || orderData.price || itemsToAdd.reduce((sum, i) => sum + (i.price * i.qty), 0),
+                customerName: customerName,
+                uangDiterima: orderData.total || orderData.price || itemsToAdd.reduce((sum, i) => sum + (i.price * i.qty), 0),
+                kembalian: 0,
+                paymentMethod: orderData.platform || 'online',
+                orderType: 'online',
+                sourceCollection: collectionName
+            };
+            
+            // Auto print struk setelah delay singkat
+            setTimeout(() => {
+                printStruk();
+                showCustomModal('✅ Pesanan Diproses', `Pesanan ${customerName} sudah masuk keranjang dan struk sedang dicetak.`);
+            }, 500);
+        }
+        
+        // ==========================================
+        // 📦 FUNGSI POTONG STOK OTOMATIS
+        // ==========================================
+        
+        async function reduceStockForOnlineOrder(items) {
+            console.log('📦 Memotong stok untuk:', items);
+            
+            for (const item of items) {
+                try {
+                    // Cari produk di collection 'products' berdasarkan nama atau id
+                    let productDoc = null;
+                    
+                    // Coba cari berdasarkan id dulu
+                    if (item.id && item.id !== 'online_' && !item.id.startsWith('online_')) {
+                        const doc = await db.collection('products').doc(item.id).get();
+                        if (doc.exists) {
+                            productDoc = doc;
+                        }
+                    }
+                    
+                    // Jika tidak ketemu, cari berdasarkan nama
+                    if (!productDoc) {
+                        const snap = await db.collection('products')
+                            .where('name', '==', item.name)
+                            .limit(1)
+                            .get();
+                        
+                        if (!snap.empty) {
+                            productDoc = snap.docs[0];
+                        }
+                    }
+                    
+                    if (productDoc) {
+                        const currentStock = productDoc.data().stock || productDoc.data().stok || 0;
+                        const newStock = Math.max(0, currentStock - item.qty);
+                        
+                        await db.collection('products').doc(productDoc.id).update({
+                            stock: newStock,
+                            stok: newStock, // Update kedua field untuk compatibility
+                            lastUpdated: new Date().toISOString()
+                        });
+                        
+                        console.log(`✅ Stok ${item.name}: ${currentStock} → ${newStock}`);
+                    } else {
+                        console.log(`⚠️ Produk "${item.name}" tidak ditemukan di database`);
+                    }
+                } catch (error) {
+                    console.error(`❌ Gagal potong stok ${item.name}:`, error);
+                }
+            }
+        }
     </script>
 </body>
 </html>
