@@ -1588,19 +1588,22 @@
                             const total = data.total ? formatRp(data.total) : '-';
                             
                             setTimeout(() => {
-                                const msg = `🔔 PESANAN WEBSITE BARU!\n\n👤 ${customerName}\n🥤 ${items}\n💰 ${total}\n📊 Status: ${status}\n\nProses pesanan ini?`;
-                                
-                                if(confirm(msg)) {
-                                    // Update status ke processing jika belum
-                                    if (status !== 'accepted' && status !== 'processing') {
-                                        db.collection('orders').doc(change.doc.id).update({
-                                            status: 'processing',
-                                            processedBy: currentUser.name || 'Kasir',
-                                            processedAt: new Date()
-                                        });
+                                // Ganti confirm() dengan modal custom
+                                showCustomModal(
+                                    '🔔 PESANAN WEBSITE BARU!', 
+                                    `👤 ${customerName}\n🥤 ${items}\n💰 ${total}\n📊 Status: ${status}`,
+                                    function() {
+                                        // Callback jika klik OK
+                                        if (status !== 'accepted' && status !== 'processing') {
+                                            db.collection('orders').doc(change.doc.id).update({
+                                                status: 'processing',
+                                                processedBy: currentUser.name || 'Kasir',
+                                                processedAt: new Date()
+                                            });
+                                        }
+                                        showCustomModal('Pesanan Diterima', `Pesanan ${customerName} sedang dibuat.`);
                                     }
-                                    showCustomModal('Pesanan Diterima', `Pesanan ${customerName} sedang dibuat.`);
-                                }
+                                );
                             }, 500);
                         }
                     });
