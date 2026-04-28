@@ -1596,10 +1596,14 @@
             
             console.log('🔔 Setup online order notifications...');
             
+            // ✅ PERBAIKAN: Hanya dengarkan yang statusnya 'pending'
             db.collection('online_sales')
+                .where('status', '==', 'pending') 
                 .orderBy('createdAt', 'desc')
                 .limit(10)
                 .onSnapshot(snapshot => {
+                    console.log(`📥 Online orders pending: ${snapshot.size}`);
+                    
                     snapshot.docChanges().forEach(change => {
                         if (change.type === 'added') {
                             const data = change.doc.data();
@@ -1607,7 +1611,7 @@
                             
                             const platform = data.platform || 'Online';
                             const orderNo = data.orderNo || data.noOrder || '-';
-                            const item = data.item || 'Item';
+                            const item = data.item || data.items?.[0]?.name || 'Item';
                             const price = data.price || data.total ? formatRp(data.price || data.total) : '-';
                             
                             setTimeout(() => {
@@ -1615,7 +1619,12 @@
                                     `🔔 PESANAN ${platform.toUpperCase()} BARU!`, 
                                     `📦 No: ${orderNo}\n🥤 ${item}\n💰 ${price}`,
                                     function() {
-                                        // ✅ TAMBAHKAN INI: Auto add to cart & print
+                                        // ✅ TAMBAHKAN INI: Update status jadi 'completed' agar notif berhenti
+                                        db.collection('online_sales').doc(change.doc.id).update({
+                                            status: 'completed'
+                                        });
+                                        
+                                        // Proses pesanan
                                         addOnlineOrderToCart(data, change.doc.id, 'online_sales');
                                     }
                                 );
@@ -1626,7 +1635,6 @@
                     console.error('❌ Online order listener error:', error);
                 });
         }
-
         // D. Initialize Notifications saat login berhasil
         const originalHandleLogin = window.handleLogin;
         window.handleLogin = async function(e) {
