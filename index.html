@@ -1934,6 +1934,33 @@
                 }
             });
         }
+        // Baris 1942-1965 (yang sudah diperbaiki)
+        const onlineOrdersListenerCashier = db.collection('penjualan_online')  // ← UBAH DISINI
+            .where('status', '==', 'pending')
+            .orderBy('createdAt', 'desc')
+            .onSnapshot(snapshot => {
+                snapshot.docChanges().forEach(change => {
+                    if (change.type === 'added') {
+                        const data = change.doc.data();
+                        const customerName = data.customerName || 'Pelanggan';
+                        const items = data.items ? data.items.map(i => i.name).join(', ') : 'Item';
+                        
+                        // Mainkan Suara Notifikasi
+                        const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+                        audio.play();
+                        
+                        // Tampilkan Notifikasi ke Kasir
+                        if(confirm(`🔔 PESANAN BARU MASUK!\n\nNama: ${customerName}\nItem: ${items}\n\nApakah Anda ingin mulai memproses pesanan ini?`)) {
+                            // Update status
+                            db.collection('penjualan_online').doc(change.doc.id).update({  // ← UBAH DISINI JUGA
+                                status: 'processing',
+                                processedBy: currentUser ? currentUser.name : 'Kasir',
+                                processedAt: new Date()
+                            });
+                        }
+                    }
+                });
+            });
     </script>
 </body>
 </html>
