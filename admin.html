@@ -107,6 +107,93 @@
         .loading { text-align: center; padding: 40px; color: #7f8c8d; }
         .spinner { border: 4px solid var(--light); border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 15px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Custom Modal */
+        .custom-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+        .custom-modal-overlay.active { display: flex; }
+        .custom-modal {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 450px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: modalSlideIn 0.3s ease;
+        }
+        @keyframes modalSlideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .custom-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--light);
+        }
+        .custom-modal-logo {
+            width: 50px;
+            height: 50px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+        }
+        .custom-modal-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .custom-modal-message {
+            font-size: 1rem;
+            color: #555;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+        .custom-modal-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+        .custom-modal-btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: 0.3s;
+            min-width: 100px;
+        }
+        .custom-modal-btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        .custom-modal-btn-primary:hover { background: var(--primary-dark); }
+        .custom-modal-btn-secondary {
+            background: var(--light);
+            color: var(--dark);
+        }
+        .custom-modal-btn-secondary:hover { background: #d5dbdb; }
+
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 3000; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px); }
         .modal.active { display: flex; }
         .modal-content { background: white; padding: 30px; border-radius: 16px; width: 100%; max-width: 500px; text-align: center; animation: modalSlide 0.3s ease; }
@@ -241,6 +328,25 @@
         </div>
     </div>
 
+    <!-- Custom Modal for Confirmations -->
+    <div class="custom-modal-overlay" id="customModalOverlay">
+        <div class="custom-modal">
+            <div class="custom-modal-header">
+                <div class="custom-modal-logo">
+                    <i class="fas fa-coffee"></i>
+                </div>
+                <div class="custom-modal-title">CST SYSTEM</div>
+            </div>
+            <div class="custom-modal-message" id="customModalMessage">
+                Apakah Anda yakin?
+            </div>
+            <div class="custom-modal-buttons">
+                <button class="custom-modal-btn custom-modal-btn-secondary" id="customModalCancelBtn">Batal</button>
+                <button class="custom-modal-btn custom-modal-btn-primary" id="customModalConfirmBtn">Oke</button>
+            </div>
+        </div>
+    </div>
+
     <div class="toast-container" id="toastContainer"></div>
     <div class="modal" id="confirmModal">
         <div class="modal-content"><img src="https://i.ibb.co.com/mC3npXRW/Gemini-Generated-Image-8aemtl8aemtl8aem-removebg-preview.png" alt="CST SYSTEM" class="modal-logo"><h2 class="modal-title">CST SYSTEM</h2><p class="modal-message" id="confirmMessage">Apakah Anda yakin?</p><div class="modal-buttons"><button class="modal-btn modal-btn-secondary" onclick="closeConfirmModal()">Batal</button><button class="modal-btn modal-btn-primary" id="confirmBtn">Ya</button></div></div>
@@ -256,6 +362,31 @@
         firebase.initializeApp(firebaseConfig);
         db = firebase.firestore();
         auth = firebase.auth();
+
+        // Custom Modal Functions
+        let customModalCallback = null;
+
+        function showCustomModal(message, callback) {
+            document.getElementById('customModalMessage').textContent = message;
+            document.getElementById('customModalOverlay').classList.add('active');
+            customModalCallback = callback;
+        }
+
+        function closeCustomModal() {
+            document.getElementById('customModalOverlay').classList.remove('active');
+            customModalCallback = null;
+        }
+
+        document.getElementById('customModalCancelBtn').onclick = function() {
+            closeCustomModal();
+        };
+
+        document.getElementById('customModalConfirmBtn').onclick = function() {
+            if (customModalCallback) {
+                customModalCallback();
+            }
+            closeCustomModal();
+        };
 
         // Make functions globally accessible
         window.showSection = function(sectionId) {
@@ -328,9 +459,9 @@
             if (chartInstance) chartInstance.destroy();
             chartInstance = new Chart(ctx, {
                 type: 'bar',
-                data: {
+                 {
                     labels: labels.length ? labels : ['Tidak ada data'],
-                    datasets: [{ label: 'Omset', data: values.length ? values : [0], backgroundColor: '#E67E22', borderRadius: 6 }]
+                    datasets: [{ label: 'Omset',  values.length ? values : [0], backgroundColor: '#E67E22', borderRadius: 6 }]
                 },
                 options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { callback: function(value) { return 'Rp ' + (value/1000) + 'k'; } } } }, plugins: { legend: { display: false } } }
             });
@@ -381,12 +512,12 @@
         };
 
         window.confirmDeleteUser = function(id) {
-            if(confirm('Hapus user ini?')) {
+            showCustomModal('Hapus user ini? Tindakan ini tidak dapat dibatalkan.', function() {
                 db.collection('users').doc(id).delete().then(() => {
                     showToast('User dihapus');
                     loadUsers();
                 });
-            }
+            });
         };
 
         window.handleAddBahanBaku = async function(e) {
@@ -440,12 +571,12 @@
         };
 
         window.confirmDeleteBahanBaku = function(id) {
-            if(confirm('Hapus bahan baku ini?')) {
+            showCustomModal('Hapus bahan baku ini? Tindakan ini tidak dapat dibatalkan.', function() {
                 db.collection('bahan_baku').doc(id).delete().then(() => {
                     showToast('Bahan baku dihapus');
                     loadBahanBaku();
                 });
-            }
+            });
         };
 
         window.exportUsersExcel = function() {
@@ -548,13 +679,13 @@
         }
 
         window.confirmDeleteTransaction = function(id) {
-            if(confirm('Hapus transaksi ini?')) {
+            showCustomModal('Hapus transaksi ini? Tindakan ini tidak dapat dibatalkan.', function() {
                 db.collection('transactions').doc(id).delete().then(() => {
                     showToast('Transaksi dihapus');
                     loadTransaksi();
                     loadDashboard();
                 });
-            }
+            });
         };
 
         window.exportTransaksiExcel = function() {
@@ -617,12 +748,12 @@
         };
 
         window.confirmDeleteOnlineSale = function(id) {
-            if(confirm('Hapus data penjualan ini?')) {
+            showCustomModal('Hapus data penjualan ini?', function() {
                 db.collection('online_sales').doc(id).delete().then(() => {
                     showToast('Data penjualan dihapus');
                     loadOnlineSales();
                 });
-            }
+            });
         };
 
         window.exportOnlineSalesExcel = function() {
@@ -707,7 +838,7 @@
         };
 
         window.rejectOrder = async function(orderId) {
-            if(confirm('Tolak pesanan ini? Pesanan akan dihapus.')) {
+            showCustomModal('Tolak pesanan ini? Pesanan akan dihapus.', async function() {
                 try {
                     await db.collection('orders').doc(orderId).update({
                         status: 'rejected',
@@ -719,7 +850,7 @@
                 } catch (e) {
                     showToast('Gagal menolak pesanan: ' + e.message, 'error');
                 }
-            }
+            });
         };
 
         window.chatWA = function(phone, name) {
@@ -743,13 +874,13 @@
         };
 
         window.confirmLogout = function() {
-            if(confirm('Yakin ingin logout?')) {
+            showCustomModal('Yakin ingin logout?', function() {
                 auth.signOut().then(() => {
                     window.location.href = 'index.html';
                 }).catch(e => {
                     alert('Gagal logout: ' + e.message);
                 });
-            }
+            });
         };
 
         window.showToast = function(title, type = 'success') {
