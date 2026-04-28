@@ -223,6 +223,7 @@
     </style>
 </head>
 <body>
+    <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <img src="https://i.ibb.co.com/mC3npXRW/Gemini-Generated-Image-8aemtl8aemtl8aem-removebg-preview.png" alt="CST SYSTEM" class="sidebar-logo">
@@ -246,6 +247,7 @@
         </div>
     </div>
 
+    <!-- Main Content -->
     <div class="main">
         <div class="header-top">
             <div>
@@ -484,9 +486,9 @@
             if (chartInstance) chartInstance.destroy();
             chartInstance = new Chart(ctx, {
                 type: 'bar',
-                 {
+                data: {
                     labels: labels.length ? labels : ['Tidak ada data'],
-                    datasets: [{ label: 'Omset',  values.length ? values : [0], backgroundColor: '#E67E22', borderRadius: 6 }]
+                    datasets: [{ label: 'Omset', data: values.length ? values : [0], backgroundColor: '#E67E22', borderRadius: 6 }]
                 },
                 options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { callback: function(value) { return 'Rp ' + (value/1000) + 'k'; } } } }, plugins: { legend: { display: false } } }
             });
