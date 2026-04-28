@@ -126,6 +126,7 @@
             align-items: center;
             justify-content: center;
             backdrop-filter: blur(4px);
+            pointer-events: none; /* Overlay captures clicks only if needed, but children need pointer-events: auto */
         }
         .custom-modal-overlay.active { display: flex; }
         .custom-modal {
@@ -137,6 +138,7 @@
             text-align: center;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             animation: modalSlideIn 0.3s ease;
+            pointer-events: auto; /* Crucial: Allow clicks on modal content */
         }
         @keyframes modalSlideIn {
             from { transform: translateY(-50px); opacity: 0; }
@@ -418,8 +420,9 @@
                 Apakah Anda yakin?
             </div>
             <div class="custom-modal-buttons">
-                <button class="custom-modal-btn custom-modal-btn-secondary" id="customModalCancelBtn">Batal</button>
-                <button class="custom-modal-btn custom-modal-btn-primary" id="customModalConfirmBtn">Oke</button>
+                <!-- FIXED: Added onclick handlers directly -->
+                <button class="custom-modal-btn custom-modal-btn-secondary" onclick="closeCustomModal()">Batal</button>
+                <button class="custom-modal-btn custom-modal-btn-primary" onclick="confirmAction()">Oke</button>
             </div>
         </div>
     </div>
@@ -467,11 +470,11 @@
         const formatRp = n => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n || 0);
 
         // ==========================================
-        // GLOBAL FUNCTIONS - MUST BE DEFINED FIRST
+        // GLOBAL FUNCTIONS - DEFINED FIRST
         // ==========================================
         
         // Navigation Function
-        function showSection(sectionId) {
+        window.showSection = function(sectionId) {
             document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
             document.getElementById('sec-' + sectionId).classList.add('active');
             document.querySelectorAll('.menu-item').forEach((el, index) => {
@@ -493,35 +496,54 @@
             if (sectionId === 'transaksi') loadTransaksi();
             if (sectionId === 'online-sales') loadOnlineSales();
             if (sectionId === 'online-orders') loadOnlineOrders();
-        }
+        };
+
+        // Toggle Branch Select
+        window.toggleBranchSelect = function() {
+            document.getElementById('grpCabang').style.display = (document.getElementById('uRole').value === 'cashier') ? 'block' : 'none';
+        };
 
         // Custom Modal Functions
-        function showCustomModal(message, callback) {
+        window.showCustomModal = function(message, callback) {
             document.getElementById('customModalMessage').textContent = message;
             document.getElementById('customModalOverlay').classList.add('active');
             customModalCallback = callback;
-        }
+        };
 
-        function closeCustomModal() {
+        window.closeCustomModal = function() {
             document.getElementById('customModalOverlay').classList.remove('active');
             customModalCallback = null;
-        }
+        };
 
-        function closeEditStockModal() {
+        // FIXED: Function to handle the "Oke" button click
+        window.confirmAction = function() {
+            if (customModalCallback) {
+                customModalCallback();
+                customModalCallback = null;
+            }
+            closeCustomModal();
+        };
+
+        window.closeConfirmModal = function() {
+            document.getElementById('confirmModal').classList.remove('active');
+            confirmCallback = null;
+        };
+
+        // Edit Stock Modal Functions
+        window.closeEditStockModal = function() {
             document.getElementById('editStockModalOverlay').classList.remove('active');
             editingStockId = null;
             isAddStock = false;
-        }
+        };
 
-        // Edit Stock Modal Functions
-        function openEditStockModal(docId, nama, stok, satuan, minStok, cabang) {
+        window.openEditStockModal = function(docId, nama, stok, satuan, minStok, cabang) {
             editingStockId = docId;
             isAddStock = false;
             document.getElementById('editStockModalTitle').textContent = 'Edit Stok Bahan Baku';
             
             const quickAddOptions = [1, 5, 10, 20, 50];
             const quickAddButtons = quickAddOptions.map(val => 
-                `<button class="quick-add-btn" onclick="quickAddStock(${val})">+${val}</button>`
+                `<button type="button" class="quick-add-btn" onclick="quickAddStock(${val})">+${val}</button>`
             ).join('');
             
             document.getElementById('editStockModalContent').innerHTML = `
@@ -544,8 +566,8 @@
                     <label style="font-size: 0.85rem; color: #7f8c8d; display: block; margin-bottom: 8px;">Tambah Cepat:</label>
                     <div class="quick-add">
                         ${quickAddButtons}
-                        <button class="quick-add-btn" onclick="quickAddStock(-1)">-1</button>
-                        <button class="quick-add-btn" onclick="quickAddStock(-5)">-5</button>
+                        <button type="button" class="quick-add-btn" onclick="quickAddStock(-1)">-1</button>
+                        <button type="button" class="quick-add-btn" onclick="quickAddStock(-5)">-5</button>
                     </div>
                 </div>
                 <div class="form-group">
@@ -556,9 +578,9 @@
             
             document.getElementById('editStockSaveBtn').textContent = 'Simpan Perubahan';
             document.getElementById('editStockModalOverlay').classList.add('active');
-        }
+        };
 
-        function openAddStockModal() {
+        window.openAddStockModal = function() {
             editingStockId = null;
             isAddStock = true;
             document.getElementById('editStockModalTitle').textContent = 'Tambah Stok Bahan Baku';
@@ -586,11 +608,11 @@
                     <div style="margin-bottom: 15px;">
                         <label style="font-size: 0.85rem; color: #7f8c8d; display: block; margin-bottom: 8px;">Tambah Cepat:</label>
                         <div class="quick-add">
-                            <button class="quick-add-btn" onclick="document.getElementById('addStokInput').value = parseInt(document.getElementById('addStokInput').value) + 1">+1</button>
-                            <button class="quick-add-btn" onclick="document.getElementById('addStokInput').value = parseInt(document.getElementById('addStokInput').value) + 5">+5</button>
-                            <button class="quick-add-btn" onclick="document.getElementById('addStokInput').value = parseInt(document.getElementById('addStokInput').value) + 10">+10</button>
-                            <button class="quick-add-btn" onclick="document.getElementById('addStokInput').value = parseInt(document.getElementById('addStokInput').value) + 20">+20</button>
-                            <button class="quick-add-btn" onclick="document.getElementById('addStokInput').value = parseInt(document.getElementById('addStokInput').value) + 50">+50</button>
+                            <button type="button" class="quick-add-btn" onclick="document.getElementById('addStokInput').value = parseInt(document.getElementById('addStokInput').value || 0) + 1">+1</button>
+                            <button type="button" class="quick-add-btn" onclick="document.getElementById('addStokInput').value = parseInt(document.getElementById('addStokInput').value || 0) + 5">+5</button>
+                            <button type="button" class="quick-add-btn" onclick="document.getElementById('addStokInput').value = parseInt(document.getElementById('addStokInput').value || 0) + 10">+10</button>
+                            <button type="button" class="quick-add-btn" onclick="document.getElementById('addStokInput').value = parseInt(document.getElementById('addStokInput').value || 0) + 20">+20</button>
+                            <button type="button" class="quick-add-btn" onclick="document.getElementById('addStokInput').value = parseInt(document.getElementById('addStokInput').value || 0) + 50">+50</button>
                         </div>
                     </div>
                 </div>
@@ -598,9 +620,9 @@
             
             document.getElementById('editStockSaveBtn').textContent = 'Tambah Stok';
             document.getElementById('editStockModalOverlay').classList.add('active');
-        }
+        };
 
-        function onAddStockSelectChange() {
+        window.onAddStockSelectChange = function() {
             const selectEl = document.getElementById('addStockSelect');
             const infoDiv = document.getElementById('addStockInfo');
             
@@ -615,25 +637,27 @@
             } else {
                 infoDiv.style.display = 'none';
             }
-        }
+        };
 
-        function quickAddStock(value) {
+        window.quickAddStock = function(value) {
             const input = document.getElementById('editStokInput');
-            const newVal = Math.max(0, parseInt(input.value || 0) + value);
-            input.value = newVal;
-            updateStockDisplay();
-        }
+            if(input) {
+                const newVal = Math.max(0, parseInt(input.value || 0) + value);
+                input.value = newVal;
+                updateStockDisplay();
+            }
+        };
 
-        function updateStockDisplay() {
+        window.updateStockDisplay = function() {
             const input = document.getElementById('editStokInput');
             const display = document.getElementById('currentStockDisplay');
             if (input && display) {
                 const satuan = allBahanBakuData.find(b => b.id === editingStockId)?.satuan || '';
                 display.textContent = `${input.value} ${satuan}`;
             }
-        }
+        };
 
-        async function saveStockChanges() {
+        window.saveStockChanges = async function() {
             if (!editingStockId) {
                 showToast('Pilih bahan baku terlebih dahulu', 'error');
                 return;
@@ -678,15 +702,10 @@
             } catch (e) {
                 showToast('Gagal mengupdate stok: ' + e.message, 'error');
             }
-        }
-
-        // Toggle Branch Select
-        function toggleBranchSelect() {
-            document.getElementById('grpCabang').style.display = (document.getElementById('uRole').value === 'cashier') ? 'block' : 'none';
-        }
+        };
 
         // Toast Notification
-        function showToast(title, type = 'success') {
+        window.showToast = function(title, type = 'success') {
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
             toast.className = 'toast';
@@ -699,10 +718,10 @@
                     setTimeout(() => toast.remove(), 300);
                 }
             }, 3000);
-        }
+        };
 
         // Load Dashboard
-        async function loadDashboard() {
+        window.loadDashboard = async function() {
             try {
                 const dateFilter = document.getElementById('dateFilter')?.value || 'today';
                 let startDate, endDate;
@@ -738,7 +757,7 @@
                 renderChart(dailySales);
                 renderTopProducts(productSales);
             } catch (e) { console.error('Dashboard error:', e); showToast('Gagal memuat dashboard', 'error'); }
-        }
+        };
 
         function renderChart(data) {
             const ctx = document.getElementById('salesChart');
@@ -750,7 +769,7 @@
                 type: 'bar',
                 data: {
                     labels: labels.length ? labels : ['Tidak ada data'],
-                    datasets: [{ label: 'Omset', data: values.length ? values : [0], backgroundColor: '#E67E22', borderRadius: 6 }]
+                    datasets: [{ label: 'Omset',  values.length ? values : [0], backgroundColor: '#E67E22', borderRadius: 6 }]
                 },
                 options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { callback: function(value) { return 'Rp ' + (value/1000) + 'k'; } } } }, plugins: { legend: { display: false } } }
             });
@@ -776,7 +795,7 @@
         }
 
         // Load Online Orders
-        async function loadOnlineOrders() {
+        window.loadOnlineOrders = async function() {
             const container = document.getElementById('onlineOrdersContainer');
             try {
                 const snap = await db.collection('orders').orderBy('createdAt', 'desc').get();
@@ -812,10 +831,10 @@
             } catch (e) {
                 container.innerHTML = `<p style="text-align:center;padding:40px;color:var(--danger);">Koneksi database bermasalah.</p>`;
             }
-        }
+        };
 
         // Accept Order
-        async function acceptOrder(orderId) {
+        window.acceptOrder = async function(orderId) {
             try {
                 await db.collection('orders').doc(orderId).update({
                     status: 'accepted',
@@ -827,10 +846,10 @@
             } catch (e) {
                 showToast('Gagal menyelesaikan pesanan: ' + e.message, 'error');
             }
-        }
+        };
 
         // Reject Order
-        async function rejectOrder(orderId) {
+        window.rejectOrder = async function(orderId) {
             showCustomModal('Tolak pesanan ini? Pesanan akan dihapus.', async function() {
                 try {
                     await db.collection('orders').doc(orderId).update({
@@ -844,16 +863,16 @@
                     showToast('Gagal menolak pesanan: ' + e.message, 'error');
                 }
             });
-        }
+        };
 
         // Chat WhatsApp
-        function chatWA(phone, name) {
+        window.chatWA = function(phone, name) {
             if (!phone) { alert('Nomor WhatsApp tidak tersedia'); return; }
             window.open(`https://wa.me/${phone}?text=${encodeURIComponent(`Halo ${name}, ada yang bisa kami bantu terkait pesanan Anda di Thai Tea CST?`)}`, '_blank');
-        }
+        };
 
         // Logout
-        function confirmLogout() {
+        window.confirmLogout = function() {
             showCustomModal('Yakin ingin logout?', function() {
                 auth.signOut().then(() => {
                     window.location.href = 'index.html';
@@ -861,15 +880,10 @@
                     alert('Gagal logout: ' + e.message);
                 });
             });
-        }
-
-        function closeConfirmModal() {
-            document.getElementById('confirmModal').classList.remove('active');
-            confirmCallback = null;
-        }
+        };
 
         // User Management
-        async function handleAddUser(e) {
+        window.handleAddUser = async function(e) {
             e.preventDefault();
             const btn = e.target.querySelector('button[type="submit"]');
             const originalText = btn.innerHTML;
@@ -887,9 +901,9 @@
                 loadUsers();
             } catch (err) { alert(err.code === 'auth/email-already-in-use' ? 'Email sudah terdaftar!' : 'Gagal: ' + err.message); }
             finally { btn.innerHTML = originalText; btn.disabled = false; }
-        }
+        };
 
-        async function loadUsers() {
+        window.loadUsers = async function() {
             try {
                 const snap = await db.collection('users').get();
                 const tbody = document.getElementById('tblUsers');
@@ -904,18 +918,18 @@
                 });
                 tbody.innerHTML = html;
             } catch (e) { showToast('Gagal memuat data user', 'error'); }
-        }
+        };
 
-        function confirmDeleteUser(id) {
+        window.confirmDeleteUser = function(id) {
             showCustomModal('Hapus user ini? Tindakan ini tidak dapat dibatalkan.', function() {
                 db.collection('users').doc(id).delete().then(() => {
                     showToast('User dihapus');
                     loadUsers();
                 });
             });
-        }
+        };
 
-        function exportUsersExcel() {
+        window.exportUsersExcel = function() {
             const data = [];
             db.collection('users').get().then(snap => {
                 snap.forEach(doc => {
@@ -928,10 +942,10 @@
                 XLSX.writeFile(wb, `Laporan_Users_${new Date().toISOString().split('T')[0]}.xlsx`);
                 showToast('File Excel berhasil diunduh');
             });
-        }
+        };
 
         // Bahan Baku Functions
-        async function handleAddBahanBaku(e) {
+        window.handleAddBahanBaku = async function(e) {
             e.preventDefault();
             const btn = e.target.querySelector('button[type="submit"]');
             const originalText = btn.innerHTML;
@@ -958,9 +972,9 @@
                 btn.innerHTML = originalText;
                 btn.disabled = false;
             }
-        }
+        };
 
-        async function loadBahanBaku() {
+        window.loadBahanBaku = async function() {
             const cabang = document.getElementById('filterBahanCabang').value;
             let query = db.collection('bahan_baku');
             if (cabang !== 'all') query = query.where('cabang', '==', cabang);
@@ -1006,18 +1020,18 @@
             } catch (e) {
                 showToast('Gagal memuat data bahan baku', 'error');
             }
-        }
+        };
 
-        function confirmDeleteBahanBaku(id) {
+        window.confirmDeleteBahanBaku = function(id) {
             showCustomModal('Hapus bahan baku ini? Tindakan ini tidak dapat dibatalkan.', function() {
                 db.collection('bahan_baku').doc(id).delete().then(() => {
                     showToast('Bahan baku dihapus');
                     loadBahanBaku();
                 });
             });
-        }
+        };
 
-        function exportBahanBakuExcel() {
+        window.exportBahanBakuExcel = function() {
             const data = [];
             db.collection('bahan_baku').get().then(snap => {
                 snap.forEach(doc => {
@@ -1033,10 +1047,10 @@
                 XLSX.writeFile(wb, `Laporan_Bahan_Baku_${new Date().toISOString().split('T')[0]}.xlsx`);
                 showToast('File Excel berhasil diunduh');
             });
-        }
+        };
 
         // Stok Functions
-        async function loadStok() {
+        window.loadStok = async function() {
             const cabang = document.getElementById('filterStokCabang').value;
             let query = db.collection('inventory');
             if (cabang !== 'all') query = query.where('branchId', '==', cabang);
@@ -1054,9 +1068,9 @@
             } catch (e) {
                 showToast('Gagal memuat data stok', 'error');
             }
-        }
+        };
 
-        async function updateStock(id) {
+        window.updateStock = async function(id) {
             const val = parseInt(document.getElementById('stock-' + id).value);
             if (isNaN(val) || val < 0) { alert('Jumlah tidak valid'); return; }
             try {
@@ -1066,9 +1080,9 @@
             } catch (e) {
                 showToast('Gagal update stok: ' + e.message, 'error');
             }
-        }
+        };
 
-        function exportStokExcel() {
+        window.exportStokExcel = function() {
             const data = [];
             db.collection('inventory').get().then(snap => {
                 snap.forEach(doc => {
@@ -1081,10 +1095,10 @@
                 XLSX.writeFile(wb, `Laporan_Stok_${new Date().toISOString().split('T')[0]}.xlsx`);
                 showToast('File Excel berhasil diunduh');
             });
-        }
+        };
 
         // Transaksi Functions
-        async function loadTransaksi() {
+        window.loadTransaksi = async function() {
             try {
                 const snap = await db.collection('transactions').orderBy('timestamp', 'desc').limit(200).get();
                 allTransaksi = [];
@@ -1093,7 +1107,7 @@
             } catch (e) {
                 showToast('Gagal memuat transaksi', 'error');
             }
-        }
+        };
 
         function renderTransaksi(data) {
             const tbody = document.getElementById('tblTransaksi');
@@ -1106,7 +1120,7 @@
             tbody.innerHTML = html;
         }
 
-        function confirmDeleteTransaction(id) {
+        window.confirmDeleteTransaction = function(id) {
             showCustomModal('Hapus transaksi ini? Tindakan ini tidak dapat dibatalkan.', function() {
                 db.collection('transactions').doc(id).delete().then(() => {
                     showToast('Transaksi dihapus');
@@ -1114,9 +1128,9 @@
                     loadDashboard();
                 });
             });
-        }
+        };
 
-        function exportTransaksiExcel() {
+        window.exportTransaksiExcel = function() {
             if (!allTransaksi.length) { alert('Tidak ada data untuk diexport'); return; }
             const data = allTransaksi.map(t => ({'Tanggal': t.timestamp ? new Date(t.timestamp.seconds * 1000).toLocaleString('id-ID') : '-', 'ID': t.id, 'Cabang': branchNames[t.branchId] || t.branchId, 'Kasir': t.cashierName || '-', 'Items': Array.isArray(t.items) ? t.items.map(i => `${i.name} (x${i.qty})`).join(', ') : '-', 'Total': t.total || 0, 'Metode': t.paymentMethod || '-'}));
             const ws = XLSX.utils.json_to_sheet(data);
@@ -1124,10 +1138,10 @@
             XLSX.utils.book_append_sheet(wb, ws, "Transaksi");
             XLSX.writeFile(wb, `Laporan_Transaksi_${new Date().toISOString().split('T')[0]}.xlsx`);
             showToast('File Excel berhasil diunduh');
-        }
+        };
 
         // Online Sales Functions
-        async function handleAddOnlineSale(e) {
+        window.handleAddOnlineSale = async function(e) {
             e.preventDefault();
             const btn = e.target.querySelector('button[type="submit"]');
             const originalText = btn.innerHTML;
@@ -1152,9 +1166,9 @@
                 btn.innerHTML = originalText;
                 btn.disabled = false;
             }
-        }
+        };
 
-        async function loadOnlineSales() {
+        window.loadOnlineSales = async function() {
             try {
                 const snap = await db.collection('online_sales').orderBy('timestamp', 'desc').get();
                 const tbody = document.getElementById('tblOnlineSales');
@@ -1173,18 +1187,18 @@
             } catch (e) {
                 showToast('Gagal memuat data penjualan online', 'error');
             }
-        }
+        };
 
-        function confirmDeleteOnlineSale(id) {
+        window.confirmDeleteOnlineSale = function(id) {
             showCustomModal('Hapus data penjualan ini?', function() {
                 db.collection('online_sales').doc(id).delete().then(() => {
                     showToast('Data penjualan dihapus');
                     loadOnlineSales();
                 });
             });
-        }
+        };
 
-        function exportOnlineSalesExcel() {
+        window.exportOnlineSalesExcel = function() {
             const data = [];
             db.collection('online_sales').get().then(snap => {
                 snap.forEach(doc => {
@@ -1198,7 +1212,7 @@
                 XLSX.writeFile(wb, `Laporan_Online_Sales_${new Date().toISOString().split('T')[0]}.xlsx`);
                 showToast('File Excel berhasil diunduh');
             });
-        }
+        };
 
         // Auth State Observer
         auth.onAuthStateChanged(async user => {
