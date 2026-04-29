@@ -1560,11 +1560,12 @@
             
             console.log('🔔 Setup web order notifications...');
             
-            // ✅ PERBAIKAN: Filter hanya untuk status 'accepted' DAN notified !== true
+            // ✅ PERBAIKAN: Gunakan == false (bukan != true) agar kompatibel dengan orderBy
             db.collection('orders')
                 .where('status', '==', 'accepted')
-                .where('notified', '!=', true)
-                .orderBy('createdAt', 'desc')
+                .where('notified', '==', false)  // ✅ UBAH: != true menjadi == false
+                .orderBy('notified')              // ✅ UBAH: orderBy notified dulu
+                .orderBy('createdAt', 'desc')     // ✅ Lalu orderBy createdAt
                 .limit(10)
                 .onSnapshot(snapshot => {
                     console.log(`📥 Web orders accepted & not notified: ${snapshot.size}`);
@@ -1584,7 +1585,7 @@
                                     '🔔 PESANAN WEBSITE BARU!', 
                                     `👤 ${customerName}\n🥤 ${items}\n💰 ${total}\n📊 Status: ${status}`,
                                     function() {
-                                        // ✅ PERBAIKAN: Update flag notified agar tidak muncul lagi
+                                        // ✅ Update field notified menjadi true
                                         db.collection('orders').doc(change.doc.id).update({
                                             notified: true,
                                             notifiedAt: new Date().toISOString()
@@ -1598,26 +1599,22 @@
                         }
                     });
                 }, error => {
-                    // Jika index belum ada, Firebase akan memberikan link untuk membuatnya
-                    if (error.code === 'failed-precondition') {
-                        console.log('⚠️ Index diperlukan untuk query. Klik link error untuk membuat index.');
-                    } else {
-                        console.error('❌ Web order listener error:', error);
-                    }
+                    console.error('❌ Web order listener error:', error);
                 });
         }
-
+        
         // C. Listener untuk Pesanan Online (GoFood/ShopeeFood/GrabFood)
         function setupOnlineOrderNotifications() {
             if (!currentUser) return;
             
             console.log('🔔 Setup online order notifications...');
             
-            // ✅ PERBAIKAN: Filter hanya untuk status 'pending' DAN notified !== true
+            // ✅ PERBAIKAN: Gunakan == false (bukan != true) agar kompatibel dengan orderBy
             db.collection('online_sales')
                 .where('status', '==', 'pending')
-                .where('notified', '!=', true)
-                .orderBy('createdAt', 'desc')
+                .where('notified', '==', false)  // ✅ UBAH: != true menjadi == false
+                .orderBy('notified')              // ✅ UBAH: orderBy notified dulu
+                .orderBy('createdAt', 'desc')     // ✅ Lalu orderBy createdAt
                 .limit(10)
                 .onSnapshot(snapshot => {
                     console.log(`📥 Online orders pending & not notified: ${snapshot.size}`);
@@ -1637,7 +1634,7 @@
                                     `🔔 PESANAN ${platform.toUpperCase()} BARU!`, 
                                     `📦 No: ${orderNo}\n🥤 ${item}\n💰 ${price}`,
                                     function() {
-                                        // ✅ PERBAIKAN: Update status jadi 'completed' DAN flag notified
+                                        // ✅ Update status dan notified
                                         db.collection('online_sales').doc(change.doc.id).update({
                                             status: 'completed',
                                             notified: true,
@@ -1652,14 +1649,9 @@
                         }
                     });
                 }, error => {
-                    if (error.code === 'failed-precondition') {
-                        console.log('⚠️ Index diperlukan untuk query. Klik link error untuk membuat index.');
-                    } else {
-                        console.error('❌ Online order listener error:', error);
-                    }
+                    console.error('❌ Online order listener error:', error);
                 });
         }
-
         // D. Initialize Notifications saat login berhasil
         const originalHandleLogin = window.handleLogin;
         window.handleLogin = async function(e) {
