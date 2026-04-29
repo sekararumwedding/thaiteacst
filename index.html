@@ -6,9 +6,9 @@
     <meta name="description" content="CST SYSTEM - Kasir Thai Tea CST">
     <meta name="theme-color" content="#E67E22">
     <title>Thai Tea CST - Kasir</title>
-    <!-- Favicon - Prevent 404 Error -->
-    <link rel="icon" href="image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧋</text></svg>">
-    <link rel="apple-touch-icon" href="image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧋</text></svg>">
+    <!-- Favicon - PERBAIKAN: Tambahkan data: URI yang benar -->
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E🧋%3C/text%3E%3C/svg%3E">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E🧋%3C/text%3E%3C/svg%3E">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
     
@@ -1136,7 +1136,7 @@
             const list = cat === 'all' ? products : products.filter(p => p.cat === cat);
             grid.innerHTML = list.map(p => `
                 <div class="product-card">
-                    <img src="${p.img}" class="product-img" loading="lazy" onerror="this.src='image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23f8f9fa%22 width=%22100%22 height=%22100%22/><text y=%22.9em%22 font-size=%2280%22 x=%2250%22 text-anchor=%22middle%22>🧋</text></svg>'">
+                    <img src="${p.img}" class="product-img" loading="lazy" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect fill=%22%23f8f9fa%22 width=%22100%22 height=%22100%22/%3E%3Ctext y=%22.9em%22 font-size=%2280%22 x=%2250%22 text-anchor=%22middle%22%3E🧋%3C/text%3E%3C/svg%3E'">
                     <div class="product-info">
                         <div class="product-name">${p.name}</div>
                         <div class="product-price">${formatRp(p.price)}</div>
@@ -1540,7 +1540,7 @@
         }
         
         // ==========================================
-        // 🔔 SISTEM NOTIFIKASI PESANAN (BARU)
+        // 🔔 SISTEM NOTIFIKASI PESANAN (DIPERBAIKI)
         // ==========================================
 
         // A. Fungsi Play Sound Notifikasi
@@ -1560,10 +1560,15 @@
             
             console.log('🔔 Setup web order notifications...');
             
+            // ✅ PERBAIKAN: Filter hanya untuk status 'accepted' DAN notified !== true
             db.collection('orders')
+                .where('status', '==', 'accepted')
+                .where('notified', '!=', true)
                 .orderBy('createdAt', 'desc')
                 .limit(10)
                 .onSnapshot(snapshot => {
+                    console.log(`📥 Web orders accepted & not notified: ${snapshot.size}`);
+                    
                     snapshot.docChanges().forEach(change => {
                         if (change.type === 'added') {
                             const data = change.doc.data();
@@ -1579,7 +1584,13 @@
                                     '🔔 PESANAN WEBSITE BARU!', 
                                     `👤 ${customerName}\n🥤 ${items}\n💰 ${total}\n📊 Status: ${status}`,
                                     function() {
-                                        // ✅ TAMBAHKAN INI: Auto add to cart & print
+                                        // ✅ PERBAIKAN: Update flag notified agar tidak muncul lagi
+                                        db.collection('orders').doc(change.doc.id).update({
+                                            notified: true,
+                                            notifiedAt: new Date().toISOString()
+                                        }).catch(err => console.error('Gagal update notified:', err));
+                                        
+                                        // Proses pesanan
                                         addOnlineOrderToCart(data, change.doc.id, 'orders');
                                     }
                                 );
@@ -1587,22 +1598,29 @@
                         }
                     });
                 }, error => {
-                    console.error('❌ Web order listener error:', error);
+                    // Jika index belum ada, Firebase akan memberikan link untuk membuatnya
+                    if (error.code === 'failed-precondition') {
+                        console.log('⚠️ Index diperlukan untuk query. Klik link error untuk membuat index.');
+                    } else {
+                        console.error('❌ Web order listener error:', error);
+                    }
                 });
         }
+
         // C. Listener untuk Pesanan Online (GoFood/ShopeeFood/GrabFood)
         function setupOnlineOrderNotifications() {
             if (!currentUser) return;
             
             console.log('🔔 Setup online order notifications...');
             
-            // ✅ PERBAIKAN: Hanya dengarkan yang statusnya 'pending'
+            // ✅ PERBAIKAN: Filter hanya untuk status 'pending' DAN notified !== true
             db.collection('online_sales')
-                .where('status', '==', 'pending') 
+                .where('status', '==', 'pending')
+                .where('notified', '!=', true)
                 .orderBy('createdAt', 'desc')
                 .limit(10)
                 .onSnapshot(snapshot => {
-                    console.log(`📥 Online orders pending: ${snapshot.size}`);
+                    console.log(`📥 Online orders pending & not notified: ${snapshot.size}`);
                     
                     snapshot.docChanges().forEach(change => {
                         if (change.type === 'added') {
@@ -1619,10 +1637,12 @@
                                     `🔔 PESANAN ${platform.toUpperCase()} BARU!`, 
                                     `📦 No: ${orderNo}\n🥤 ${item}\n💰 ${price}`,
                                     function() {
-                                        // ✅ TAMBAHKAN INI: Update status jadi 'completed' agar notif berhenti
+                                        // ✅ PERBAIKAN: Update status jadi 'completed' DAN flag notified
                                         db.collection('online_sales').doc(change.doc.id).update({
-                                            status: 'completed'
-                                        });
+                                            status: 'completed',
+                                            notified: true,
+                                            notifiedAt: new Date().toISOString()
+                                        }).catch(err => console.error('Gagal update status/notified:', err));
                                         
                                         // Proses pesanan
                                         addOnlineOrderToCart(data, change.doc.id, 'online_sales');
@@ -1632,9 +1652,14 @@
                         }
                     });
                 }, error => {
-                    console.error('❌ Online order listener error:', error);
+                    if (error.code === 'failed-precondition') {
+                        console.log('⚠️ Index diperlukan untuk query. Klik link error untuk membuat index.');
+                    } else {
+                        console.error('❌ Online order listener error:', error);
+                    }
                 });
         }
+
         // D. Initialize Notifications saat login berhasil
         const originalHandleLogin = window.handleLogin;
         window.handleLogin = async function(e) {
@@ -1662,6 +1687,7 @@
                 }, 1000);
             }
         };
+
         // ==========================================
         // 🛒 FUNGSI AUTO-ADD PESANAN ONLINE KE KERANJANG
         // ==========================================
