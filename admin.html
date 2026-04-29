@@ -211,25 +211,24 @@
         // 🔐 ROLE-BASED AUTH (PENTING)
         // ==========================================
         auth.onAuthStateChanged(async user => {
-            // Jika belum login, redirect ke index.html (kasir)
+            // ✅ UBAHAN: Jangan redirect otomatis, biarkan halaman tetap terbuka
             if (!user) { 
-                console.log('⚠️ Tidak ada user login');
-                window.location.href = 'index.html';
+                console.log('⚠️ Tidak ada user login - Silakan login dulu');
+                // window.location.href = 'index.html';  // ← DI-COMMENT AGAR TIDAK REDIRECT
                 return; 
             }
             try {
                 const doc = await db.collection('users').doc(user.uid).get();
                 const data = doc.data();
                 
-                // ✅ LOGIKA ROLE: Jika Kasir, redirect ke index.html
+                // ✅ UBAHAN: Tampilkan warning tapi jangan redirect
                 if (!data || data.role === 'cashier') {
-                    console.log('⚠️ Akses ditolak: Role Kasir tidak boleh akses Admin');
-                    alert('Akses Ditolak! Halaman ini khusus Admin.');
-                    window.location.href = 'index.html';
-                    return;
+                    console.log('⚠️ Warning: Role Kasir mengakses Admin');
+                    // alert('Akses Ditolak! Halaman ini khusus Admin.');  // ← DI-COMMENT
+                    // window.location.href = 'index.html';  // ← DI-COMMENT
                 }
                 
-                // Jika Admin, lanjutkan
+                // Lanjutkan load halaman admin
                 window.currentUser = user;
                 document.getElementById('adminName').textContent = data.name || 'Admin';
                 listenOnlineOrders();
