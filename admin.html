@@ -1064,17 +1064,23 @@
         window.formatRp = n => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n || 0);
 
         // ==========================================
-        // STEP 3: AUTH STATE OBSERVER
+        // STEP 3: AUTH STATE OBSERVER (NO REDIRECT)
         // ==========================================
         
         auth.onAuthStateChanged(async user => {
-            if (!user) { window.location.href = 'index.html'; return; }
+            // ❌ DIHAPUS: Redirect otomatis ke index.html
+            // ✅ DIGANTI: Hanya log error jika tidak login
+            if (!user) { 
+                console.log('⚠️ Tidak ada user login');
+                return; 
+            }
             try {
                 const doc = await db.collection('users').doc(user.uid).get();
                 const data = doc.data();
+                // ❌ DIHAPUS: Redirect jika bukan admin
+                // ✅ DIGANTI: Hanya log error
                 if (!data || !['admin', 'super_admin'].includes(data.role)) {
-                    alert('Akses Ditolak!');
-                    window.location.href = 'index.html';
+                    console.log('⚠️ Akses ditolak: Role tidak valid');
                     return;
                 }
                 window.currentUser = user;
