@@ -172,7 +172,57 @@
         window.updateStockDisplay = function() { const input = document.getElementById('editStokInput'); const display = document.getElementById('currentStockDisplay'); if (input && display) { const satuan = window.allBahanBakuData.find(b => b.id === window.editingStockId)?.satuan || ''; display.textContent = `${input.value} ${satuan}`; } };
         window.saveStockChanges = async function() { if (!window.editingStockId) { window.showToast('Pilih bahan baku terlebih dahulu', 'error'); return; } let newStock; if (window.isAddStock) { const addInput = document.getElementById('addStokInput'); if (!addInput || !addInput.value) { window.showToast('Masukkan jumlah stok yang ingin ditambahkan', 'error'); return; } const currentBahan = window.allBahanBakuData.find(b => b.id === window.editingStockId); newStock = parseInt(currentBahan.stok) + parseInt(addInput.value); } else { const editInput = document.getElementById('editStokInput'); if (!editInput || editInput.value === '') { window.showToast('Masukkan jumlah stok', 'error'); return; } newStock = parseInt(editInput.value); } if (isNaN(newStock) || newStock < 0) { window.showToast('Jumlah stok tidak valid', 'error'); return; } try { const minStokInput = document.getElementById('editMinStokInput'); const newMinStok = minStokInput ? parseInt(minStokInput.value) || 0 : window.allBahanBakuData.find(b => b.id === window.editingStockId)?.minStok || 0; await db.collection('bahan_baku').doc(window.editingStockId).update({ stok: newStock, minStok: newMinStok, updatedAt: new Date().toISOString() }); window.showToast(`Stok berhasil diupdate menjadi ${newStock}`); window.closeEditStockModal(); window.loadBahanBaku(); } catch (e) { window.showToast('Gagal mengupdate stok: ' + e.message, 'error'); } };
         window.showToast = function(title, type = 'success') { const container = document.getElementById('toastContainer'); const toast = document.createElement('div'); toast.className = 'toast'; toast.style.borderLeftColor = type === 'error' ? 'var(--danger)' : 'var(--success)'; toast.innerHTML = `<div class="toast-icon" style="background:${type === 'error' ? 'var(--danger)' : 'var(--success)'}"><i class="fas fa-${type === 'error' ? 'exclamation' : 'check'}"></i></div><div class="toast-content"><div class="toast-title">${type === 'error' ? 'Error' : 'Sukses'}</div><div class="toast-message">${title}</div></div><button class="toast-close" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>`; container.appendChild(toast); setTimeout(() => { if (toast.parentElement) { toast.style.animation = 'slideInRight 0.3s ease reverse'; setTimeout(() => toast.remove(), 300); } }, 3000); };
-        window.loadDashboard = async function() { try { const dateFilter = document.getElementById('dateFilter')?.value || 'today'; let startDate, endDate; const now = new Date(); if (dateFilter === 'today') { startDate = new Date(now.setHours(0,0,0,0)); endDate = new Date(now.setHours(23,59,59,999)); } else if (dateFilter === 'week') { startDate = new Date(now.setDate(now.getDate() - now.getDay())); startDate.setHours(0,0,0,0); endDate = new Date(); endDate.setHours(23,59,59,999); } else if (dateFilter === 'month') { startDate = new Date(now.getFullYear(), now.getMonth(), 1); endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999); } let query = db.collection('transactions').orderBy('timestamp', 'desc'); if (startDate && endDate) query = query.where('timestamp', '>=', startDate).where('timestamp', '<=', endDate); const snap = await query.get(); let omset = 0, count = 0, itemsSold = 0; const productSales = {}; let recentHtml = ''; const dailySales = {}; snap.forEach(doc => { const d = doc.data(); omset += (d.total || 0); count++; if (Array.isArray(d.items)) d.items.forEach(i => { itemsSold += (i.qty || 0); productSales[i.name] = (productSales[i.name] || 0) + (i.qty || 0); }); if (d.timestamp) { const dateKey = new Date(d.timestamp.seconds * 1000).toLocaleDateString('id-ID', { weekday: 'short' }); dailySales[dateKey] = (dailySales[dateKey] || 0) + (d.total || 0); } if (count <= 5) { const timeStr = d.timestamp ? new Date(d.timestamp.seconds * 1000).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '-'; const branchName = window.branchNames[d.branchId] || d.branchId || '-'; recentHtml += `<tr><td><small>${timeStr}</small></td><td>${branchName}</td><td>${d.cashierName || '-'}</td><td><b>${window.formatRp(d.total)}</b></td><td><span class="badge badge-info">${d.paymentMethod}</span></td></tr>`; } }); document.getElementById('dashTodaySales').textContent = window.formatRp(omset); document.getElementById('dashTotalTrans').textContent = count; document.getElementById('dashAvgOrder').textContent = count > 0 ? window.formatRp(Math.round(omset / count)) : 'Rp 0'; const bestSeller = Object.entries(productSales).sort((a,b) => b[1] - a[1])[0]; if (bestSeller) { document.getElementById('dashBestSeller').textContent = bestSeller[0]; document.getElementById('dashBestSellerCount').textContent = bestSeller[1] + ' terjual'; } document.getElementById('tblRecentTrans').innerHTML = recentHtml || '<tr><td colspan="5" style="text-align:center">Belum ada transaksi</td></tr>'; renderChart(dailySales); renderTopProducts(productSales); } catch (e) { console.error('Dashboard error:', e); window.showToast('Gagal memuat dashboard', 'error'); } };
+        
+        // ✅ PERBAIKAN 1: loadDashboard dengan check currentUser
+        window.loadDashboard = async function() { 
+            if (!window.currentUser) {
+                console.log('⚠️ User belum login, tampilkan placeholder');
+                document.getElementById('dashTodaySales').textContent = 'Rp 0';
+                document.getElementById('dashTotalTrans').textContent = '0';
+                document.getElementById('dashAvgOrder').textContent = 'Rp 0';
+                document.getElementById('dashBestSeller').textContent = '-';
+                document.getElementById('dashBestSellerCount').textContent = 'Login untuk melihat';
+                document.getElementById('tblRecentTrans').innerHTML = '<tr><td colspan="5" style="text-align:center;color:#7f8c8d;">Silakan login untuk melihat data</td></tr>';
+                if (window.chartInstance) window.chartInstance.destroy();
+                document.getElementById('topProductsList').innerHTML = '<li style="text-align:center;color:#7f8c8d;padding:20px">Login untuk melihat data</li>';
+                return;
+            }
+            try { 
+                const dateFilter = document.getElementById('dateFilter')?.value || 'today'; 
+                let startDate, endDate; 
+                const now = new Date(); 
+                if (dateFilter === 'today') { startDate = new Date(now.setHours(0,0,0,0)); endDate = new Date(now.setHours(23,59,59,999)); } 
+                else if (dateFilter === 'week') { startDate = new Date(now.setDate(now.getDate() - now.getDay())); startDate.setHours(0,0,0,0); endDate = new Date(); endDate.setHours(23,59,59,999); } 
+                else if (dateFilter === 'month') { startDate = new Date(now.getFullYear(), now.getMonth(), 1); endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999); } 
+                let query = db.collection('transactions').orderBy('timestamp', 'desc'); 
+                if (startDate && endDate) query = query.where('timestamp', '>=', startDate).where('timestamp', '<=', endDate); 
+                const snap = await query.get(); 
+                let omset = 0, count = 0, itemsSold = 0; 
+                const productSales = {}; 
+                let recentHtml = ''; 
+                const dailySales = {}; 
+                snap.forEach(doc => { 
+                    const d = doc.data(); 
+                    omset += (d.total || 0); 
+                    count++; 
+                    if (Array.isArray(d.items)) d.items.forEach(i => { itemsSold += (i.qty || 0); productSales[i.name] = (productSales[i.name] || 0) + (i.qty || 0); }); 
+                    if (d.timestamp) { const dateKey = new Date(d.timestamp.seconds * 1000).toLocaleDateString('id-ID', { weekday: 'short' }); dailySales[dateKey] = (dailySales[dateKey] || 0) + (d.total || 0); } 
+                    if (count <= 5) { const timeStr = d.timestamp ? new Date(d.timestamp.seconds * 1000).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '-'; const branchName = window.branchNames[d.branchId] || d.branchId || '-'; recentHtml += `<tr><td><small>${timeStr}</small></td><td>${branchName}</td><td>${d.cashierName || '-'}</td><td><b>${window.formatRp(d.total)}</b></td><td><span class="badge badge-info">${d.paymentMethod}</span></td></tr>`; } 
+                }); 
+                document.getElementById('dashTodaySales').textContent = window.formatRp(omset); 
+                document.getElementById('dashTotalTrans').textContent = count; 
+                document.getElementById('dashAvgOrder').textContent = count > 0 ? window.formatRp(Math.round(omset / count)) : 'Rp 0'; 
+                const bestSeller = Object.entries(productSales).sort((a,b) => b[1] - a[1])[0]; 
+                if (bestSeller) { document.getElementById('dashBestSeller').textContent = bestSeller[0]; document.getElementById('dashBestSellerCount').textContent = bestSeller[1] + ' terjual'; } else { document.getElementById('dashBestSeller').textContent = '-'; document.getElementById('dashBestSellerCount').textContent = 'Belum ada data'; }
+                document.getElementById('tblRecentTrans').innerHTML = recentHtml || '<tr><td colspan="5" style="text-align:center;color:#7f8c8d;">Belum ada transaksi</td></tr>'; 
+                renderChart(dailySales); 
+                renderTopProducts(productSales); 
+            } catch (e) { 
+                console.error('Dashboard error:', e); 
+                if (e.code !== 'permission-denied') window.showToast('Gagal memuat dashboard', 'error'); 
+            } 
+        };
+        
         function renderChart(data) { const ctx = document.getElementById('salesChart'); if (!ctx) return; const labels = Object.keys(data).slice(-7); const values = Object.values(data).slice(-7); if (window.chartInstance) window.chartInstance.destroy(); window.chartInstance = new Chart(ctx, { type: 'bar', data: { labels: labels.length ? labels : ['Tidak ada data'], datasets: [{ label: 'Omset', data: values.length ? values : [0], backgroundColor: '#E67E22', borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { callback: function(value) { return 'Rp ' + (value/1000) + 'k'; } } } }, plugins: { legend: { display: false } } } }); }
         function renderTopProducts(productSales) { const list = document.getElementById('topProductsList'); const sorted = Object.entries(productSales).sort((a,b) => b[1] - a[1]).slice(0, 5); if (sorted.length === 0) { list.innerHTML = '<li style="text-align:center;color:#7f8c8d;padding:20px">Belum ada data produk</li>'; return; } list.innerHTML = sorted.map((item, index) => `<li><div style="display:flex;align-items:center"><span class="product-rank ${index < 3 ? 'top-3' : ''}">${index + 1}</span><span>${item[0]}</span></div><span style="font-weight:600;color:var(--primary)">${item[1]}x</span></li>`).join(''); }
         function listenOnlineOrders() { if (window.onlineOrdersListener) window.onlineOrdersListener(); window.onlineOrdersListener = db.collection('orders').orderBy('createdAt', 'desc').onSnapshot(snapshot => { const count = snapshot.size; const badge = document.getElementById('onlineOrderBadge'); if (count > 0) { badge.textContent = count; badge.classList.add('active'); } else { badge.classList.remove('active'); } window.loadOnlineOrders(); }, error => { console.error('Error listening to orders:', error); }); }
@@ -182,7 +232,33 @@
         window.chatWA = function(phone, name) { if (!phone) { alert('Nomor WhatsApp tidak tersedia'); return; } window.open(`https://wa.me/${phone}?text=${encodeURIComponent(`Halo ${name}, ada yang bisa kami bantu terkait pesanan Anda di Thai Tea CST?`)}`, '_blank'); };
         window.confirmLogout = function() { window.showCustomModal('Yakin ingin logout?', function() { auth.signOut().then(() => { window.location.href = 'index.html'; }).catch(e => { alert('Gagal logout: ' + e.message); }); }); };
         window.handleAddUser = async function(e) { e.preventDefault(); const btn = e.target.querySelector('button[type="submit"]'); const originalText = btn.innerHTML; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...'; btn.disabled = true; const nama = document.getElementById('uNama').value.trim(), email = document.getElementById('uEmail').value.trim(), pass = document.getElementById('uPass').value, role = document.getElementById('uRole').value; const cabang = role === 'cashier' ? document.getElementById('uCabang').value : 'all'; try { const cred = await auth.createUserWithEmailAndPassword(email, pass); await db.collection('users').doc(cred.user.uid).set({ name: nama, email: email, branchId: cabang, role: role, active: true, createdAt: new Date().toISOString() }); await cred.user.delete(); window.showToast('User berhasil ditambahkan'); document.getElementById('formUser').reset(); window.toggleBranchSelect(); window.loadUsers(); } catch (err) { alert(err.code === 'auth/email-already-in-use' ? 'Email sudah terdaftar!' : 'Gagal: ' + err.message); } finally { btn.innerHTML = originalText; btn.disabled = false; } };
-        window.loadUsers = async function() { try { const snap = await db.collection('users').get(); const tbody = document.getElementById('tblUsers'); if (snap.empty) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Belum ada user</td></tr>'; return; } let html = '', no = 1; snap.forEach(doc => { const d = doc.data(); const isCurrentUser = doc.id === window.currentUser.uid; const roleBadge = d.role === 'cashier' ? 'badge-info' : (d.role === 'super_admin' ? 'badge-danger' : 'badge-warning'); const roleName = d.role === 'cashier' ? 'Kasir' : (d.role === 'super_admin' ? 'Super Admin' : 'Admin'); html += `<tr><td>${no++}</td><td><b>${d.name}</b></td><td>${d.email}</td><td><span class="badge ${roleBadge}">${roleName}</span></td><td>${window.branchNames[d.branchId] || d.branchId || '-'}</td><td><span class="badge ${d.active ? 'badge-success' : 'badge-danger'}">${d.active ? 'Aktif' : 'Nonaktif'}</span></td><td>${!isCurrentUser ? `<button class="btn btn-sm btn-warning" onclick="alert('Fitur edit user')"><i class="fas fa-edit"></i></button> <button class="btn btn-sm btn-danger" onclick="confirmDeleteUser('${doc.id}')"><i class="fas fa-trash"></i></button>` : '<small>Akun Saya</small>'}</td></tr>`; }); tbody.innerHTML = html; } catch (e) { window.showToast('Gagal memuat data user', 'error'); } };
+        
+        // ✅ PERBAIKAN 2: loadUsers dengan check currentUser
+        window.loadUsers = async function() { 
+            if (!window.currentUser) {
+                console.log('⚠️ User belum login, tidak bisa memuat data user');
+                document.getElementById('tblUsers').innerHTML = '<tr><td colspan="7" style="text-align:center;color:#7f8c8d;">Silakan login terlebih dahulu</td></tr>';
+                return;
+            }
+            try { 
+                const snap = await db.collection('users').get(); 
+                const tbody = document.getElementById('tblUsers'); 
+                if (snap.empty) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Belum ada user</td></tr>'; return; } 
+                let html = '', no = 1; 
+                snap.forEach(doc => { 
+                    const d = doc.data(); 
+                    const isCurrentUser = doc.id === window.currentUser.uid; 
+                    const roleBadge = d.role === 'cashier' ? 'badge-info' : (d.role === 'super_admin' ? 'badge-danger' : 'badge-warning'); 
+                    const roleName = d.role === 'cashier' ? 'Kasir' : (d.role === 'super_admin' ? 'Super Admin' : 'Admin'); 
+                    html += `<tr><td>${no++}</td><td><b>${d.name}</b></td><td>${d.email}</td><td><span class="badge ${roleBadge}">${roleName}</span></td><td>${window.branchNames[d.branchId] || d.branchId || '-'}</td><td><span class="badge ${d.active ? 'badge-success' : 'badge-danger'}">${d.active ? 'Aktif' : 'Nonaktif'}</span></td><td>${!isCurrentUser ? `<button class="btn btn-sm btn-warning" onclick="alert('Fitur edit user')"><i class="fas fa-edit"></i></button> <button class="btn btn-sm btn-danger" onclick="confirmDeleteUser('${doc.id}')"><i class="fas fa-trash"></i></button>` : '<small>Akun Saya</small>'}</td></tr>`; 
+                }); 
+                tbody.innerHTML = html; 
+            } catch (e) { 
+                console.error('Load users error:', e);
+                window.showToast('Gagal memuat data user', 'error'); 
+            } 
+        };
+        
         window.confirmDeleteUser = function(id) { window.showCustomModal('Hapus user ini? Tindakan ini tidak dapat dibatalkan.', function() { db.collection('users').doc(id).delete().then(() => { window.showToast('User dihapus'); window.loadUsers(); }); }); };
         window.exportUsersExcel = function() { const data = []; db.collection('users').get().then(snap => { snap.forEach(doc => { const d = doc.data(); data.push({'Nama': d.name, 'Email': d.email, 'Role': d.role, 'Cabang': window.branchNames[d.branchId] || d.branchId, 'Status': d.active ? 'Aktif' : 'Nonaktif'}); }); const ws = XLSX.utils.json_to_sheet(data); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Users"); XLSX.writeFile(wb, `Laporan_Users_${new Date().toISOString().split('T')[0]}.xlsx`); window.showToast('File Excel berhasil diunduh'); }); };
         window.handleAddBahanBaku = async function(e) { e.preventDefault(); const btn = e.target.querySelector('button[type="submit"]'); const originalText = btn.innerHTML; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...'; btn.disabled = true; const bahanBaku = { nama: document.getElementById('bbNama').value.trim(), satuan: document.getElementById('bbSatuan').value, stok: parseInt(document.getElementById('bbStok').value) || 0, minStok: parseInt(document.getElementById('bbMinStok').value) || 0, harga: parseInt(document.getElementById('bbHarga').value) || 0, cabang: document.getElementById('bbCabang').value, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }; try { await db.collection('bahan_baku').add(bahanBaku); window.showToast('Bahan baku berhasil ditambahkan'); document.getElementById('formBahanBaku').reset(); window.loadBahanBaku(); } catch (err) { window.showToast('Gagal menambahkan bahan baku: ' + err.message, 'error'); } finally { btn.innerHTML = originalText; btn.disabled = false; } };
@@ -208,27 +284,19 @@
         window.formatRp = n => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n || 0);
 
         // ==========================================
-        // 🔐 ROLE-BASED AUTH (PENTING)
+        // 🔐 ROLE-BASED AUTH (TIDAK DIUBAH)
         // ==========================================
         auth.onAuthStateChanged(async user => {
-            // ✅ UBAHAN: Jangan redirect otomatis, biarkan halaman tetap terbuka
             if (!user) { 
                 console.log('⚠️ Tidak ada user login - Silakan login dulu');
-                // window.location.href = 'index.html';  // ← DI-COMMENT AGAR TIDAK REDIRECT
                 return; 
             }
             try {
                 const doc = await db.collection('users').doc(user.uid).get();
                 const data = doc.data();
-                
-                // ✅ UBAHAN: Tampilkan warning tapi jangan redirect
                 if (!data || data.role === 'cashier') {
                     console.log('⚠️ Warning: Role Kasir mengakses Admin');
-                    // alert('Akses Ditolak! Halaman ini khusus Admin.');  // ← DI-COMMENT
-                    // window.location.href = 'index.html';  // ← DI-COMMENT
                 }
-                
-                // Lanjutkan load halaman admin
                 window.currentUser = user;
                 document.getElementById('adminName').textContent = data.name || 'Admin';
                 listenOnlineOrders();
