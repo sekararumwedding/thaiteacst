@@ -104,8 +104,8 @@
         .modal-btn { padding: 10px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; flex: 1; max-width: 140px; }
         .modal-btn-primary { background: var(--primary); color: white; } .modal-btn-secondary { background: var(--light); color: var(--dark); }
         .close-modal { position: absolute; top: 12px; right: 12px; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #999; }
-        .report-filter { display: flex; gap: 8px; margin-bottom: 15px; }
-        .report-filter select { flex: 1; padding: 10px; border: 2px solid #ddd; border-radius: 8px; font-size: 0.9rem; }
+        .report-filter { display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
+        .report-filter select { flex: 1; padding: 10px; border: 2px solid #ddd; border-radius: 8px; font-size: 0.9rem; min-width: 120px; }
         .report-table-container { overflow-x: auto; margin-bottom: 15px; max-height: 300px; }
         .report-table { width: 100%; border-collapse: collapse; min-width: 400px; }
         .report-table th, .report-table td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; font-size: 0.85rem; }
@@ -115,6 +115,24 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .empty-state { text-align: center; padding: 40px 20px; color: #95a5a6; }
         .empty-state i { font-size: 3rem; margin-bottom: 12px; opacity: 0.4; }
+        
+        /* Report Summary Styles */
+        #reportSummary { background:#f8f9fa; padding:15px; border-radius:8px; margin-bottom:15px; display:none; }
+        #reportSummary .summary-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; text-align:center; }
+        #reportSummary .summary-card { background:white; padding:10px; border-radius:6px; box-shadow:0 2px 4px rgba(0,0,0,0.05); }
+        #reportSummary .summary-label { font-size:0.8rem; color:#7f8c8d; margin-bottom:5px; }
+        #reportSummary .summary-value { font-size:1.2rem; font-weight:800; }
+        #reportSummary .summary-value.revenue { color:var(--primary); }
+        #reportSummary .summary-value.transactions { color:var(--success); }
+        #reportSummary .summary-value.items { color:var(--info); }
+        
+        #topItemsSummary { background:#fff5eb; padding:15px; border-radius:8px; margin-bottom:15px; display:none; }
+        #topItemsSummary .top-items-title { font-weight:700; color:var(--primary); margin-bottom:10px; display:flex; align-items:center; gap:8px; }
+        #topItemsSummary .top-item-row { display:flex; justify-content:space-between; background:white; padding:8px; border-radius:6px; margin-bottom:8px; align-items:center; }
+        #topItemsSummary .top-item-rank { background:var(--primary); color:white; width:20px; height:20px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:0.75rem; margin-right:8px; flex-shrink:0; }
+        #topItemsSummary .top-item-name { flex:1; font-size:0.9rem; }
+        #topItemsSummary .top-item-qty { font-weight:700; color:var(--primary); font-size:0.9rem; }
+        
         @media (min-width: 768px) {
             .content-wrapper { display: grid; grid-template-columns: 1.8fr 1fr; gap: 20px; }
             .floating-cart { display: none; }
@@ -129,6 +147,7 @@
             .content-wrapper { padding: 10px; } .section-title { font-size: 1rem; margin-bottom: 10px; }
             .category-filter { gap: 6px; margin-bottom: 10px; } .cat-btn { padding: 6px 14px; font-size: 0.8rem; }
             .payment-method { grid-template-columns: repeat(2, 1fr); }
+            #reportSummary .summary-grid { grid-template-columns:1fr; }
         }
     </style>
 </head>
@@ -230,7 +249,38 @@
             <button class="close-modal" onclick="closeReportModal()">&times;</button>
             <img src="https://i.ibb.co.com/mC3npXRW/Gemini-Generated-Image-8aemtl8aemtl8aem-removebg-preview.png" class="modal-logo" alt="Logo">
             <div class="modal-title">Laporan Penjualan</div>
-            <div class="report-filter"><select id="branchFilter" onchange="loadReports()"><option value="all">Semua Cabang</option><option value="cabang_01">Sport Center Bandara Soetta</option><option value="cabang_02">TOD M1, Benda</option></select></div>
+            <div class="report-filter">
+                <select id="branchFilter" onchange="loadReports()">
+                    <option value="all">Semua Cabang</option>
+                    <option value="cabang_01">Sport Center Bandara Soetta</option>
+                    <option value="cabang_02">TOD M1, Benda</option>
+                </select>
+                <select id="periodFilter" onchange="loadReports()" style="padding:10px;border:2px solid #ddd;border-radius:8px;font-size:0.9rem;">
+                    <option value="daily">Harian</option>
+                    <option value="weekly">Mingguan</option>
+                    <option value="monthly">Bulanan</option>
+                </select>
+            </div>
+            <div id="reportSummary" style="background:#f8f9fa;padding:15px;border-radius:8px;margin-bottom:15px;display:none;">
+                <div class="summary-grid">
+                    <div class="summary-card">
+                        <div class="summary-label">Total Pendapatan</div>
+                        <div id="totalRevenue" class="summary-value revenue">Rp 0</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-label">Total Transaksi</div>
+                        <div id="totalTransactions" class="summary-value transactions">0</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-label">Total Item</div>
+                        <div id="totalItems" class="summary-value items">0</div>
+                    </div>
+                </div>
+            </div>
+            <div id="topItemsSummary" style="background:#fff5eb;padding:15px;border-radius:8px;margin-bottom:15px;display:none;">
+                <div class="top-items-title"><i class="fas fa-chart-bar"></i> Barang Terlaris</div>
+                <div id="topItemsList"></div>
+            </div>
             <div id="reportLoading" class="loading"><div class="spinner"></div>Memuat Data...</div>
             <div id="reportContent" style="display:none;">
                 <div class="report-table-container"><table class="report-table"><thead><tr><th>Tgl</th><th>Items</th><th>Total</th><th>Bayar</th></tr></thead><tbody id="reportTableBody"></tbody></table></div>
@@ -330,9 +380,101 @@
         function closeCartModal() { document.getElementById('cartModal').classList.remove('active'); }
         async function checkout() { const customerName = isMobile ? document.getElementById('customerNameMobile').value.trim() : document.getElementById('customerNameDesktop').value.trim(); if (!customerName) { showCustomModal('Perhatian', 'Mohon masukkan nama pembeli!', null); return; } if (cart.length === 0) { showCustomModal('Perhatian', 'Keranjang masih kosong!', null); return; } const sub = cart.reduce((s, i) => s + (i.price * i.qty), 0); const discMobile = parseInt(document.getElementById('discountMobile').value) || 0; const discDesktop = parseInt(document.getElementById('discountDesktop').value) || 0; const disc = isMobile ? discMobile : discDesktop; const total = Math.max(0, sub - disc); if (selectedPaymentMethod === 'cash') { if (uangDiterima < total) { showCustomModal('Perhatian', 'Uang yang diterima kurang!', null); return; } } try { const docRef = await db.collection('transactions').add({ items: cart, subtotal: sub, discount: disc, total: total, customerName: customerName, cashierId: currentUser.uid, cashierName: currentUser.name, branchId: currentBranch, paymentMethod: selectedPaymentMethod, uangDiterima: uangDiterima, kembalian: kembalian, orderType: 'offline', timestamp: firebase.firestore.FieldValue.serverTimestamp() }); lastTransaction = { id: docRef.id, items: cart, total: total, customerName: customerName, uangDiterima: uangDiterima, kembalian: kembalian, paymentMethod: selectedPaymentMethod }; printStruk(); cart = []; document.getElementById('customerNameMobile').value = ''; document.getElementById('customerNameDesktop').value = ''; document.getElementById('discountMobile').value = '0'; document.getElementById('discountDesktop').value = '0'; document.getElementById('uangDiterimaMobile').value = ''; document.getElementById('uangDiterimaDesktop').value = ''; document.getElementById('kembalianMobile').value = 'Rp 0'; document.getElementById('kembalianDesktop').value = 'Rp 0'; uangDiterima = 0; kembalian = 0; renderCart(); updateCartBadge(); closeCartModal(); showCustomModal('Transaksi Berhasil', 'Pesanan telah berhasil diproses.', null); } catch (e) { showCustomModal('Error', 'Gagal: ' + e.message, null); } }
         function printStruk() { if (!lastTransaction) return; const date = new Date(); const dateStr = date.toLocaleDateString('id-ID'); const timeStr = date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }); const width = 32; const formatRpStruk = (n) => 'Rp' + new Intl.NumberFormat('id-ID').format(n); const center = (text, w = width) => { const padding = Math.floor((w - text.length) / 2); return ' '.repeat(Math.max(0, padding)) + text; }; const formatItem = (name, qty, priceStr, w = width) => { const qtyText = `${qty}x `; const rightPart = qtyText + priceStr; let spacesCount = w - name.length - rightPart.length; if (spacesCount < 1) { const maxNameLen = w - rightPart.length - 3; const shortName = name.substring(0, Math.max(0, maxNameLen)) + '...'; spacesCount = w - shortName.length - rightPart.length; return shortName + ' '.repeat(Math.max(0, spacesCount)) + rightPart; } return name + ' '.repeat(spacesCount) + rightPart; }; const formatPayment = (label, amountStr, w = width) => { const labelWithColon = label + ':'; const spacesCount = w - labelWithColon.length - amountStr.length; return labelWithColon + ' '.repeat(Math.max(1, spacesCount)) + amountStr; }; let strukText = ''; strukText += '\x1B\x40'; strukText += '\x1B\x45\x01'; strukText += center('THAI TEA CST') + '\n'; strukText += '\x1B\x45\x00'; strukText += center(branchNames[currentBranch] || '') + '\n\n'; strukText += '--------------------------------\n'; strukText += `Pelanggan: ${lastTransaction.customerName}\n`; strukText += `${dateStr} ${timeStr}\n`; strukText += '--------------------------------\n'; lastTransaction.items.forEach(item => { const subtotal = formatRpStruk(item.price * item.qty); strukText += formatItem(item.name, item.qty, subtotal) + '\n'; }); strukText += '--------------------------------\n'; const totalStr = formatRpStruk(lastTransaction.total); const bayarStr = formatRpStruk(lastTransaction.uangDiterima || lastTransaction.total); const kembaliStr = formatRpStruk(lastTransaction.kembalian || 0); strukText += formatPayment('Total', totalStr) + '\n'; strukText += '================================\n'; strukText += formatPayment('BAYAR', bayarStr) + '\n'; strukText += formatPayment('KEMBALI', kembaliStr) + '\n'; strukText += '================================\n\n'; strukText += center('Pesanan Kembali:') + '\n'; strukText += center('+62 822-9999-7227') + '\n'; strukText += center('TERIMA KASIH') + '\n\n'; strukText += '\x1B\x64\x02'; const cleanText = strukText.replace(/[^\x00-\x7F\x1B]/g, (char) => { return char; }).trim(); const b64 = btoa(cleanText); if (/Android/i.test(navigator.userAgent)) { window.location.href = `rawbt:base64,${b64}`; } else { const previewText = strukText.replace(/\x1B\[[0-9;]*[A-Za-z]/g, ''); const printWindow = window.open('', '_blank', 'width=400,height=600'); printWindow.document.write(`<!DOCTYPE html><html><head><title>Struk</title><style>@media print { @page { margin: 0; size: 58mm auto; } body { margin: 0; padding: 5px; font-family: 'Courier New', monospace; font-size: 12px; } } body { font-family: 'Courier New', monospace; font-size: 12px; max-width: 300px; margin: 0 auto; padding: 10px; white-space: pre-wrap; word-wrap: break-word; line-height: 1.4; } .bold { font-weight: bold; } .large { font-size: 18px; } .center { text-align: center; } </style></head><body><div class="center"><span class="bold">THAI TEA CST</span></div><div class="center">${branchNames[currentBranch] || ''}</div><br>${previewText.replace(/\n/g, '<br>')}<script>window.onload=function(){window.print();setTimeout(()=>window.close(),1000);};<\/script></body></html>`); printWindow.document.close(); } }
-        function openReportModal() { document.getElementById('reportModal').classList.add('active'); document.getElementById('branchFilter').value = currentBranch; document.getElementById('reportLoading').style.display = 'block'; document.getElementById('reportContent').style.display = 'none'; loadReports(); }
+        function openReportModal() { document.getElementById('reportModal').classList.add('active'); document.getElementById('branchFilter').value = currentBranch; document.getElementById('reportLoading').style.display = 'block'; document.getElementById('reportContent').style.display = 'none'; document.getElementById('reportSummary').style.display = 'none'; document.getElementById('topItemsSummary').style.display = 'none'; loadReports(); }
         function closeReportModal() { document.getElementById('reportModal').classList.remove('active'); }
-        async function loadReports() { const selectedBranch = document.getElementById('branchFilter').value; document.getElementById('reportLoading').style.display = 'block'; document.getElementById('reportContent').style.display = 'none'; try { let query = db.collection('transactions').orderBy('timestamp', 'desc').limit(100); if (selectedBranch !== 'all') query = query.where('branchId', '==', selectedBranch); const snap = await query.get(); transactionsData = []; const tbody = document.getElementById('reportTableBody'); tbody.innerHTML = ''; snap.forEach(doc => { const d = doc.data(); const tDate = d.timestamp ? d.timestamp.toDate() : new Date(); const row = { tanggal: tDate.toLocaleDateString('id-ID'), items: d.items.map(i => `${i.name} x${i.qty}`).join(', '), total: d.total, bayar: d.paymentMethod || 'Cash' }; transactionsData.push(row); tbody.innerHTML += `<tr><td>${row.tanggal}</td><td>${row.items}</td><td><b>${formatRp(row.total)}</b></td><td>${row.bayar}</td></tr>`; }); document.getElementById('reportLoading').style.display = 'none'; document.getElementById('reportContent').style.display = 'block'; } catch (e) { document.getElementById('reportLoading').textContent = 'Gagal memuat data.'; } }
+        async function loadReports() {
+            const selectedBranch = document.getElementById('branchFilter').value;
+            const selectedPeriod = document.getElementById('periodFilter').value;
+            document.getElementById('reportLoading').style.display = 'block';
+            document.getElementById('reportContent').style.display = 'none';
+            document.getElementById('reportSummary').style.display = 'none';
+            document.getElementById('topItemsSummary').style.display = 'none';
+            
+            try {
+                let query = db.collection('transactions').orderBy('timestamp', 'desc').limit(500);
+                if (selectedBranch !== 'all') query = query.where('branchId', '==', selectedBranch);
+                
+                const snap = await query.get();
+                transactionsData = [];
+                const tbody = document.getElementById('reportTableBody');
+                tbody.innerHTML = '';
+                
+                let totalRevenue = 0;
+                let totalTransactions = 0;
+                let totalItems = 0;
+                const itemSales = {};
+                
+                // Hitung berdasarkan periode
+                const now = new Date();
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+                const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+                
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    const tDate = d.timestamp ? d.timestamp.toDate() : new Date();
+                    
+                    // Filter berdasarkan periode
+                    if (selectedPeriod === 'daily' && tDate < today) return;
+                    if (selectedPeriod === 'weekly' && tDate < weekAgo) return;
+                    if (selectedPeriod === 'monthly' && tDate < monthStart) return;
+                    
+                    const row = {
+                        tanggal: tDate.toLocaleDateString('id-ID'),
+                        items: d.items.map(i => `${i.name} x${i.qty}`).join(', '),
+                        total: d.total,
+                        bayar: d.paymentMethod || 'Cash'
+                    };
+                    transactionsData.push(row);
+                    tbody.innerHTML += `<tr><td>${row.tanggal}</td><td>${row.items}</td><td><b>${formatRp(row.total)}</b></td><td>${row.bayar}</td></tr>`;
+                    
+                    // Hitung total
+                    totalRevenue += (d.total || 0);
+                    totalTransactions++;
+                    
+                    // Hitung per item
+                    if (Array.isArray(d.items)) {
+                        d.items.forEach(item => {
+                            const qty = item.qty || 1;
+                            totalItems += qty;
+                            if (itemSales[item.name]) {
+                                itemSales[item.name] += qty;
+                            } else {
+                                itemSales[item.name] = qty;
+                            }
+                        });
+                    }
+                });
+                
+                // Tampilkan summary
+                document.getElementById('totalRevenue').textContent = formatRp(totalRevenue);
+                document.getElementById('totalTransactions').textContent = totalTransactions;
+                document.getElementById('totalItems').textContent = totalItems;
+                document.getElementById('reportSummary').style.display = 'block';
+                
+                // Tampilkan top items
+                const sortedItems = Object.entries(itemSales).sort((a, b) => b[1] - a[1]).slice(0, 5);
+                if (sortedItems.length > 0) {
+                    let topItemsHtml = '';
+                    sortedItems.forEach((item, index) => {
+                        topItemsHtml += `<div class="top-item-row">
+                            <div style="display:flex;align-items:center">
+                                <span class="top-item-rank">${index + 1}</span>
+                                <span class="top-item-name">${item[0]}</span>
+                            </div>
+                            <span class="top-item-qty">${item[1]} terjual</span>
+                        </div>`;
+                    });
+                    document.getElementById('topItemsList').innerHTML = topItemsHtml;
+                    document.getElementById('topItemsSummary').style.display = 'block';
+                }
+                
+                document.getElementById('reportLoading').style.display = 'none';
+                document.getElementById('reportContent').style.display = 'block';
+            } catch (e) {
+                document.getElementById('reportLoading').textContent = 'Gagal memuat data.';
+            }
+        }
         function downloadExcel() { if(transactionsData.length === 0) { showCustomModal('Info', 'Tidak ada data', null); return; } const ws = XLSX.utils.json_to_sheet(transactionsData); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Laporan"); XLSX.writeFile(wb, `Laporan_${new Date().toISOString().split('T')[0]}.xlsx`); }
         function openRegisterModal() { document.getElementById('registerModal').classList.add('active'); }
         function closeRegisterModal() { document.getElementById('registerModal').classList.remove('active'); }
