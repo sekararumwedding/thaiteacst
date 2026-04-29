@@ -1540,100 +1540,138 @@
         }
         
         // ==========================================
-        // 🔔 SISTEM NOTIFIKASI PESANAN (VERSI FIX & AUTO-CART)
+        // 🔔 SISTEM NOTIFIKASI PESANAN ONLINE (DIPERBAIKI)
         // ==========================================
         
+        // A. Fungsi Play Sound Notifikasi
         function playNotificationSound() {
             try {
                 const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
                 audio.volume = 0.7;
-                audio.play().catch(e => console.log('🔇 Audio play blocked:', e));
+                audio.play().catch(e => console.log('🔇 Audio diblokir browser:', e));
             } catch (e) {
                 console.log('Audio error:', e);
             }
         }
         
-        // A. Listener Web Order (orders)
+        // B. Listener untuk Pesanan dari Website (collection: orders)
         function setupWebOrderNotifications() {
             if (!currentUser) return;
-            console.log('🔔 Listener Web Order Aktif...');
             
+            console.log('🔔 Setup web order notifications...');
+            
+            // ✅ PERBAIKAN: Filter notified == false dan orderBy notified dulu
             db.collection('orders')
                 .where('status', '==', 'accepted')
                 .where('notified', '==', false)
+                .orderBy('notified')
+                .orderBy('createdAt', 'desc')
+                .limit(10)
                 .onSnapshot(snapshot => {
+                    console.log(`📥 Web orders accepted & not notified: ${snapshot.size}`);
+                    
                     snapshot.docChanges().forEach(change => {
                         if (change.type === 'added') {
                             const data = change.doc.data();
-                            const docId = change.doc.id;
                             playNotificationSound();
                             
-                            const name = data.customerName || data.nama || 'Pelanggan';
-                            const detail = data.items ? data.items.map(i => i.name).join(', ') : 'Item';
+                            const customerName = data.customerName || data.nama || 'Pelanggan';
+                            const items = data.items ? data.items.map(i => i.name).join(', ') : 'Item';
+                            const total = data.total ? formatRp(data.total) : '-';
                             
-                            showCustomModal(
-                                '🔔 PESANAN WEBSITE BARU!', 
-                                `👤 ${name}\n🥤 ${detail}\n💰 ${formatRp(data.total || 0)}`,
-                                function() {
-                                    // 1. Update agar tidak muncul lagi
-                                    db.collection('orders').doc(docId).update({
-                                        notified: true,
-                                        notifiedAt: new Date().toISOString()
-                                    });
-                                    // 2. Masukkan ke keranjang otomatis
-                                    addOnlineOrderToCart(data, docId, 'orders');
-                                }
-                            );
+                            setTimeout(() => {
+                                showCustomModal(
+                                    '🔔 PESANAN WEBSITE BARU!', 
+                                    `👤 ${customerName}\n🥤 ${items}\n💰 ${total}`,
+                                    function() {
+                                        // ✅ Update notified menjadi true
+                                        db.collection('orders').doc(change.doc.id).update({
+                                            notified: true,
+                                            notifiedAt: new Date().toISOString()
+                                        }).catch(err => console.error('Gagal update notified:', err));
+                                        
+                                        // ✅ Otomatis masukkan ke keranjang
+                                        autoAddToCart(data, 'orders');
+                                    }
+                                );
+                            }, 500);
                         }
                     });
+                }, error => {
+                    if (error.code === 'failed-precondition') {
+                        console.log('⚠️ INDEX DIPERLUKAN! Klik link ini untuk membuat index:');
+                        console.log(error.message);
+                    } else {
+                        console.error('❌ Web order listener error:', error);
+                    }
                 });
         }
         
-        // B. Listener Online Sales (GoFood/Grab/Shopee)
+        // C. Listener untuk Pesanan Online (GoFood/ShopeeFood/GrabFood)
         function setupOnlineOrderNotifications() {
             if (!currentUser) return;
-            console.log('🔔 Listener Online Sales Aktif...');
             
+            console.log('🔔 Setup online order notifications...');
+            
+            // ✅ PERBAIKAN: Filter notified == false dan orderBy notified dulu
             db.collection('online_sales')
                 .where('notified', '==', false)
+                .orderBy('notified')
+                .orderBy('createdAt', 'desc')
+                .limit(10)
                 .onSnapshot(snapshot => {
+                    console.log(`📥 Online orders not notified: ${snapshot.size}`);
+                    
                     snapshot.docChanges().forEach(change => {
                         if (change.type === 'added') {
                             const data = change.doc.data();
-                            const docId = change.doc.id;
                             playNotificationSound();
                             
-                            const platform = (data.platform || 'Online').toUpperCase();
-                            const item = data.item || (data.items ? data.items[0].name : 'Item');
-                            const price = data.price || data.total || 0;
-        
-                            showCustomModal(
-                                `🔔 PESANAN ${platform} BARU!`, 
-                                `📦 No: ${data.orderNo || '-'}\n🥤 ${item}\n💰 ${formatRp(price)}`,
-                                function() {
-                                    // 1. Update agar tidak muncul lagi
-                                    db.collection('online_sales').doc(docId).update({
-                                        status: 'completed',
-                                        notified: true,
-                                        notifiedAt: new Date().toISOString()
-                                    });
-                                    // 2. Masukkan ke keranjang otomatis
-                                    addOnlineOrderToCart(data, docId, 'online_sales');
-                                    // 3. Auto pilih metode bayar sesuai platform
-                                    if(typeof autoSelectPayment === "function") autoSelectPayment(data.platform);
-                                }
-                            );
+                            const platform = data.platform || 'Online';
+                            const orderNo = data.orderNo || data.noOrder || '-';
+                            const item = data.item || 'Item';
+                            const price = data.price || data.total ? formatRp(data.price || data.total) : '-';
+                            
+                            setTimeout(() => {
+                                showCustomModal(
+                                    `🔔 PESANAN ${platform.toUpperCase()} BARU!`, 
+                                    `📦 No: ${orderNo}\n🥤 ${item}\n💰 ${price}`,
+                                    function() {
+                                        // ✅ Update notified menjadi true
+                                        db.collection('online_sales').doc(change.doc.id).update({
+                                            notified: true,
+                                            notifiedAt: new Date().toISOString()
+                                        }).catch(err => console.error('Gagal update notified:', err));
+                                        
+                                        // ✅ Otomatis masukkan ke keranjang & set payment
+                                        autoAddToCart(data, 'online_sales');
+                                        
+                                        // ✅ Otomatis pilih metode pembayaran sesuai platform
+                                        autoSelectPayment(platform);
+                                    }
+                                );
+                            }, 500);
                         }
                     });
+                }, error => {
+                    if (error.code === 'failed-precondition') {
+                        console.log('⚠️ INDEX DIPERLUKAN! Klik link ini untuk membuat index:');
+                        console.log(error.message);
+                    } else {
+                        console.error('❌ Online order listener error:', error);
+                    }
                 });
         }
         
-        // C. Fungsi Auto-Add ke Keranjang (Pastikan variabel 'cart' dan fungsi 'renderCart' ada)
-        function addOnlineOrderToCart(orderData, orderId, collectionName) {
-            console.log('🛒 Memproses masuk keranjang...');
+        // D. Fungsi Auto-Add to Cart
+        function autoAddToCart(orderData, source) {
+            console.log('🛒 Auto-adding to cart from:', source);
             
             let itemsToAdd = [];
-            if (orderData.items && Array.isArray(orderData.items)) {
+            let customerName = orderData.customerName || orderData.nama || 'Pelanggan Online';
+            
+            // Handle format dari collection 'orders' (website)
+            if (source === 'orders' && orderData.items && Array.isArray(orderData.items)) {
                 itemsToAdd = orderData.items.map(item => ({
                     id: item.id || item.name,
                     name: item.name,
@@ -1642,9 +1680,11 @@
                     cat: item.cat || 'online',
                     img: item.img || ''
                 }));
-            } else if (orderData.item) {
+            }
+            // Handle format dari collection 'online_sales' (GoFood/Shopee/Grab)
+            else if (source === 'online_sales' && orderData.item) {
                 itemsToAdd.push({
-                    id: orderId,
+                    id: orderData.orderNo || 'online_' + Date.now(),
                     name: orderData.item,
                     price: orderData.price || orderData.total || 0,
                     qty: 1,
@@ -1652,29 +1692,115 @@
                     img: ''
                 });
             }
-        
-            // Masukkan ke array cart (asumsi variabel global Anda bernama 'cart')
+            
+            if (itemsToAdd.length === 0) {
+                console.error('❌ Tidak ada item untuk ditambahkan');
+                return;
+            }
+            
+            // Tambahkan ke keranjang
             itemsToAdd.forEach(item => {
                 const exist = cart.find(c => c.id === item.id);
-                if (exist) { exist.qty += item.qty; } else { cart.push(item); }
+                if (exist) {
+                    exist.qty += item.qty;
+                } else {
+                    cart.push(item);
+                }
             });
-        
-            // Update tampilan (asumsi fungsi render Anda)
-            if(typeof renderCart === "function") renderCart();
-            if(typeof updateCartBadge === "function") updateCartBadge();
             
-            // Isi nama pelanggan otomatis
-            const inputName = document.getElementById('customerNameDesktop') || document.getElementById('customerNameMobile');
-            if (inputName) inputName.value = orderData.customerName || orderData.nama || 'Pelanggan Online';
+            // Update tampilan keranjang
+            renderCart();
+            updateCartBadge();
+            
+            // Auto-fill nama pembeli
+            const desktopInput = document.getElementById('customerNameDesktop');
+            const mobileInput = document.getElementById('customerNameMobile');
+            if (desktopInput) desktopInput.value = customerName;
+            if (mobileInput) mobileInput.value = customerName;
+            
+            console.log('✅ Pesanan masuk keranjang. Total items:', cart.length);
+            showCustomModal('✅ Berhasil', `Pesanan ${customerName} sudah masuk keranjang.`);
         }
         
-        // D. Jalankan Listener saat Auth siap
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                setupWebOrderNotifications();
-                setupOnlineOrderNotifications();
+        // E. Fungsi Auto-Select Payment Method
+        function autoSelectPayment(platform) {
+            console.log('💳 Auto-selecting payment for:', platform);
+            
+            let paymentMethod = '';
+            
+            // Tentukan metode pembayaran berdasarkan platform
+            if (platform.toLowerCase().includes('gofood')) {
+                paymentMethod = 'gofood';
+            } else if (platform.toLowerCase().includes('shopee')) {
+                paymentMethod = 'shopeefood';
+            } else if (platform.toLowerCase().includes('grab')) {
+                paymentMethod = 'grabfood';
+            } else {
+                paymentMethod = 'cash'; // default
             }
-        });
+            
+            // Cari dan klik tombol pembayaran yang sesuai
+            const payBtn = document.querySelector(`.pay-btn[data-payment="${paymentMethod}"]`);
+            if (payBtn) {
+                // Hapus active dari semua tombol
+                document.querySelectorAll('.pay-btn').forEach(btn => btn.classList.remove('active'));
+                // Tambah active ke tombol yang dipilih
+                payBtn.classList.add('active');
+                // Update variable global
+                selectedPaymentMethod = paymentMethod;
+                
+                console.log('✅ Payment method selected:', paymentMethod);
+                
+                // Auto-set uang diterima = total (untuk non-cash)
+                if (paymentMethod !== 'cash') {
+                    const totalMobile = parseFloat(document.getElementById('totalMobile').textContent.replace(/[^0-9]/g, '')) || 0;
+                    const totalDesktop = parseFloat(document.getElementById('totalDesktop').textContent.replace(/[^0-9]/g, '')) || 0;
+                    
+                    const uangInputDesktop = document.getElementById('uangDiterimaDesktop');
+                    const uangInputMobile = document.getElementById('uangDiterimaMobile');
+                    
+                    if (uangInputDesktop) {
+                        uangInputDesktop.value = totalDesktop;
+                        uangInputDesktop.readOnly = true;
+                    }
+                    if (uangInputMobile) {
+                        uangInputMobile.value = totalMobile;
+                        uangInputMobile.readOnly = true;
+                    }
+                    
+                    calculateChange('desktop');
+                    calculateChange('mobile');
+                }
+            }
+        }
+        
+        // F. Initialize Notifications saat login
+        const originalHandleLogin = window.handleLogin;
+        window.handleLogin = async function(e) {
+            if (originalHandleLogin) {
+                await originalHandleLogin.call(this, e);
+                if (currentUser) {
+                    setupWebOrderNotifications();
+                    setupOnlineOrderNotifications();
+                }
+            }
+        };
+        
+        // G. Initialize saat window load
+        const originalWindowOnload = window.onload;
+        window.onload = function() {
+            if (originalWindowOnload) originalWindowOnload.call(this);
+            
+            const savedUser = sessionStorage.getItem('currentUser');
+            if (savedUser) {
+                setTimeout(() => {
+                    if (currentUser) {
+                        setupWebOrderNotifications();
+                        setupOnlineOrderNotifications();
+                    }
+                }, 1000);
+            }
+        };
     </script>
 </body>
 </html>
