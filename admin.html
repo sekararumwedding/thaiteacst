@@ -306,6 +306,46 @@
             }
         });
         window.onclick = function(event) { if (event.target.classList.contains('modal')) event.target.classList.remove('active'); if (event.target.id === 'customModalOverlay') window.closeCustomModal(); if (event.target.id === 'editStockModalOverlay') window.closeEditStockModal(); };
+        // Tampilkan tombol login jika belum login
+        function showLoginPrompt() {
+            // Cek apakah sudah ada prompt
+            if (document.getElementById('loginPrompt')) return;
+            
+            const loginButton = document.createElement('div');
+            loginButton.id = 'loginPrompt';
+            loginButton.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: white;
+                padding: 40px;
+                border-radius: 16px;
+                box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+                text-align: center;
+                z-index: 9999;
+                max-width: 400px;
+                width: 90%;
+            `;
+            loginButton.innerHTML = `
+                <div style="font-size: 4rem; margin-bottom: 20px;">🔐</div>
+                <h2 style="color: var(--primary); margin-bottom: 15px;">Login Required</h2>
+                <p style="color: #7f8c8d; margin-bottom: 25px; line-height: 1.6;">Silakan login terlebih dahulu untuk mengakses dashboard admin</p>
+                <button onclick="window.location.href='index.html'" 
+                        style="background: var(--primary); color: white; padding: 15px 40px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 1rem; width: 100%;">
+                        🚀 Login Sekarang
+                </button>
+                <p style="margin-top: 15px; font-size: 0.85rem; color: #95a5a6;">
+                    Atau buka <a href="index.html" style="color: var(--primary);">halaman login</a>
+                </p>
+            `;
+            document.body.appendChild(loginButton);
+        }
+        
+        // Panggil fungsi showLoginPrompt jika belum login
+        if (!window.currentUser) {
+            showLoginPrompt();
+        }
     </script>
 </body>
 </html>
