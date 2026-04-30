@@ -284,28 +284,50 @@
         window.formatRp = n => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n || 0);
 
         // ==========================================
-        // 🔐 ROLE-BASED AUTH (TIDAK DIUBAH)
+        // 🔐 ROLE-BASED AUTH (DIPERBAIKI)
         // ==========================================
         auth.onAuthStateChanged(async user => {
-            if (!user) { 
-                console.log('⚠️ Tidak ada user login - Silakan login dulu');
-                return; 
-            }
-            try {
-                const doc = await db.collection('users').doc(user.uid).get();
-                const data = doc.data();
-                if (!data || data.role === 'cashier') {
-                    console.log('⚠️ Warning: Role Kasir mengakses Admin');
-                }
+            const existingPrompt = document.getElementById('loginPrompt');
+
+            if (user) {
+                // ✅ USER SUDAH LOGIN
+                console.log('✅ User logged in:', user.email);
                 window.currentUser = user;
-                document.getElementById('adminName').textContent = data.name || 'Admin';
-                listenOnlineOrders();
-                window.loadDashboard();
-            } catch (err) {
-                console.error('Auth error:', err);
+
+                // Hapus popup login jika masih ada
+                if (existingPrompt) existingPrompt.remove();
+
+                try {
+                    const doc = await db.collection('users').doc(user.uid).get();
+                    const data = doc.data();
+
+                    if (data && data.role !== 'cashier') {
+                        // ✅ Admin valid → load dashboard
+                        document.getElementById('adminName').textContent = data.name || 'Admin';
+                        listenOnlineOrders();
+                        window.loadDashboard();
+                        window.loadUsers();
+                    } else {
+                        console.log('⚠️ Warning: Role Kasir mengakses Admin');
+                    }
+                } catch (err) {
+                    console.error('Error loading user ', err);
+                }
+
+            } else {
+                // ❌ USER BELUM LOGIN → TAMPILKAN POPUP
+                console.log('⚠️ Tidak ada user login - Silakan login dulu');
+                showLoginPrompt();
             }
         });
-        window.onclick = function(event) { if (event.target.classList.contains('modal')) event.target.classList.remove('active'); if (event.target.id === 'customModalOverlay') window.closeCustomModal(); if (event.target.id === 'editStockModalOverlay') window.closeEditStockModal(); };
+
+        // Handle click outside modal
+        window.onclick = function(event) { 
+            if (event.target.classList.contains('modal')) event.target.classList.remove('active'); 
+            if (event.target.id === 'customModalOverlay') window.closeCustomModal(); 
+            if (event.target.id === 'editStockModalOverlay') window.closeEditStockModal(); 
+        };
+
         // Tampilkan tombol login jika belum login
         function showLoginPrompt() {
             // Cek apakah sudah ada prompt
@@ -341,11 +363,7 @@
             `;
             document.body.appendChild(loginButton);
         }
-        
-        // Panggil fungsi showLoginPrompt jika belum login
-        if (!window.currentUser) {
-            showLoginPrompt();
-        }
+        <!-- ✅ TIDAK ADA LAGI: if (!window.currentUser) { showLoginPrompt(); } -->
     </script>
 </body>
 </html>
